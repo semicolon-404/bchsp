@@ -55,7 +55,11 @@ class Banner extends Model
             }
         });
 
-        static::deleted(fn (Banner $banner) => Storage::disk('public')->delete($banner->image_path));
+        // Not an arrow function: delete() answers false for a file already gone, and a listener that answers false
+        // stops the ones after it (the access log's among them).
+        static::deleted(function (Banner $banner) {
+            Storage::disk('public')->delete($banner->image_path);
+        });
     }
 
     /** Switched on and inside its dates, in the order staff gave them. */

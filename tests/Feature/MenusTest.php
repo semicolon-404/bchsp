@@ -7,7 +7,6 @@ use App\Filament\Resources\StaffLinks\Pages\ManageStaffLinks;
 use App\Models\Announcement;
 use App\Models\AnnouncementType;
 use App\Models\BlogPost;
-use App\Models\Document;
 use App\Models\SitePage;
 use App\Models\StaffLink;
 use App\Models\User;
@@ -16,7 +15,6 @@ use App\Support\SiteSettings;
 use Database\Seeders\StaffLinkSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Storage;
 use Livewire\Livewire;
 use Tests\TestCase;
 
@@ -187,22 +185,6 @@ class MenusTest extends TestCase
             ->assertHasNoFormErrors();
 
         $this->assertSame(1, StaffLink::count());
-    }
-
-    public function test_ita_documents_are_filed_by_fiscal_year_newest_first_and_kept_off_the_downloads_page(): void
-    {
-        Storage::fake('public');
-        Document::factory()->create(['title' => 'Procurement plan 2568', 'section' => 'ita', 'year' => 2568, 'group' => 'MOIT 5']);
-        Document::factory()->create(['title' => 'Ethics standard', 'section' => 'ita', 'year' => 2569, 'group' => 'MOIT 10']);
-        Document::factory()->create(['title' => 'Structure of the hospital', 'section' => 'ita', 'year' => 2569, 'group' => 'MOIT 2']);
-        Document::factory()->create(['title' => 'Leave form']);
-
-        $this->get('/ita')
-            ->assertOk()
-            ->assertSeeInOrder(['Fiscal year 2569', 'MOIT 2', 'Structure of the hospital', 'MOIT 10', 'Ethics standard', 'Fiscal year 2568', 'MOIT 5', 'Procurement plan 2568'])
-            ->assertDontSee('Leave form');
-
-        $this->get('/downloads')->assertSee('Leave form')->assertDontSee('Ethics standard');
     }
 
     public function test_an_administrator_reorders_the_top_bar_and_the_dock(): void

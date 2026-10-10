@@ -30,12 +30,9 @@ class Document extends Model
         'application/vnd.openxmlformats-officedocument.presentationml.presentation' => 'PowerPoint',
     ];
 
-    /** The page a document is offered on => what the panel calls it. */
-    public const SECTIONS = ['downloads' => 'Downloads page', 'ita' => 'ITA page'];
+    protected $fillable = ['title', 'title_en', 'group', 'file_path', 'file_name', 'is_active', 'sort_order'];
 
-    protected $fillable = ['title', 'title_en', 'section', 'year', 'group', 'file_path', 'file_name', 'is_active', 'sort_order'];
-
-    protected $attributes = ['section' => 'downloads', 'is_active' => true, 'sort_order' => 0];
+    protected $attributes = ['is_active' => true, 'sort_order' => 0];
 
     protected function casts(): array
     {
@@ -53,7 +50,11 @@ class Document extends Model
             }
         });
 
-        static::deleted(fn (Document $document) => Storage::disk('public')->delete($document->file_path));
+        // Not an arrow function: delete() answers false for a file already gone, and a listener that answers false
+        // stops the ones after it (the access log's among them).
+        static::deleted(function (Document $document) {
+            Storage::disk('public')->delete($document->file_path);
+        });
     }
 
     /** Offered on the site, in staff's order. */

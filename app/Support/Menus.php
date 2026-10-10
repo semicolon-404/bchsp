@@ -3,6 +3,7 @@
 namespace App\Support;
 
 use App\Models\AnnouncementType;
+use App\Models\ItaItem;
 use App\Models\SitePage;
 use Illuminate\Support\Facades\Route;
 
@@ -16,7 +17,8 @@ use Illuminate\Support\Facades\Route;
  *   Home · About us · ITA · News · Procurement
  *
  * "About us" opens onto the pages an administrator filed there (System > Pages),
- * the departments and the contact page. "News" opens onto the kinds of
+ * the departments and the contact page. "ITA" opens onto its fiscal years and
+ * the pages filed there. "News" opens onto the kinds of
  * announcement, the articles and the downloads. What staff use (their own
  * services) is not in the public menu at all: it has a page of its own, /staff.
  *
@@ -106,6 +108,24 @@ class Menus
 
                 return ['url' => $children[0]['url'], 'active' => in_array(true, array_column($children, 'active'), true), 'children' => $children];
 
+            case 'ita':
+                $shown = $request->routeIs('ita') ? (int) ($request->route('year') ?? (ItaItem::years()[0] ?? 0)) : null;
+                $children = array_map(
+                    fn (int $year, int $index) => $link(__('Fiscal year :year', ['year' => $year]), route('ita', $index === 0 ? [] : ['year' => $year]), $shown === $year),
+                    ItaItem::years(), array_keys(ItaItem::years()),
+                );
+
+                foreach (SitePage::menuLinks('ita') as $page) {
+                    $children[] = $link($page->localTitle(), route('pages.show', $page), $request->routeIs('pages.show') && $request->route('page')?->is($page));
+                }
+
+                return [
+                    'url' => route('ita'),
+                    'active' => $request->routeIs('ita') || in_array(true, array_column($children, 'active'), true),
+                    // One year and nothing else is just the page itself: no list to open.
+                    'children' => count($children) > 1 ? $children : [],
+                ];
+
             case 'news':
                 $children = AnnouncementType::where('slug', '!=', self::PROCUREMENT)->orderBy('sort_order')->orderBy('name')->get()
                     ->map(fn (AnnouncementType $one) => $link($one->localName(), route('announcements.index', ['type' => $one->slug]), $type === $one->slug))
@@ -126,7 +146,6 @@ class Menus
                     : null;
 
             case 'home': return $simple('home', 'home');
-            case 'ita': return $simple('ita', 'ita');
             case 'blog': return $simple('blog.index', 'blog.*');
             case 'departments': return $simple('departments.index', 'departments.*');
             case 'downloads': return $simple('downloads', 'downloads');

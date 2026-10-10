@@ -63,7 +63,11 @@ class Announcement extends Model
             }
         });
 
-        static::deleted(fn (Announcement $announcement) => Storage::disk('public')->delete($announcement->attachments ?? []));
+        // Not an arrow function: delete() answers false for a file already gone, and a listener that answers false
+        // stops the ones after it (the access log's among them).
+        static::deleted(function (Announcement $announcement) {
+            Storage::disk('public')->delete($announcement->attachments ?? []);
+        });
     }
 
     public function getRouteKeyName(): string

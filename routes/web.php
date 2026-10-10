@@ -3,6 +3,7 @@
 use App\Http\Controllers\AnnouncementController;
 use App\Http\Controllers\BlogController;
 use App\Http\Controllers\DepartmentController;
+use App\Http\Controllers\ItaController;
 use App\Http\Controllers\SitePageController;
 use App\Http\Middleware\SetLocale;
 use Illuminate\Support\Facades\Route;
@@ -20,7 +21,7 @@ Route::get('/departments/{department}', [DepartmentController::class, 'show'])->
 
 Route::view('/contact', 'contact')->name('contact');
 Route::view('/downloads', 'downloads')->name('downloads');
-Route::view('/ita', 'ita')->name('ita');
+Route::get('/ita/{year?}', [ItaController::class, 'show'])->whereNumber('year')->name('ita');
 
 // Everything on the site in one list (the dock's "Menu" tab), and the page of services for staff.
 Route::view('/menu', 'menu')->name('menu');

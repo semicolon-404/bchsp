@@ -29,7 +29,7 @@ class SitePage extends Model
     private const FOOTER_KEY = 'site-pages:footer';
 
     /** Where in the menu a page can be filed => what the panel calls it (App\Support\Menus). */
-    public const SECTIONS = ['about' => 'About us'];
+    public const SECTIONS = ['about' => 'About us', 'ita' => 'ITA'];
 
     private const MENU_KEY = 'site-pages:menu:';
 
