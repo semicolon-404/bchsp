@@ -3,8 +3,8 @@
 namespace Tests\Feature;
 
 use App\Enums\Role;
+use App\Filament\Auth\Login;
 use App\Models\User;
-use Filament\Auth\Pages\Login;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
 use Tests\TestCase;
@@ -38,6 +38,30 @@ class StaffAccessTest extends TestCase
             ->assertHasNoFormErrors();
 
         $this->assertAuthenticatedAs($user);
+    }
+
+    public function test_staff_sign_in_with_a_username_instead(): void
+    {
+        $user = User::factory()->create(['username' => 'malee', 'email' => null]);
+
+        Livewire::test(Login::class)
+            ->fillForm(['email' => 'malee', 'password' => 'password'])
+            ->call('authenticate')
+            ->assertHasNoFormErrors();
+
+        $this->assertAuthenticatedAs($user);
+    }
+
+    public function test_a_username_with_the_wrong_password_does_not_sign_in(): void
+    {
+        User::factory()->create(['username' => 'malee']);
+
+        Livewire::test(Login::class)
+            ->fillForm(['email' => 'malee', 'password' => 'not-it'])
+            ->call('authenticate')
+            ->assertHasFormErrors(['email']);
+
+        $this->assertGuest();
     }
 
     public function test_a_wrong_password_does_not_sign_anyone_in(): void

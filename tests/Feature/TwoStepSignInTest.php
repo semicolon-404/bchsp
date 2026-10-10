@@ -2,9 +2,9 @@
 
 namespace Tests\Feature;
 
+use App\Filament\Auth\Login;
 use App\Models\User;
 use App\Support\TwoStep;
-use Filament\Auth\Pages\Login;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
 use Tests\TestCase;

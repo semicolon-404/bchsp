@@ -38,7 +38,9 @@
     "The hospital": "โรงพยาบาล",
     "The name and logo shown at the top of every page and in this panel.": "ชื่อและโลโก้ที่แสดงด้านบนของทุกหน้าและในหลังบ้านนี้",
     "They apply from the next page anyone opens.": "มีผลตั้งแต่หน้าถัดไปที่เปิด",
-    "What they sign in with.": "ใช้สำหรับเข้าสู่ระบบ",
+    "They sign in with this or with the email. One of the two is needed.": "ใช้ชื่อผู้ใช้หรืออีเมลในการเข้าสู่ระบบ ต้องกรอกอย่างน้อยหนึ่งอย่าง",
+    "Username": "ชื่อผู้ใช้",
+    "Username or email": "ชื่อผู้ใช้หรืออีเมล",
     "staff": "เจ้าหน้าที่",
     "staff member": "เจ้าหน้าที่"
 }

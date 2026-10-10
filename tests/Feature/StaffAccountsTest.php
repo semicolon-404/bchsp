@@ -68,6 +68,21 @@ class StaffAccountsTest extends TestCase
         $this->assertSame(1, User::count());
     }
 
+    public function test_an_account_needs_a_username_or_an_email_and_one_is_enough(): void
+    {
+        $this->actingAs(User::factory()->admin()->create());
+
+        Livewire::test(ManageUsers::class)
+            ->callAction('create', ['name' => 'Malee', 'username' => null, 'email' => null, 'role' => Role::Author->value, 'password' => 'a-long-password'])
+            ->assertHasFormErrors(['username', 'email']);
+
+        Livewire::test(ManageUsers::class)
+            ->callAction('create', ['name' => 'Malee', 'username' => 'malee', 'email' => null, 'role' => Role::Author->value, 'password' => 'a-long-password'])
+            ->assertHasNoFormErrors();
+
+        $this->assertNull(User::where('username', 'malee')->firstOrFail()->email);
+    }
+
     public function test_editing_without_a_password_keeps_the_old_one(): void
     {
         $this->actingAs(User::factory()->admin()->create());

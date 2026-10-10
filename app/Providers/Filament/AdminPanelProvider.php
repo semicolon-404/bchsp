@@ -2,6 +2,7 @@
 
 namespace App\Providers\Filament;
 
+use App\Filament\Auth\Login;
 use App\Http\Middleware\RequireTwoStepOfStaff;
 use App\Support\TwoStep;
 use Filament\Http\Middleware\Authenticate;
@@ -29,7 +30,8 @@ class AdminPanelProvider extends PanelProvider
             ->default()
             ->id('admin')
             ->path('admin')
-            ->login()
+            // A username or an email address, then the password (App\Filament\Auth\Login).
+            ->login(Login::class)
             // Name, email, password, and two-step sign-in: a code from an authenticator app after the password.
             // The panel is told "required" so the set-up page exists; RequireTwoStepOfStaff asks on each request whether it is.
             ->profile(isSimple: false)

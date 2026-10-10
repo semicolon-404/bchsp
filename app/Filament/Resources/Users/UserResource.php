@@ -53,13 +53,19 @@ class UserResource extends Resource
                     ->label(__('Name'))
                     ->required()
                     ->maxLength(255),
+                TextInput::make('username')
+                    ->label(__('Username'))
+                    ->alphaDash()
+                    ->maxLength(50)
+                    ->unique(ignoreRecord: true)
+                    ->requiredWithout('email')
+                    ->helperText(__('They sign in with this or with the email. One of the two is needed.')),
                 TextInput::make('email')
                     ->label(__('Email'))
                     ->email()
-                    ->required()
                     ->maxLength(255)
                     ->unique(ignoreRecord: true)
-                    ->helperText(__('What they sign in with.')),
+                    ->requiredWithout('username'),
                 Select::make('role')
                     ->label(__('Role'))
                     ->options(collect(Role::cases())->mapWithKeys(fn (Role $role) => [$role->value => __($role->label())])->all())
@@ -91,6 +97,9 @@ class UserResource extends Resource
                     ->label(__('Name'))
                     ->searchable()
                     ->sortable(),
+                TextColumn::make('username')
+                    ->label(__('Username'))
+                    ->searchable(),
                 TextColumn::make('email')
                     ->label(__('Email'))
                     ->searchable(),
