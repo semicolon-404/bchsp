@@ -50,7 +50,7 @@ class SeoController extends Controller
         Department::shown()->get(['slug', 'updated_at'])
             ->each(fn (Department $department) => $urls->push(['loc' => route('departments.show', $department), 'lastmod' => $department->updated_at?->toAtomString(), 'priority' => '0.5']));
 
-        Announcement::current()->inListOrder()->limit(5000)->get(['slug', 'updated_at'])
+        Announcement::published()->inListOrder()->limit(5000)->get(['slug', 'updated_at'])
             ->each(fn (Announcement $announcement) => $urls->push(['loc' => route('announcements.show', $announcement), 'lastmod' => $announcement->updated_at?->toAtomString(), 'priority' => '0.6']));
 
         BlogPost::published()->latest('published_at')->limit(5000)->get(['slug', 'updated_at'])

@@ -34,12 +34,15 @@ class SearchAndSeoTest extends TestCase
     public function test_what_is_not_out_is_not_found(): void
     {
         Announcement::factory()->scheduled()->create(['title' => 'Secret upcoming notice']);
-        Announcement::factory()->ended()->create(['title' => 'Secret ended notice']);
         BlogPost::factory()->draft()->create(['title' => 'Secret draft']);
         SitePage::factory()->create(['title' => 'Secret page', 'is_published' => false]);
         Department::factory()->create(['name' => 'Secret unit', 'is_active' => false]);
 
         $this->get('/search?q=secret')->assertOk()->assertSee('Nothing was found for')->assertDontSee('Secret upcoming')->assertDontSee('Secret draft');
+
+        // One that has ended is in the archive, and found.
+        Announcement::factory()->ended()->create(['title' => 'Secret ended notice']);
+        $this->get('/search?q=secret')->assertSee('1 result for')->assertSee('Secret ended notice');
     }
 
     public function test_search_asks_for_two_characters_and_treats_wildcards_as_themselves(): void

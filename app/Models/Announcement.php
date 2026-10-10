@@ -10,14 +10,17 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Number;
 
 /**
  * Something the hospital has to tell the public, at /announcements/{slug}:
- * a notice, a procurement result, a job opening. It may carry PDF files, be
- * pinned to the top of the list, and is shown between two dates: one prepared
- * ahead comes out by itself, and one that has ended takes itself down.
+ * a notice, a procurement result, a job opening. It may carry PDF files and be
+ * pinned to the top of the list. It has two dates: one prepared ahead comes out
+ * by itself on the first; after the second it leaves the home page and the top
+ * of the list, but stays in the archive, where it is found by its fiscal year.
+ * (A procurement notice has to stay readable long after it stopped being news.)
  */
 class Announcement extends Model
 {
@@ -85,7 +88,60 @@ class Announcement extends Model
         return $this->belongsTo(User::class, 'author_id');
     }
 
-    /** Inside its dates right now. */
+    /** Out: its first date has come. Everything the public can read, the archive included. */
+    public function scopePublished(Builder $query): void
+    {
+        $query->where('starts_at', '<=', now());
+    }
+
+    /** Of a fiscal year, as written in Thailand (2569): from 1 October of the year before to 30 September. */
+    public function scopeOfFiscalYear(Builder $query, int $year): void
+    {
+        [$from, $until] = self::fiscalYearDates($year);
+
+        $query->where('starts_at', '>=', $from)->where('starts_at', '<', $until);
+    }
+
+    /**
+     * The first moment of a fiscal year and the first moment of the next.
+     *
+     * @return array{0: Carbon, 1: Carbon}
+     */
+    public static function fiscalYearDates(int $year): array
+    {
+        $from = Carbon::create($year - 543 - 1, 10, 1, 0, 0, 0, config('app.timezone'));
+
+        return [$from, $from->copy()->addYear()];
+    }
+
+    /** The fiscal year a date falls in, as written in Thailand: October 2025 is in 2569. */
+    public static function fiscalYearOf(Carbon $date): int
+    {
+        return $date->year + 543 + ($date->month >= 10 ? 1 : 0);
+    }
+
+    /**
+     * The fiscal years that have something out, newest first, with how many announcements each holds.
+     * Counted here, not by the database: MariaDB and the tests' SQLite do not share a way to take a year from a date.
+     *
+     * @return array<int, int> [2569 => 48, 2568 => 112]
+     */
+    public static function fiscalYears(?int $typeId = null): array
+    {
+        $years = [];
+
+        static::published()->when($typeId, fn (Builder $query) => $query->where('announcement_type_id', $typeId))->pluck('starts_at')
+            ->each(function ($date) use (&$years) {
+                $year = self::fiscalYearOf($date);
+                $years[$year] = ($years[$year] ?? 0) + 1;
+            });
+
+        krsort($years);
+
+        return $years;
+    }
+
+    /** Inside its dates right now: what the home page shows. */
     public function scopeCurrent(Builder $query): void
     {
         $query
@@ -93,10 +149,25 @@ class Announcement extends Model
             ->where(fn (Builder $query) => $query->whereNull('ends_at')->orWhere('ends_at', '>', now()));
     }
 
-    /** The order of every list: pinned ones first, then the newest. */
+    /** The order of every list: pinned ones that have not ended first, then the newest. */
     public function scopeInListOrder(Builder $query): void
     {
-        $query->orderByDesc('is_pinned')->orderByDesc('starts_at')->orderByDesc('id');
+        $query
+            ->orderByRaw('case when is_pinned = 1 and (ends_at is null or ends_at > ?) then 0 else 1 end', [now()])
+            ->orderByDesc('starts_at')
+            ->orderByDesc('id');
+    }
+
+    /** Out, whether or not it has ended. */
+    public function isPublished(): bool
+    {
+        return (bool) $this->starts_at?->isPast();
+    }
+
+    /** Still pinned to the top: pinned, and not ended. */
+    public function isPinnedNow(): bool
+    {
+        return $this->is_pinned && ! $this->ends_at?->isPast();
     }
 
     public function isCurrent(): bool
@@ -109,7 +180,7 @@ class Announcement extends Model
     {
         return match (true) {
             (bool) $this->starts_at?->isFuture() => 'Scheduled',
-            (bool) $this->ends_at?->isPast() => 'Ended',
+            (bool) $this->ends_at?->isPast() => 'In the archive',
             default => 'Showing',
         };
     }

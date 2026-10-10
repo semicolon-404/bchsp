@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Filament\Resources\Announcements\Pages\CreateAnnouncement;
 use App\Filament\Resources\Announcements\Pages\EditAnnouncement;
+use App\Filament\Resources\Announcements\Pages\ListAnnouncements;
 use App\Filament\Resources\AnnouncementTypes\Pages\ManageAnnouncementTypes;
 use App\Http\Middleware\SetLocale;
 use App\Models\Announcement;
@@ -11,6 +12,7 @@ use App\Models\AnnouncementType;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Livewire;
 use Tests\TestCase;
@@ -31,22 +33,26 @@ class AnnouncementsTest extends TestCase
         $this->get('/announcements')->assertOk()->assertSeeInOrder(['News', 'Procurement', 'Job openings']);
     }
 
-    public function test_the_list_shows_what_is_inside_its_dates_pinned_first_then_newest(): void
+    public function test_the_list_shows_what_is_out_pinned_first_then_newest_with_the_ended_ones_kept(): void
     {
         Announcement::factory()->create(['title' => 'Older notice', 'starts_at' => now()->subDays(5)]);
         Announcement::factory()->create(['title' => 'Newer notice', 'starts_at' => now()->subDay()]);
         Announcement::factory()->pinned()->create(['title' => 'Pinned notice', 'starts_at' => now()->subDays(9)]);
         Announcement::factory()->scheduled()->create(['title' => 'Not yet']);
-        Announcement::factory()->ended()->create(['title' => 'Over']);
+        // Pinned once, ended since: it keeps its place by date, no longer at the top.
+        Announcement::factory()->pinned()->ended()->create(['title' => 'Over but kept']);
 
         $this->get('/announcements')
             ->assertOk()
-            ->assertSeeInOrder(['Pinned notice', 'Newer notice', 'Older notice'])
-            ->assertDontSee('Not yet')
-            ->assertDontSee('Over');
+            ->assertSee('4 announcements')
+            ->assertSeeInOrder(['Pinned notice', 'Newer notice', 'Older notice', 'Over but kept'])
+            ->assertDontSee('Not yet');
+
+        // Only the one still in force wears the "pinned" mark.
+        $this->assertSame(1, substr_count($this->get('/announcements')->getContent(), '>Pinned<'));
     }
 
-    public function test_one_comes_out_and_takes_itself_down_by_itself(): void
+    public function test_one_comes_out_by_itself_and_after_its_end_leaves_the_home_page_but_stays_in_the_archive(): void
     {
         $announcement = Announcement::factory()->create(['title' => 'Flu vaccine week', 'starts_at' => now()->addDay(), 'ends_at' => now()->addDays(8)]);
 
@@ -55,12 +61,88 @@ class AnnouncementsTest extends TestCase
 
         $this->travel(2)->days();
         $this->get('/announcements')->assertSee('Flu vaccine week');
-        $this->get(route('announcements.show', $announcement))->assertOk();
+        $this->get(route('announcements.show', $announcement))->assertOk()->assertDontSee('From the archive');
         $this->get('/')->assertSee('Flu vaccine week');
 
         $this->travel(7)->days();
-        $this->get('/announcements')->assertDontSee('Flu vaccine week');
-        $this->get(route('announcements.show', $announcement))->assertNotFound();
+        $this->get('/')->assertDontSee('Flu vaccine week');
+        $this->get('/announcements')->assertSee('Flu vaccine week');
+        $this->get(route('announcements.show', $announcement))->assertOk()->assertSee('From the archive: this announcement ended on');
+    }
+
+    public function test_a_fiscal_year_runs_from_october_to_september_in_the_buddhist_year(): void
+    {
+        $this->assertSame(2569, Announcement::fiscalYearOf(Carbon::parse('2025-10-01 00:00', 'Asia/Bangkok')));
+        $this->assertSame(2569, Announcement::fiscalYearOf(Carbon::parse('2026-09-30 23:59', 'Asia/Bangkok')));
+        $this->assertSame(2570, Announcement::fiscalYearOf(Carbon::parse('2026-10-01 00:00', 'Asia/Bangkok')));
+        $this->assertSame(2568, Announcement::fiscalYearOf(Carbon::parse('2025-09-30 23:59', 'Asia/Bangkok')));
+    }
+
+    public function test_the_list_is_narrowed_by_fiscal_year_and_each_year_says_how_many_it_holds(): void
+    {
+        $this->travelTo(Carbon::parse('2026-11-15 09:00', 'Asia/Bangkok'));
+
+        Announcement::factory()->create(['title' => 'From this fiscal year', 'starts_at' => '2026-10-20 09:00']);
+        Announcement::factory()->create(['title' => 'From September', 'starts_at' => '2026-09-30 09:00']);
+        Announcement::factory()->create(['title' => 'From last December', 'starts_at' => '2025-12-01 09:00']);
+        Announcement::factory()->create(['title' => 'From two years back', 'starts_at' => '2025-03-01 09:00']);
+        Announcement::factory()->create(['title' => 'Not out yet', 'starts_at' => '2026-12-01 09:00']);
+
+        $this->assertSame([2570 => 1, 2569 => 2, 2568 => 1], Announcement::fiscalYears());
+
+        $this->get('/announcements')->assertSeeInOrder(['2570 (1)', '2569 (2)', '2568 (1)'])->assertSee('4 announcements');
+
+        $this->get('/announcements?year=2569')
+            ->assertOk()
+            ->assertSee('2 announcements')
+            ->assertSee('From September')
+            ->assertSee('From last December')
+            ->assertDontSee('From this fiscal year')
+            ->assertDontSee('From two years back');
+
+        // A year with nothing in it, or nonsense, shows everything.
+        $this->get('/announcements?year=2500')->assertOk()->assertSee('4 announcements');
+        $this->get('/announcements?year=abc')->assertOk()->assertSee('4 announcements');
+        $this->get('/announcements?year[]=1')->assertOk();
+    }
+
+    public function test_type_year_and_a_word_in_the_title_narrow_the_list_together(): void
+    {
+        $this->travelTo(Carbon::parse('2026-11-15 09:00', 'Asia/Bangkok'));
+
+        Announcement::factory()->for($this->type('procurement'), 'type')->create(['title' => 'ประกาศผู้ชนะ ซื้อยา มีนาคม', 'starts_at' => '2026-03-10 09:00']);
+        Announcement::factory()->for($this->type('procurement'), 'type')->create(['title' => 'ประกาศผู้ชนะ ซื้อวัสดุทันตกรรม', 'starts_at' => '2026-03-12 09:00']);
+        Announcement::factory()->for($this->type('procurement'), 'type')->create(['title' => 'ประกาศผู้ชนะ ซื้อยา ตุลาคม', 'starts_at' => '2026-10-12 09:00']);
+        Announcement::factory()->for($this->type('news'), 'type')->create(['title' => 'รณรงค์ใช้ยาอย่างสมเหตุผล', 'starts_at' => '2026-03-15 09:00']);
+
+        $this->get('/announcements?type=procurement&year=2569&q='.urlencode('ซื้อยา'))
+            ->assertOk()
+            ->assertSee('1 announcement')
+            ->assertSee('ประกาศผู้ชนะ ซื้อยา มีนาคม')
+            ->assertDontSee('ทันตกรรม')
+            ->assertDontSee('ตุลาคม')
+            ->assertDontSee('รณรงค์');
+
+        // The years offered are those of the type being looked at.
+        $this->assertSame([2570 => 1, 2569 => 2], Announcement::fiscalYears($this->type('procurement')->id));
+
+        $this->get('/announcements?q='.urlencode('ไม่มีคำนี้'))->assertSee('No announcements match.');
+        // The characters that mean "anything" to the database are looked for as themselves.
+        $this->get('/announcements?q='.urlencode('%%'))->assertSee('No announcements match.');
+    }
+
+    public function test_the_filters_are_kept_from_page_to_page_and_when_the_type_is_changed(): void
+    {
+        Announcement::factory()->count(16)->for($this->type('news'), 'type')->create(['title' => 'Notice about vaccine']);
+
+        $year = Announcement::fiscalYearOf(now());
+
+        $this->get('/announcements?type=news&year='.$year.'&q=vaccine')
+            ->assertSee('1 / 2')
+            ->assertSee('type=news', false)
+            ->assertSee('year='.$year, false)
+            ->assertSee('q=vaccine', false)
+            ->assertSee('page=2', false);
     }
 
     public function test_staff_who_are_signed_in_can_check_one_that_is_not_showing(): void
@@ -295,8 +377,21 @@ class AnnouncementsTest extends TestCase
             ->call('save')
             ->assertHasNoFormErrors();
 
-        $this->assertSame('Ended', $announcement->fresh()->state());
+        $this->assertSame('In the archive', $announcement->fresh()->state());
         $this->assertFalse($announcement->fresh()->is_pinned);
+    }
+
+    public function test_the_panels_list_can_be_narrowed_to_a_fiscal_year(): void
+    {
+        $this->actingAs(User::factory()->create());
+        $this->travelTo(Carbon::parse('2026-11-15 09:00', 'Asia/Bangkok'));
+        $old = Announcement::factory()->create(['starts_at' => '2026-03-10 09:00']);
+        $new = Announcement::factory()->create(['starts_at' => '2026-10-12 09:00']);
+
+        Livewire::test(ListAnnouncements::class)
+            ->filterTable('fiscal_year', 2569)
+            ->assertCanSeeTableRecords([$old])
+            ->assertCanNotSeeTableRecords([$new]);
     }
 
     public function test_only_an_administrator_arranges_the_types_and_deleting_one_keeps_its_announcements(): void

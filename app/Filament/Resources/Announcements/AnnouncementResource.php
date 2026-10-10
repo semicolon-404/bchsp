@@ -131,7 +131,7 @@ class AnnouncementResource extends Resource
                             ->label(__('Show until (optional)'))
                             ->seconds(false)
                             ->after('starts_at')
-                            ->helperText(__('Left blank, it stays in the list.')),
+                            ->helperText(__('After this it leaves the home page and the top of the list, and stays in the archive. Left blank, it does not end.')),
                     ]),
 
                 Section::make(__('English version'))
@@ -176,6 +176,9 @@ class AnnouncementResource extends Resource
                         'Scheduled' => 'warning',
                         default => 'gray',
                     }),
+                TextColumn::make('fiscal_year')
+                    ->label(__('Fiscal year'))
+                    ->state(fn (Announcement $record) => Announcement::fiscalYearOf($record->starts_at ?? $record->created_at)),
                 TextColumn::make('attachments')
                     ->label(__('Files'))
                     ->state(fn (Announcement $record) => (count($record->attachments ?? []) + count($record->documentLinks())) ?: null)
@@ -193,6 +196,10 @@ class AnnouncementResource extends Resource
                 SelectFilter::make('announcement_type_id')
                     ->label(__('Type'))
                     ->relationship('type', 'name'),
+                SelectFilter::make('fiscal_year')
+                    ->label(__('Fiscal year'))
+                    ->options(fn () => collect(Announcement::query()->pluck('starts_at')->map(fn ($date) => Announcement::fiscalYearOf($date))->unique()->sortDesc()->values())->mapWithKeys(fn ($year) => [$year => $year])->all())
+                    ->query(fn ($query, array $data) => filled($data['value'] ?? null) ? $query->ofFiscalYear((int) $data['value']) : $query),
                 TernaryFilter::make('is_pinned')
                     ->label(__('Pinned')),
             ])

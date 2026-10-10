@@ -5,10 +5,13 @@
     <article class="wrap max-w-3xl py-10 sm:py-14">
         <p class="text-sm"><a href="{{ route('announcements.index') }}" class="font-semibold text-brand underline">&larr; {{ __('All announcements') }}</a></p>
 
-        @unless ($announcement->isCurrent())
+        @if (! $announcement->isPublished())
             {{-- Only staff who are signed in get this far (AnnouncementController::show). --}}
             <p class="mt-6 rounded-lg border border-danger px-4 py-3 text-danger" role="status">{{ __('Not showing to the public right now: only staff who are signed in can see this page.') }}</p>
-        @endunless
+        @elseif (! $announcement->isCurrent())
+            {{-- Kept for the record: a reader should know it is no longer in force. --}}
+            <p class="mt-6 rounded-lg border border-line bg-surface px-4 py-3 text-muted" role="status">{{ __('From the archive: this announcement ended on :date.', ['date' => $announcement->ends_at->locale(app()->getLocale())->translatedFormat('j M ').($announcement->ends_at->year + (app()->getLocale() === 'th' ? 543 : 0))]) }}</p>
+        @endif
 
         @if ($announcement->type)
             <p class="eyebrow mt-6"><a href="{{ route('announcements.index', ['type' => $announcement->type->slug]) }}" class="text-brand no-underline">{{ $announcement->type->localName() }}</a></p>
@@ -16,6 +19,7 @@
         <h1 class="mt-2 text-2xl sm:text-3xl">{{ $announcement->localTitle() }}</h1>
         <p class="mt-3 font-mono text-sm text-muted">
             <time datetime="{{ ($announcement->starts_at ?? $announcement->created_at)->toDateString() }}">{{ $announcement->shownOn() }}</time>
+            · <a href="{{ route('announcements.index', array_filter(['type' => $announcement->type?->slug, 'year' => App\Models\Announcement::fiscalYearOf($announcement->starts_at ?? $announcement->created_at)])) }}" class="underline">{{ __('Fiscal year :year', ['year' => App\Models\Announcement::fiscalYearOf($announcement->starts_at ?? $announcement->created_at)]) }}</a>
         </p>
 
         @if ($announcement->hasBody())

@@ -38,7 +38,7 @@ class SearchController extends Controller
             $in = fn ($query, array $columns) => $query->where(fn ($query) => collect($columns)->each(fn ($column) => $query->orWhereRaw("$column like ? escape '!'", [$like])));
 
             $results = array_filter([
-                'Announcements' => $in(Announcement::current(), ['title', 'title_en', 'body'])->inListOrder()->limit(self::PER_KIND)->get()
+                'Announcements' => $in(Announcement::published(), ['title', 'title_en', 'body'])->inListOrder()->limit(self::PER_KIND)->get()
                     ->map(fn (Announcement $one) => ['title' => $one->localTitle(), 'url' => route('announcements.show', $one), 'note' => $one->shownOn()])->all(),
                 'Articles' => $in(BlogPost::published(), ['title', 'title_en', 'excerpt', 'body'])->latest('published_at')->limit(self::PER_KIND)->get()
                     ->map(fn (BlogPost $one) => ['title' => $one->localTitle(), 'url' => route('blog.show', $one), 'note' => $one->publishedOn()])->all(),
