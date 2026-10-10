@@ -42,7 +42,7 @@
         <style>{!! $themeCss !!}</style>
     @endif
 </head>
-<body class="flex min-h-screen flex-col font-sans antialiased">
+<body class="has-dock flex min-h-screen flex-col font-sans antialiased">
     <a href="#main" class="btn btn-brand sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50">{{ __('Skip to the content') }}</a>
 
     <header class="sticky top-0 z-40 border-b border-line bg-page/90 backdrop-blur">
@@ -58,6 +58,8 @@
                 {{-- A long name takes a second line on a phone; it is never cut short. --}}
                 <span class="text-base leading-snug sm:text-lg">{{ $name }}</span>
             </a>
+
+            <x-site.nav />
 
             <div class="ml-auto flex shrink-0 items-center gap-2">
                 {{-- On a phone the language switch is in the footer, so the bar keeps to what fits. --}}
@@ -125,5 +127,7 @@
             </div>
         </div>
     </footer>
+
+    <x-site.mobile-tabs />
 </body>
 </html>

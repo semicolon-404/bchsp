@@ -5,6 +5,7 @@ namespace App\Filament\Pages;
 use App\Filament\Concerns\AdminOnly;
 use App\Filament\Concerns\SiteSettingsForm;
 use App\Filament\Concerns\TranslatesTitle;
+use App\Support\Menus;
 use App\Support\SiteSettings as Settings;
 use App\Support\Theme;
 use BackedEnum;
@@ -59,6 +60,11 @@ class SiteSettings extends Page
             $values['theme_day_'.$day] = $colour;
         }
 
+        // Kept only when an administrator has arranged something; listed in full either way.
+        unset($values['menu__top'], $values['menu__tabs']);
+        $values['menu_top'] = array_map(fn (string $key) => ['key' => $key], Menus::keys('top'));
+        $values['menu_tabs'] = array_map(fn (string $key) => ['key' => $key], Menus::keys('tabs'));
+
         $this->form->fill($values);
     }
 
@@ -71,6 +77,9 @@ class SiteSettings extends Page
         }
 
         $values[Theme::DAYS] = array_map(fn (int $day) => Theme::hex($values['theme_day_'.$day] ?? null) ?? Theme::days()[$day], array_keys(Theme::DAY_COLOURS));
+
+        $values['menu.top'] = Menus::toStore('top', (array) ($values['menu_top'] ?? []));
+        $values['menu.tabs'] = Menus::toStore('tabs', (array) ($values['menu_tabs'] ?? []));
 
         Settings::save($values);
 

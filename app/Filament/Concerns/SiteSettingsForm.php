@@ -2,10 +2,12 @@
 
 namespace App\Filament\Concerns;
 
+use App\Support\Menus;
 use App\Support\Theme;
 use Filament\Forms\Components\ColorPicker;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Radio;
+use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
@@ -81,6 +83,15 @@ trait SiteSettingsForm
                             ->columnSpanFull(),
                     ]),
 
+                Section::make(__('Menus'))
+                    ->description(__('Which links are in the top bar of a wide screen, and which tabs are in the dock at the bottom of a phone or tablet, in the order you want.'))
+                    ->columns(2)
+                    ->collapsed()
+                    ->components([
+                        self::menu('menu_top', 'top', __('Top bar'), __('Up to :count. On a phone these are not shown; the dock is there instead.', ['count' => Menus::max('top')])),
+                        self::menu('menu_tabs', 'tabs', __('Dock on phones and tablets'), __('Up to :count.', ['count' => Menus::max('tabs')])),
+                    ]),
+
                 Section::make(__('The hospital'))
                     ->description(__('The name and logo shown at the top of every page and in this panel.'))
                     ->columns(2)
@@ -145,6 +156,26 @@ trait SiteSettingsForm
                             ->helperText(__('Someone who has not set it up is taken to do so before anything else. Set up your own first: it applies to you too.')),
                     ]),
             ]);
+    }
+
+    /** One of the two menus: an ordered list of places, each picked once. */
+    private static function menu(string $field, string $menu, string $label, string $help): Repeater
+    {
+        return Repeater::make($field)
+            ->label($label)
+            ->helperText($help)
+            ->simple(
+                Select::make('key')
+                    ->label(__('Place'))
+                    ->options(collect(Menus::PLACES)->map(fn (array $place) => __($place[1]))->all())
+                    ->required()
+                    ->distinct()
+                    ->selectablePlaceholder(false),
+            )
+            ->addActionLabel(__('Add a place'))
+            ->minItems(1)
+            ->maxItems(Menus::max($menu))
+            ->reorderableWithButtons();
     }
 
     /** A web address, with an example of one. */
