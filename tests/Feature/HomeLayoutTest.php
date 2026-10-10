@@ -6,6 +6,7 @@ use App\Filament\Pages\SiteSettings as SettingsPage;
 use App\Models\Announcement;
 use App\Models\Banner;
 use App\Models\BlogPost;
+use App\Models\ClinicSession;
 use App\Models\Department;
 use App\Models\User;
 use App\Support\HomeLayout;
@@ -22,6 +23,7 @@ class HomeLayoutTest extends TestCase
     {
         Banner::factory()->create(['title' => 'A slide']);
         Banner::factory()->poster()->create(['title' => 'A poster']);
+        ClinicSession::factory()->create(['name' => 'A clinic', 'days' => [0, 1, 2, 3, 4, 5, 6]]);
         Announcement::factory()->create(['title' => 'A notice']);
         Department::factory()->create(['name' => 'A department']);
         BlogPost::factory()->create(['title' => 'An article']);
@@ -32,10 +34,10 @@ class HomeLayoutTest extends TestCase
         $this->fillTheHomePage();
 
         // The list of departments is off at first: it is not what the home page is for.
-        $this->assertSame(['slides', 'hero', 'shortcuts', 'announcements', 'posters', 'articles'], HomeLayout::shown());
+        $this->assertSame(['slides', 'today', 'announcements', 'posters', 'articles'], HomeLayout::shown());
 
         $this->get('/')
-            ->assertSeeInOrder(['alt="A slide"', '<h1', 'aria-label="Shortcuts"', 'A notice', 'alt="A poster"', 'An article'], false)
+            ->assertSeeInOrder(['<h1', 'alt="A slide"', 'A clinic', 'A notice', 'alt="A poster"', 'An article'], false)
             ->assertDontSee('A department');
     }
 
@@ -47,46 +49,31 @@ class HomeLayoutTest extends TestCase
         Livewire::test(SettingsPage::class)
             ->assertFormSet(fn (array $state) => array_column(array_values($state['home_layout']), 'key') === array_keys(HomeLayout::SECTIONS))
             ->fillForm(['home_layout' => [
-                ['key' => 'hero', 'shown' => true],
+                ['key' => 'slides', 'shown' => true],
                 ['key' => 'articles', 'shown' => true],
                 ['key' => 'announcements', 'shown' => true],
-                ['key' => 'slides', 'shown' => true],
-                ['key' => 'departments', 'shown' => false],
+                ['key' => 'departments', 'shown' => true],
+                ['key' => 'today', 'shown' => false],
                 ['key' => 'posters', 'shown' => false],
-                ['key' => 'shortcuts', 'shown' => false],
             ]])
             ->call('save')
             ->assertHasNoFormErrors();
 
-        $this->assertSame(['hero', 'articles', 'announcements', 'slides'], HomeLayout::shown());
+        $this->assertSame(['slides', 'articles', 'announcements', 'departments'], HomeLayout::shown());
 
         auth()->logout();
         $this->get('/')
-            ->assertSeeInOrder(['<h1', 'An article', 'A notice', 'alt="A slide"'], false)
-            ->assertDontSee('A department')
+            ->assertSeeInOrder(['<h1', 'An article', 'A notice', 'A department'], false)
+            ->assertDontSee('A clinic')
             ->assertDontSee('alt="A poster"', false);
     }
 
-    public function test_the_shortcuts_lead_to_what_visitors_come_for_and_departments_can_be_switched_on(): void
+    public function test_the_slides_cannot_be_hidden_for_they_hold_the_heading_of_the_page(): void
     {
-        $this->fillTheHomePage();
+        SiteSettings::save(['home.layout' => [['key' => 'slides', 'shown' => false], ['key' => 'today', 'shown' => false]]]);
 
-        $this->get('/')
-            ->assertSee('href="'.route('schedule').'"', false)
-            ->assertSee('href="'.route('contact').'"', false)
-            ->assertSee('href="'.route('downloads').'"', false);
-
-        SiteSettings::save(['home.layout' => [['key' => 'departments', 'shown' => true]]]);
-
-        $this->get('/')->assertSee('A department')->assertSee('All departments');
-    }
-
-    public function test_the_heading_of_the_page_cannot_be_hidden(): void
-    {
-        SiteSettings::save(['home.layout' => [['key' => 'hero', 'shown' => false], ['key' => 'slides', 'shown' => false]]]);
-
-        $this->assertContains('hero', HomeLayout::shown());
-        $this->assertNotContains('slides', HomeLayout::shown());
+        $this->assertContains('slides', HomeLayout::shown());
+        $this->assertNotContains('today', HomeLayout::shown());
         $this->get('/')->assertOk()->assertSee('<h1', false);
     }
 
@@ -95,18 +82,19 @@ class HomeLayoutTest extends TestCase
         $this->assertNull(HomeLayout::toStore(HomeLayout::rows()));
 
         // Saved before "articles" existed, say: it is added at the end, shown.
-        SiteSettings::save(['home.layout' => [['key' => 'announcements', 'shown' => true], ['key' => 'hero', 'shown' => true]]]);
+        SiteSettings::save(['home.layout' => [['key' => 'announcements', 'shown' => true], ['key' => 'slides', 'shown' => true]]]);
 
-        $this->assertSame(['announcements', 'hero', 'slides', 'shortcuts', 'posters', 'articles'], HomeLayout::shown());
+        $this->assertSame(['announcements', 'slides', 'today', 'posters', 'articles'], HomeLayout::shown());
     }
 
-    public function test_whatever_is_saved_only_known_sections_are_drawn_each_once(): void
+    public function test_a_layout_saved_with_sections_that_no_longer_exist_still_draws_the_page(): void
     {
-        SiteSettings::save(['home.layout' => ['nonsense', ['key' => 'no-such', 'shown' => true], ['key' => 'hero'], ['key' => 'hero'], ['key' => '<script>']]]);
+        // "hero" and "shortcuts" were sections once; their content is now the first slide.
+        SiteSettings::save(['home.layout' => ['nonsense', ['key' => 'hero', 'shown' => true], ['key' => 'shortcuts', 'shown' => false], ['key' => 'slides'], ['key' => 'slides'], ['key' => '<script>']]]);
 
-        $this->assertSame(1, count(array_keys(HomeLayout::shown(), 'hero')));
+        $this->assertSame(1, count(array_keys(HomeLayout::shown(), 'slides')));
         $this->assertCount(count(HomeLayout::SECTIONS), HomeLayout::rows());
-        $this->get('/')->assertOk();
+        $this->get('/')->assertOk()->assertSee('<h1', false);
     }
 
     public function test_the_poster_that_opens_over_the_page_does_not_depend_on_the_layout(): void

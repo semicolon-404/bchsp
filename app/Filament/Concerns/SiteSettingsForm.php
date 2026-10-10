@@ -125,7 +125,7 @@ trait SiteSettingsForm
                                 Hidden::make('key'),
                                 Toggle::make('shown')
                                     ->label(__('Shown'))
-                                    // The heading of the page and the phone buttons cannot be hidden.
+                                    // The slides hold the heading of the page and the phone buttons: they cannot be hidden.
                                     ->disabled(fn (Get $get): bool => in_array($get('key'), HomeLayout::LOCKED, true))
                                     ->dehydrated(),
                             ]),
