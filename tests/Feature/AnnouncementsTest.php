@@ -52,7 +52,7 @@ class AnnouncementsTest extends TestCase
         $this->assertSame(1, substr_count($this->get('/announcements')->getContent(), '>Pinned<'));
     }
 
-    public function test_one_comes_out_by_itself_and_after_its_end_leaves_the_home_page_but_stays_in_the_archive(): void
+    public function test_one_comes_out_by_itself_and_after_its_end_stays_in_the_archive(): void
     {
         $announcement = Announcement::factory()->create(['title' => 'Flu vaccine week', 'starts_at' => now()->addDay(), 'ends_at' => now()->addDays(8)]);
 
@@ -62,10 +62,8 @@ class AnnouncementsTest extends TestCase
         $this->travel(2)->days();
         $this->get('/announcements')->assertSee('Flu vaccine week');
         $this->get(route('announcements.show', $announcement))->assertOk()->assertDontSee('From the archive');
-        $this->get('/')->assertSee('Flu vaccine week');
 
         $this->travel(7)->days();
-        $this->get('/')->assertDontSee('Flu vaccine week');
         $this->get('/announcements')->assertSee('Flu vaccine week');
         $this->get(route('announcements.show', $announcement))->assertOk()->assertSee('From the archive: this announcement ended on');
     }
@@ -172,7 +170,6 @@ class AnnouncementsTest extends TestCase
 
         $this->get(route('announcements.show', $bid))->assertSee('var(--color-syn-string)', false);
         $this->get(route('announcements.show', $orphan))->assertOk();
-        $this->get('/')->assertSee('var(--color-syn-string)', false);
     }
 
     public function test_a_mark_is_only_ever_one_of_the_symbols_and_colours_on_offer(): void
@@ -338,20 +335,19 @@ class AnnouncementsTest extends TestCase
             ->assertSee('href="'.route('announcements.index').'" class="chip gap-2"', false);
     }
 
-    public function test_the_home_page_shows_the_four_at_the_top_of_the_list_and_the_way_to_the_rest(): void
+    public function test_the_home_page_lists_none_and_leads_to_them_all(): void
     {
-        $this->get('/')->assertDontSee('All announcements');
+        Announcement::factory()->create(['title' => 'A notice of today', 'starts_at' => now()]);
 
-        foreach (range(1, 5) as $days) {
-            Announcement::factory()->create(['title' => "Notice from $days days ago", 'starts_at' => now()->subDays($days)]);
-        }
-
+        // Kept open: what the news is, and the way in. The welcome's button goes down to it.
         $this->get('/')
-            ->assertSee('Notice from 1 days ago')
-            ->assertSee('Notice from 4 days ago')
-            ->assertDontSee('Notice from 5 days ago')
-            ->assertSee('All announcements')
-            ->assertSee('href="'.route('announcements.index', ['type' => 'procurement']).'" class="btn btn-brand mt-8">Go to Procurement', false);
+            ->assertDontSee('A notice of today')
+            ->assertSeeInOrder(['href="#news"', '<section id="news"', 'Follow the latest news and announcements', 'href="'.route('announcements.index').'" class="btn btn-brand mt-8"', 'Go to the news page'], false);
+
+        // The sections for the other parts of the site are there for an administrator to switch on.
+        $this->showOnHome('shortcuts');
+
+        $this->get('/')->assertSee('href="'.route('announcements.index', ['type' => 'procurement']).'" class="btn btn-brand mt-8">Go to Procurement', false);
     }
 
     public function test_a_reader_in_english_gets_the_english_where_there_is_some_and_thai_dates_are_buddhist(): void

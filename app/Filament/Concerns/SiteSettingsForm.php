@@ -249,6 +249,29 @@ trait SiteSettingsForm
                             ->visibility('public')
                             ->maxSize(2048)
                             ->helperText(__('PNG, JPG or WebP, up to 2 MB. A square or wide picture on a clear background reads best.')),
+                        TextInput::make(self::field('site.motto'))
+                            ->label(__('Motto (optional)'))
+                            ->maxLength(200)
+                            ->helperText(__('Shown under the name on the home page.'))
+                            ->columnSpanFull(),
+                    ]),
+
+                Section::make(__('Identity of the organisation'))
+                    ->description(__('Shown on the home page, one tab each. One item on each line. Leave all three blank to hide the section.'))
+                    ->components([
+                        Textarea::make(self::field('identity.vision'))
+                            ->label(__('Vision'))
+                            ->rows(4)
+                            ->maxLength(2000)
+                            ->helperText(__('The first line is shown large; the lines after it explain it.')),
+                        Textarea::make(self::field('identity.mission'))
+                            ->label(__('Mission'))
+                            ->rows(5)
+                            ->maxLength(2000),
+                        Textarea::make(self::field('identity.values'))
+                            ->label(__('Core values'))
+                            ->rows(7)
+                            ->maxLength(2000),
                     ]),
 
                 Section::make(__('Contact'))

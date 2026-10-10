@@ -3,9 +3,10 @@
     the grid of posters, and the one poster that opens over the page.
 
     <x-site.banners part="banners" />   <x-site.banners part="posters" />   <x-site.banners part="popup" />
+    <x-site.banners part="screens" :banners="$slides" />   the slides as window-high screens, after the welcome (home page)
     <x-site.banners part="all" />       every slide and poster in one grid, for the page of their own (/posters)
 --}}
-@props(['part'])
+@props(['part', 'banners' => null])
 @php
     use App\Models\Banner;
 
@@ -81,6 +82,12 @@
             </div>
         </section>
     @endif
+@elseif ($part === 'screens')
+    @foreach ($banners as $banner)
+        <li class="home-screen w-full shrink-0 snap-center" aria-roledescription="slide" aria-label="{{ $loop->iteration + 1 }} / {{ $loop->count + 1 }}">
+            <div class="wrap flex justify-center py-16">{!! $picture($banner, 'mx-auto max-h-[calc(100svh-12rem)] w-auto max-w-full rounded-xl object-contain') !!}</div>
+        </li>
+    @endforeach
 @elseif ($part === 'all')
     @php($pictures = Banner::slides()->concat(Banner::showingAs('poster')))
     @if ($pictures->isNotEmpty())

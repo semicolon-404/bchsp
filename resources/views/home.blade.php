@@ -8,20 +8,20 @@
     $name = SiteSettings::name();
     $phone = SiteSettings::get('contact.phone');
     $emergency = SiteSettings::get('contact.emergency_phone');
-    $email = SiteSettings::get('contact.email');
     $dial = fn (string $number) => 'tel:'.preg_replace('/[^0-9+]/', '', $number);
+    $motto = SiteSettings::get('site.motto');
 
-    // What the "editor window" lists: only what has been filled in.
-    $facts = array_filter(['phone' => $phone, 'emergency' => $emergency, 'email' => $email]);
-
-    // Today's clinics take the place beside the heading; the contact details drawn as code are what shows until a schedule exists.
-    $sessions = App\Models\ClinicSession::today();
+    // What the hospital says of itself: each a few lines an administrator typed, one item to a line. Blank ones are left out.
+    $lines = fn (string $key) => array_values(array_filter(array_map('trim', preg_split('/\R/', (string) SiteSettings::get($key)))));
+    $identity = array_filter(['Vision' => $lines('identity.vision'), 'Mission' => $lines('identity.mission'), 'Core values' => $lines('identity.values')]);
 
     // Only what the sections that are switched on will draw is read.
     $sections = App\Support\HomeLayout::shown();
-    $announcements = in_array('announcements', $sections, true) ? App\Models\Announcement::current()->with('type')->inListOrder()->limit(4)->get() : collect();
-    $departments = in_array('departments', $sections, true) ? App\Models\Department::shown()->limit(6)->get() : collect();
-    $articles = in_array('articles', $sections, true) ? App\Models\BlogPost::published()->with('category')->latest('published_at')->limit(3)->get() : collect();
+    $shows = fn (string $section) => in_array($section, $sections, true);
+    $slides = App\Models\Banner::slides();
+    $sessions = $shows('today') ? App\Models\ClinicSession::today() : collect();
+    $departments = $shows('departments') ? App\Models\Department::shown()->limit(6)->get() : collect();
+    $articles = $shows('articles') ? App\Models\BlogPost::published()->with('category')->latest('published_at')->limit(3)->get() : collect();
 @endphp
 <x-layouts.site :description="__('News, announcements and services of :name.', ['name' => $name])">
     @foreach ($sections as $section)
@@ -31,37 +31,125 @@
     @break
 
     @case('hero')
-    {{-- Like every section of this page it fills the window, less the header: one thing to look at at a time. --}}
-    <section class="home-screen border-b border-line">
-        <div class="wrap grid items-center gap-10 py-14 sm:py-20 lg:grid-cols-2">
-            <div class="text-center lg:text-left">
-                <p class="inline-flex items-center gap-2 rounded-full border border-line bg-surface px-3 py-1 text-sm text-muted">
-                    <span class="size-2 animate-pulse-dot rounded-full bg-brand" aria-hidden="true"></span>
-                    {{ __('Caring for the community') }}
-                </p>
-                <h1 class="mt-6 text-3xl leading-tight sm:text-4xl md:text-5xl">{{ $name }}</h1>
-                <p class="mx-auto mt-5 max-w-xl text-lg text-muted lg:mx-0">{{ __('News, announcements and services of the hospital, in one place.') }}</p>
+    {{--
+        The first thing seen, as tall as the window: the welcome, then the slides staff put up, one at a time.
+        They can be swiped; resources/js/slider.js adds the arrows, the dots and moving on by itself.
+    --}}
+    <section class="relative border-b border-line bg-surface" aria-label="{{ __('Welcome') }}" @if ($slides->isNotEmpty()) aria-roledescription="carousel" data-slider @endif>
+        <ul class="slider-track" data-slider-track>
+            <li class="home-screen w-full shrink-0 snap-center" @if ($slides->isNotEmpty()) aria-roledescription="slide" aria-label="1 / {{ $slides->count() + 1 }}" @endif>
+                <div class="wrap py-16 text-center">
+                    @if ($logo = SiteSettings::logoUrl())
+                        <img src="{{ $logo }}" alt="" class="mx-auto mb-6 h-24 w-auto sm:h-28">
+                    @endif
+                    <p class="eyebrow">{{ __('Welcome to') }}</p>
+                    <h1 class="mt-4 text-4xl leading-tight sm:text-5xl md:text-6xl">{{ $name }}</h1>
+                    <p class="mx-auto mt-6 max-w-2xl text-lg text-muted sm:text-xl">{{ $motto ? '“'.$motto.'”' : __('News, announcements and services of the hospital, in one place.') }}</p>
 
-                @if ($phone || $emergency)
-                    <div class="mt-8 flex flex-wrap justify-center gap-3 lg:justify-start">
+                    <div class="mt-10 flex flex-wrap justify-center gap-3">
+                        @if ($shows('announcements'))
+                            <a href="#news" class="btn btn-brand"><x-heroicon-o-megaphone class="size-5" aria-hidden="true" />{{ __('News') }}</a>
+                        @endif
+                        @if ($shows('identity') && $identity)
+                            <a href="#identity" class="btn btn-line"><x-heroicon-o-information-circle class="size-5" aria-hidden="true" />{{ __('About the organisation') }}</a>
+                        @endif
                         @if ($phone)
-                            <a href="{{ $dial($phone) }}" class="btn btn-brand">
-                                <x-heroicon-s-phone class="size-5" aria-hidden="true" />
-                                {{ __('Call :number', ['number' => $phone]) }}
-                            </a>
+                            <a href="{{ $dial($phone) }}" class="btn btn-line"><x-heroicon-s-phone class="size-5" aria-hidden="true" />{{ __('Call :number', ['number' => $phone]) }}</a>
                         @endif
                         @if ($emergency)
-                            <a href="{{ $dial($emergency) }}" class="btn btn-line">
-                                {{ __('Emergency :number', ['number' => $emergency]) }}
-                            </a>
+                            <a href="{{ $dial($emergency) }}" class="btn btn-line">{{ __('Emergency :number', ['number' => $emergency]) }}</a>
                         @endif
                     </div>
-                @endif
-            </div>
+                </div>
+            </li>
+            <x-site.banners part="screens" :banners="$slides" />
+        </ul>
 
-            @if ($sessions->isNotEmpty())
-                {{-- What visitors most often phone to ask: what is open today. Drawn as an editor's window, read as a list. --}}
-                <section class="code-block" aria-labelledby="today-heading">
+        @if ($slides->isNotEmpty())
+            <button type="button" class="slider-arrow left-2 sm:left-6" data-slider-prev aria-label="{{ __('Previous slide') }}"><x-heroicon-m-chevron-left class="size-6" aria-hidden="true" /></button>
+            <button type="button" class="slider-arrow right-2 sm:right-6" data-slider-next aria-label="{{ __('Next slide') }}"><x-heroicon-m-chevron-right class="size-6" aria-hidden="true" /></button>
+            <div class="absolute inset-x-0 bottom-4 flex justify-center gap-1">
+                @foreach (range(1, $slides->count() + 1) as $number)
+                    <button type="button" class="slider-dot" data-slider-dot aria-current="{{ $number === 1 ? 'true' : 'false' }}" aria-label="{{ __('Slide :number', ['number' => $number]) }}"></button>
+                @endforeach
+            </div>
+        @endif
+    </section>
+    @break
+
+    @case('announcements')
+    {{-- Nothing is listed here: what the news is, in a sentence, and the way to all of it. --}}
+    <section id="news" class="home-screen scroll-mt-16 border-b border-line">
+        <div class="wrap py-16 text-center sm:py-24">
+            <h2 class="text-3xl sm:text-4xl">{{ __('News') }}</h2>
+            <span class="mx-auto mt-4 block h-1 w-16 rounded-full bg-brand" aria-hidden="true"></span>
+            <div class="card mx-auto mt-10 max-w-3xl px-6 py-12 sm:px-12 sm:py-16">
+                <x-heroicon-o-newspaper class="mx-auto size-16 text-brand" aria-hidden="true" />
+                <h3 class="mt-6 text-2xl">{{ __('Follow the latest news and announcements') }}</h3>
+                <p class="mx-auto mt-4 max-w-xl text-lg text-muted">{{ __('Public relations news, procurement notices and the activities of :name, all in one place.', ['name' => $name]) }}</p>
+                <a href="{{ route('announcements.index') }}" class="btn btn-brand mt-8"><x-heroicon-m-arrow-right-circle class="size-5" aria-hidden="true" />{{ __('Go to the news page') }}</a>
+            </div>
+        </div>
+    </section>
+    @break
+
+    @case('identity')
+    @if ($identity)
+        {{--
+            Vision, mission and core values, one at a time. The tabs are radio buttons and the stylesheet shows the
+            panel of the one that is ticked (.tabs in app.css): no script, and the arrow keys move between them.
+        --}}
+        <section id="identity" class="home-screen scroll-mt-16 border-b border-line bg-surface">
+            <div class="wrap py-16 sm:py-24">
+                <h2 class="text-center text-3xl sm:text-4xl">{{ __('Identity of the organisation') }}</h2>
+                <span class="mx-auto mt-4 block h-1 w-16 rounded-full bg-brand" aria-hidden="true"></span>
+
+                <div class="tabs mx-auto mt-10 max-w-4xl">
+                    @foreach (array_keys($identity) as $index => $heading)
+                        <input type="radio" name="identity" id="identity-{{ $index }}" class="sr-only" @checked($index === 0)>
+                    @endforeach
+                    <div class="flex flex-wrap justify-center gap-2">
+                        @foreach (array_keys($identity) as $index => $heading)
+                            <label for="identity-{{ $index }}" class="chip cursor-pointer">{{ __($heading) }}</label>
+                        @endforeach
+                    </div>
+                    <div class="mt-8">
+                        @foreach ($identity as $heading => $items)
+                            <div class="tab-panel card bg-page px-6 py-10 sm:px-10">
+                                <p class="eyebrow">{{ __($heading) }}</p>
+                                @if ($heading === 'Vision')
+                                    <p class="mt-4 text-2xl leading-relaxed sm:text-3xl">“{{ $items[0] }}”</p>
+                                    @foreach (array_slice($items, 1) as $item)
+                                        <p class="mt-4 text-muted">{{ $item }}</p>
+                                    @endforeach
+                                @elseif ($heading === 'Mission')
+                                    <ol class="mt-6 grid gap-3 sm:grid-cols-2">
+                                        @foreach ($items as $number => $item)
+                                            <li class="flex gap-3 rounded-lg border border-line border-l-4 border-l-brand bg-surface px-4 py-3"><span class="font-mono text-brand">{{ $number + 1 }}</span><span>{{ $item }}</span></li>
+                                        @endforeach
+                                    </ol>
+                                @else
+                                    <ul class="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
+                                        @foreach ($items as $item)
+                                            <li class="rounded-lg border border-line bg-surface px-3 py-4 text-center font-medium">{{ $item }}</li>
+                                        @endforeach
+                                    </ul>
+                                @endif
+                            </div>
+                        @endforeach
+                    </div>
+                </div>
+            </div>
+        </section>
+    @endif
+    @break
+
+    @case('today')
+    @if ($sessions->isNotEmpty())
+        {{-- What visitors most often phone to ask: what is open today. Drawn as an editor's window, read as a list. --}}
+        <section class="border-b border-line" aria-labelledby="today-heading">
+            <div class="wrap max-w-3xl py-16 sm:py-24">
+                <div class="code-block">
                     <div class="code-header">
                         <span class="code-dot bg-danger" aria-hidden="true"></span>
                         <span class="code-dot bg-syn-string" aria-hidden="true"></span>
@@ -80,26 +168,10 @@
                         @endforeach
                     </ul>
                     <p class="border-t border-line px-4 py-3 text-sm"><a href="{{ route('schedule') }}" class="font-semibold text-brand underline">{{ __('The whole week') }} &rarr;</a></p>
-                </section>
-            {{-- The same contact details again, drawn as a file open in an editor. Decoration: screen readers skip it. --}}
-            @elseif ($facts)
-                <div class="code-block" aria-hidden="true">
-                    <div class="code-header">
-                        <span class="code-dot bg-danger"></span>
-                        <span class="code-dot bg-syn-string"></span>
-                        <span class="code-dot bg-syn-function"></span>
-                        <span class="ml-3 font-mono text-sm text-muted">contact.ts</span>
-                    </div>
-                    <pre class="code-body"><code><span class="text-syn-comment">// {{ $name }}</span>
-<span class="text-syn-keyword">const</span> <span class="text-syn-variable">hospital</span> = {
-@foreach ($facts as $key => $value)
-  <span class="text-syn-function">{{ $key }}</span>: <span class="text-syn-string">"{{ $value }}"</span>,
-@endforeach
-};</code></pre>
                 </div>
-            @endif
-        </div>
-    </section>
+            </div>
+        </section>
+    @endif
     @break
 
     @case('shortcuts')
@@ -132,27 +204,6 @@
             </section>
         @endforeach
     </div>
-    @break
-
-    @case('announcements')
-    @if ($announcements->isNotEmpty())
-        {{-- The one part that shows some of what is inside: the newest few. The whole list, with its kinds and years, is a page of its own. --}}
-        <section class="home-screen border-b border-line">
-            <div class="wrap grid items-center gap-8 py-16 sm:py-24 md:grid-cols-2">
-                <div class="text-center md:text-left">
-                    <p class="eyebrow">{{ __('Announcements') }}</p>
-                    <h2 class="mt-3 text-3xl sm:text-4xl md:text-5xl">{{ __('News') }}</h2>
-                    <p class="mx-auto mt-4 max-w-md text-lg text-muted md:mx-0">{{ __('News and announcements from the hospital, the newest first.') }}</p>
-                    <a href="{{ route('announcements.index') }}" class="btn btn-brand mt-8">{{ __('All announcements') }} &rarr;</a>
-                </div>
-                <ul class="card p-0">
-                    @foreach ($announcements as $announcement)
-                        <x-site.announcement-row :announcement="$announcement" />
-                    @endforeach
-                </ul>
-            </div>
-        </section>
-    @endif
     @break
 
     @case('posters')

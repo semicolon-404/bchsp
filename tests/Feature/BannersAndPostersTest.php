@@ -30,7 +30,11 @@ class BannersAndPostersTest extends TestCase
         Banner::factory()->create(['title' => 'A slide']);
         Banner::factory()->poster()->create(['title' => 'A poster']);
 
-        $this->get('/')->assertOk()->assertDontSee('alt="A slide"', false)->assertDontSee('alt="A poster"', false)->assertSee('href="'.route('posters').'"', false);
+        // The slides follow the welcome, one window-high screen each; the posters are not on the home page.
+        $this->get('/')->assertOk()
+            ->assertSeeInOrder(['<h1', 'aria-label="2 / 2"', 'alt="A slide"', 'aria-label="Next slide"'], false)
+            ->assertDontSee('alt="A poster"', false);
+        $this->assertSame(2, substr_count($this->get('/')->getContent(), 'data-slider-dot'));
 
         $this->get('/posters')->assertOk()->assertSeeInOrder(['alt="A slide"', 'alt="A poster"'], false);
         $this->get('/sitemap.xml')->assertSee(route('posters'));
@@ -63,15 +67,16 @@ class BannersAndPostersTest extends TestCase
         $page = $this->get('/')->getContent();
 
         // A section of its own, below the hospital's name and the announcements' place.
-        $this->assertGreaterThan(strpos($page, '<h1'), strpos($page, 'data-slider'));
-        $this->assertStringNotContainsString('data-slider-next', $page);
+        $this->assertGreaterThan(strpos($page, '<section id="news"'), strpos($page, 'aria-label="Banners"'));
+        $this->assertSame(1, substr_count($page, 'data-slider-next'));
 
         Banner::factory()->create(['title' => 'Second slide']);
 
         $page = $this->get('/')->getContent();
 
-        $this->assertStringContainsString('aria-label="Next slide"', $page);
-        $this->assertSame(2, substr_count($page, 'data-slider-dot'));
+        // The welcome's arrows and dots (itself and two slides), and the section's own.
+        $this->assertSame(2, substr_count($page, 'aria-label="Next slide"'));
+        $this->assertSame(3 + 2, substr_count($page, 'data-slider-dot'));
         // Shown whole in a frame of one shape, whatever its own: nothing is cropped, and the page keeps its height.
         $this->assertSame(2, substr_count($page, 'aspect-[4/3] sm:aspect-[16/9] lg:aspect-[21/9]'));
         $this->assertSame(2, substr_count($page, 'class="relative size-full object-contain"'));
@@ -98,7 +103,7 @@ class BannersAndPostersTest extends TestCase
         $page = $this->get('/')->getContent();
 
         // Each is drawn twice: itself, and out of focus behind itself to fill its frame.
-        $this->assertSame(8 + 8, substr_count($page, 'object-contain'));
+        $this->assertSame(8 + 8, substr_count($page, 'size-full object-contain'));
         $this->assertSame(8 + 8, substr_count($page, 'aria-hidden="true" loading="lazy" class="absolute'));
     }
 

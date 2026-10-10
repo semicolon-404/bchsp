@@ -51,6 +51,8 @@ class SiteSettings
         'maintenance.enabled', 'maintenance.message',
         // The hospital's name for a reader in English, and its logo: a path on the public disk, or nothing.
         'site.name_en', 'site.logo',
+        // What the home page says under the name, and of the hospital itself: plain text, one item to a line.
+        'site.motto', 'identity.vision', 'identity.mission', 'identity.values',
         'contact.address', 'contact.phone', 'contact.emergency_phone', 'contact.email',
         // For the contact page: when the hospital is open, and the address of an embedded Google map.
         'contact.hours', 'contact.map',

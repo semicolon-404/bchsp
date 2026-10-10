@@ -31,19 +31,47 @@ class HomeLayoutTest extends TestCase
     {
         $this->fillTheHomePage();
 
-        // Kept open: the name of the hospital, the newest announcements, then a section for each part of the site.
+        // Kept open, as the hospital's first page always was: the welcome, the way to the news, what it says of itself.
         // The pictures, the articles and the departments are off at first, and read on their own pages.
-        $this->assertSame(['hero', 'announcements', 'shortcuts'], HomeLayout::shown());
+        $this->assertSame(['hero', 'announcements', 'identity'], HomeLayout::shown());
 
         $this->get('/')
-            ->assertSeeInOrder(['<h1', 'A notice', 'aria-label="Shortcuts"', 'id="door-0"', 'id="door-4"'], false)
-            ->assertDontSee('id="door-5"', false)
-            ->assertDontSee('alt="A slide"', false)->assertDontSee('alt="A poster"', false)->assertDontSee('An article')->assertDontSee('A department');
+            ->assertSeeInOrder(['<h1', 'alt="A slide"', '<section id="news"'], false)
+            ->assertDontSee('aria-label="Shortcuts"', false)
+            // Nothing has been written about the hospital yet, so that section takes no room.
+            ->assertDontSee('id="identity"', false)
+            ->assertDontSee('A notice')->assertDontSee('alt="A poster"', false)->assertDontSee('An article')->assertDontSee('A department');
 
         // Switched on, each takes its usual place: the pictures after what people came to read.
-        $this->showOnHome('slides', 'posters', 'articles');
+        $this->showOnHome('shortcuts', 'posters', 'articles');
 
-        $this->get('/')->assertSeeInOrder(['<h1', 'A notice', 'aria-label="Shortcuts"', 'alt="A slide"', 'alt="A poster"', 'An article'], false);
+        $this->get('/')
+            ->assertSeeInOrder(['<h1', '<section id="news"', 'aria-label="Shortcuts"', 'id="door-0"', 'id="door-4"', 'alt="A poster"', 'An article'], false)
+            ->assertDontSee('id="door-5"', false);
+    }
+
+    public function test_the_welcome_carries_the_motto_and_what_the_hospital_says_of_itself_has_a_tab_each(): void
+    {
+        $this->get('/')->assertSee('Welcome to')->assertDontSee('href="#identity"', false);
+
+        $this->actingAs(User::factory()->admin()->create());
+
+        Livewire::test(SettingsPage::class)
+            ->fillForm(['site__motto' => 'Service from the heart', 'identity__vision' => "A hospital of quality
+Quality: a service that works", 'identity__values' => "T - Teamwork
+
+A - Agility"])
+            ->call('save')
+            ->assertHasNoFormErrors();
+
+        auth()->logout();
+        $page = $this->get('/')
+            ->assertSeeInOrder(['Welcome to', '<h1', '“Service from the heart”', 'href="#identity"', '<section id="identity"', '“A hospital of quality”', 'Quality: a service that works', 'T - Teamwork', 'A - Agility'], false)
+            // Nothing was written for the mission: it has no tab.
+            ->assertDontSee('for="identity-2"', false)
+            ->getContent();
+
+        $this->assertSame(2, substr_count($page, 'class="tab-panel'));
     }
 
     public function test_an_administrator_reorders_the_sections_and_hides_some(): void
@@ -61,6 +89,8 @@ class HomeLayoutTest extends TestCase
                 ['key' => 'departments', 'shown' => false],
                 ['key' => 'posters', 'shown' => false],
                 ['key' => 'shortcuts', 'shown' => false],
+                ['key' => 'identity', 'shown' => false],
+                ['key' => 'today', 'shown' => false],
             ]])
             ->call('save')
             ->assertHasNoFormErrors();
@@ -69,7 +99,7 @@ class HomeLayoutTest extends TestCase
 
         auth()->logout();
         $this->get('/')
-            ->assertSeeInOrder(['<h1', 'An article', 'A notice', 'alt="A slide"'], false)
+            ->assertSeeInOrder(['<h1', 'An article', '<section id="news"', 'aria-label="Banners"'], false)
             ->assertDontSee('A department')
             ->assertDontSee('alt="A poster"', false);
     }
@@ -77,11 +107,12 @@ class HomeLayoutTest extends TestCase
     public function test_the_shortcuts_lead_to_what_visitors_come_for_and_departments_can_be_switched_on(): void
     {
         $this->fillTheHomePage();
+        $this->showOnHome('shortcuts');
 
         $this->get('/')
             ->assertSee('href="'.route('schedule').'"', false)
             ->assertSee('href="'.route('contact').'"', false)
-            ->assertSee('href="'.route('downloads').'"', false);
+            ->assertSee('href="'.route('posters').'"', false);
 
         SiteSettings::save(['home.layout' => [['key' => 'departments', 'shown' => true]]]);
 
@@ -101,10 +132,10 @@ class HomeLayoutTest extends TestCase
     {
         $this->assertNull(HomeLayout::toStore(HomeLayout::rows()));
 
-        // Saved before "shortcuts" existed, say: it is added at the end, shown.
+        // Saved before "identity" existed, say: it is added at the end, shown.
         SiteSettings::save(['home.layout' => [['key' => 'announcements', 'shown' => true], ['key' => 'hero', 'shown' => true]]]);
 
-        $this->assertSame(['announcements', 'hero', 'shortcuts'], HomeLayout::shown());
+        $this->assertSame(['announcements', 'hero', 'identity'], HomeLayout::shown());
     }
 
     public function test_whatever_is_saved_only_known_sections_are_drawn_each_once(): void

@@ -25,17 +25,17 @@ class WordingTest extends TestCase
 
     public function test_a_phrase_left_alone_reads_as_it_always_did(): void
     {
-        $this->withUnencryptedCookie(SetLocale::COOKIE, 'th')->get('/')->assertSee('ดูแลสุขภาพชุมชน');
-        $this->withUnencryptedCookie(SetLocale::COOKIE, 'en')->get('/')->assertSee('Caring for the community');
+        $this->withUnencryptedCookie(SetLocale::COOKIE, 'th')->get('/')->assertSee('ยินดีต้อนรับสู่');
+        $this->withUnencryptedCookie(SetLocale::COOKIE, 'en')->get('/')->assertSee('Welcome to');
     }
 
     public function test_a_rewritten_phrase_wins_in_the_language_it_was_written_for(): void
     {
-        SiteSettings::save(['wording' => [['key' => 'Caring for the community', 'th' => 'โรงพยาบาลของชุมชน', 'en' => null]]]);
+        SiteSettings::save(['wording' => [['key' => 'Welcome to', 'th' => 'โรงพยาบาลของชุมชน', 'en' => null]]]);
 
-        $this->withUnencryptedCookie(SetLocale::COOKIE, 'th')->get('/')->assertSee('โรงพยาบาลของชุมชน')->assertDontSee('ดูแลสุขภาพชุมชน');
+        $this->withUnencryptedCookie(SetLocale::COOKIE, 'th')->get('/')->assertSee('โรงพยาบาลของชุมชน')->assertDontSee('ยินดีต้อนรับสู่');
         // English was left empty, so it keeps its usual wording.
-        $this->withUnencryptedCookie(SetLocale::COOKIE, 'en')->get('/')->assertSee('Caring for the community');
+        $this->withUnencryptedCookie(SetLocale::COOKIE, 'en')->get('/')->assertSee('Welcome to');
     }
 
     public function test_placeholders_keep_working_in_the_new_wording(): void
@@ -48,7 +48,7 @@ class WordingTest extends TestCase
 
     public function test_what_an_administrator_writes_is_printed_as_text_never_run(): void
     {
-        SiteSettings::save(['wording' => [['key' => 'Caring for the community', 'en' => '<script>alert(1)</script>']]]);
+        SiteSettings::save(['wording' => [['key' => 'Welcome to', 'en' => '<script>alert(1)</script>']]]);
 
         $this->withUnencryptedCookie(SetLocale::COOKIE, 'en')->get('/')->assertDontSee('<script>alert(1)</script>', false);
     }

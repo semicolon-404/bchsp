@@ -54,12 +54,14 @@ class ClinicScheduleTest extends TestCase
         ClinicSession::factory()->create(['name' => 'Afternoon dental', 'days' => [2], 'starts_at' => '13:00', 'ends_at' => '15:30']);
         ClinicSession::factory()->create(['name' => 'Wednesday only', 'days' => [3]]);
 
+        // Off until an administrator switches it on: the home page is kept open.
+        $this->get('/')->assertOk()->assertDontSee('Open today');
+        $this->showOnHome('today');
+
         $page = $this->get('/')
             ->assertOk()
             ->assertSeeInOrder(['Open today', 'Tuesday', 'Morning diabetes', 'Open now', 'Afternoon dental', 'The whole week'])
             ->assertDontSee('Wednesday only')
-            // Real information takes the place of the decoration.
-            ->assertDontSee('contact.ts')
             ->getContent();
 
         $this->assertSame(1, substr_count($page, 'Open now'));
@@ -83,11 +85,11 @@ class ClinicScheduleTest extends TestCase
         $this->assertFalse($session->isOpenNow());
     }
 
-    public function test_until_there_is_a_schedule_the_home_page_keeps_its_contact_details(): void
+    public function test_until_there_is_a_schedule_the_home_page_says_nothing_of_today(): void
     {
-        SiteSettings::save(['contact.phone' => '044-579076']);
+        $this->showOnHome('today');
 
-        $this->get('/')->assertSee('contact.ts')->assertDontSee('Open today');
+        $this->get('/')->assertOk()->assertDontSee('Open today');
         $this->get('/schedule')->assertOk()->assertSee('Nothing has been added here yet.');
     }
 
