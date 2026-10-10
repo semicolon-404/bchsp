@@ -99,6 +99,11 @@ class SystemHealth
             }, ! TwoStep::isRequiredOfStaff() ? __('Not required of staff') : ($weak > 0 ? trans_choice('{1} :count account has not set it up yet|[2,*] :count accounts have not set it up yet', $weak, ['count' => $weak]) : __('Required, and everyone has it')),
                 __('Switch it on under Site settings > Security. A stolen password then is not enough to get in.')),
 
+            // Uploaded pictures and files are linked by the address in APP_URL: when it is not the address people use, they do not open.
+            $check('Site address', self::addressMatches() ? 'ok' : 'problem',
+                self::addressMatches() ? (string) config('app.url') : __('APP_URL is :set, but the site is being opened at :used', ['set' => config('app.url'), 'used' => request()->getSchemeAndHttpHost()]),
+                __('Set APP_URL in .env to the address people type to reach the site, or uploaded pictures and documents will not open.')),
+
             $check('Debug mode', config('app.debug') ? 'problem' : 'ok', config('app.debug') ? __('On') : __('Off'),
                 __('With it on, an error page shows the site\'s inner workings to anyone. Set APP_DEBUG=false in .env on the live server.')),
 
@@ -108,6 +113,16 @@ class SystemHealth
             $check('Maintenance mode', SiteSettings::get('maintenance.enabled') ? 'warning' : 'ok', SiteSettings::get('maintenance.enabled') ? __('The site is closed to visitors') : __('The site is open'),
                 __('Switch it off under Site settings when the work is done.')),
         ];
+    }
+
+    /** Whether the address in APP_URL is the one this page was opened at (the same name and port). */
+    private static function addressMatches(): bool
+    {
+        $set = parse_url((string) config('app.url'));
+        $port = fn (?int $port, ?string $scheme) => $port ?? ($scheme === 'https' ? 443 : 80);
+
+        return ($set['host'] ?? null) === request()->getHost()
+            && $port($set['port'] ?? null, $set['scheme'] ?? null) === (int) request()->getPort();
     }
 
     /** How many checks say "problem": the number shown beside "System status" in the panel's menu. */

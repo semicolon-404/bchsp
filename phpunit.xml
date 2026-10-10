@@ -21,6 +21,8 @@
         <env name="APP_ENV" value="testing"/>
         <!-- The tests read the pages in English, whatever language this machine's .env gives the site. -->
         <env name="APP_LOCALE" value="en"/>
+        <!-- The tests open the site at this address, whatever address this machine's .env gives it. -->
+        <env name="APP_URL" value="http://localhost"/>
         <env name="APP_MAINTENANCE_DRIVER" value="file"/>
         <env name="BCRYPT_ROUNDS" value="4"/>
         <env name="CACHE_STORE" value="array"/>

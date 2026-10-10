@@ -162,6 +162,8 @@ class BackupsAndStatusTest extends TestCase
     {
         config(['app.debug' => true]);
 
+        config(['app.url' => 'http://localhost']);
+
         // Debug mode, no backup yet, scheduler never ran.
         $this->assertSame(3, SystemHealth::problems());
         $this->assertSame('3', SystemStatus::getNavigationBadge());
@@ -172,6 +174,22 @@ class BackupsAndStatusTest extends TestCase
         file_put_contents($this->folder.DIRECTORY_SEPARATOR.'db-'.now()->format('Y-m-d-His').'.sql.gz', 'x');
 
         $this->assertNull(SystemStatus::getNavigationBadge());
+    }
+
+    public function test_an_address_in_app_url_that_is_not_the_one_in_use_is_a_problem(): void
+    {
+        $state = fn () => collect(SystemHealth::checks())->firstWhere('name', 'Site address')['state'];
+
+        // The tests open the site at http://localhost.
+        config(['app.url' => 'http://localhost']);
+        $this->get('/');
+        $this->assertSame('ok', $state());
+
+        config(['app.url' => 'http://localhost:8000']);
+        $this->assertSame('problem', $state());
+
+        config(['app.url' => 'https://buachedhsp.moph.go.th']);
+        $this->assertSame('problem', $state());
     }
 
     public function test_the_backup_and_the_heartbeat_are_scheduled(): void
