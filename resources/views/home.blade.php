@@ -99,6 +99,30 @@
     </section>
     @break
 
+    @case('shortcuts')
+    {{-- What people come to a hospital's site for, one press away. --}}
+    <section class="border-b border-line" aria-label="{{ __('Shortcuts') }}">
+        <div class="wrap grid grid-cols-2 gap-3 py-6 lg:grid-cols-4">
+            @foreach ([
+                ['schedule', 'calendar-days', 'Clinic schedule', 'What is open, and when'],
+                ['contact', 'map-pin', 'Contact and map', 'Address, phone, how to get here'],
+                ['departments.index', 'building-office-2', 'Departments', 'Where each one is'],
+                ['downloads', 'arrow-down-tray', 'Forms and documents', 'To download'],
+            ] as [$route, $icon, $label, $hint])
+                <a href="{{ route($route) }}" class="card flex items-center gap-3 px-4 py-4 text-ink no-underline">
+                    <span class="flex size-10 shrink-0 items-center justify-center rounded-lg bg-raised text-brand" aria-hidden="true">
+                        <x-dynamic-component :component="'heroicon-o-'.$icon" class="size-5" />
+                    </span>
+                    <span class="min-w-0">
+                        <span class="block font-medium">{{ __($label) }}</span>
+                        <span class="hidden text-sm text-muted sm:block">{{ __($hint) }}</span>
+                    </span>
+                </a>
+            @endforeach
+        </div>
+    </section>
+    @break
+
     @case('announcements')
     @if ($announcements->isNotEmpty())
         <section class="border-b border-line bg-surface">

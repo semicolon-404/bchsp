@@ -6,6 +6,7 @@ use App\Filament\Resources\Departments\Pages\ManageDepartments;
 use App\Http\Middleware\SetLocale;
 use App\Models\Department;
 use App\Models\User;
+use App\Support\SiteSettings;
 use Database\Seeders\DepartmentSeeder;
 use Filament\Actions\EditAction;
 use Filament\Actions\Testing\TestAction;
@@ -75,8 +76,10 @@ class DepartmentsTest extends TestCase
         $this->assertStringNotContainsString('<img src=x', $page);
     }
 
-    public function test_the_home_page_shows_the_first_six(): void
+    public function test_the_home_page_shows_the_first_six_when_switched_on(): void
     {
+        // Off at first; an administrator can put it on the home page (Site settings > Home page layout).
+        SiteSettings::save(['home.layout' => [['key' => 'departments', 'shown' => true]]]);
         $this->get('/')->assertDontSee('All departments');
 
         foreach (range(1, 7) as $order) {

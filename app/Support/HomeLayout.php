@@ -7,7 +7,7 @@ namespace App\Support;
  * administrator arranged them (System > Site settings > "Home page layout").
  *
  * Until an administrator changes something nothing is saved, and the page
- * keeps the order it always had (SECTIONS below). A section with nothing in it
+ * keeps the order it always had (SECTIONS below), without the ones that are off at first. A section with nothing in it
  * (no slide, no article yet) takes no room, shown or not.
  */
 class HomeLayout
@@ -18,11 +18,18 @@ class HomeLayout
     public const SECTIONS = [
         'slides' => 'Slides',
         'hero' => 'Name of the hospital and phone buttons',
+        'shortcuts' => 'Shortcuts to what visitors come for',
         'announcements' => 'Announcements',
         'posters' => 'Posters',
         'departments' => 'Departments',
         'articles' => 'Articles',
     ];
+
+    /**
+     * Off until an administrator switches them on. The list of departments is reference material, not
+     * what the home page is for: it has a page of its own and a shortcut to it.
+     */
+    public const OFF_AT_FIRST = ['departments'];
 
     /** Cannot be hidden: it holds the page's heading and the buttons to call the hospital. */
     public const LOCKED = ['hero'];
@@ -83,7 +90,7 @@ class HomeLayout
         }
 
         foreach (array_keys(self::SECTIONS) as $key) {
-            $clean[$key] ??= ['key' => $key, 'shown' => true];
+            $clean[$key] ??= ['key' => $key, 'shown' => ! in_array($key, self::OFF_AT_FIRST, true)];
         }
 
         return array_values($clean);

@@ -31,9 +31,12 @@ class HomeLayoutTest extends TestCase
     {
         $this->fillTheHomePage();
 
-        $this->assertSame(['slides', 'hero', 'announcements', 'posters', 'departments', 'articles'], HomeLayout::shown());
+        // The list of departments is off at first: it is not what the home page is for.
+        $this->assertSame(['slides', 'hero', 'shortcuts', 'announcements', 'posters', 'articles'], HomeLayout::shown());
 
-        $this->get('/')->assertSeeInOrder(['alt="A slide"', '<h1', 'A notice', 'alt="A poster"', 'A department', 'An article'], false);
+        $this->get('/')
+            ->assertSeeInOrder(['alt="A slide"', '<h1', 'aria-label="Shortcuts"', 'A notice', 'alt="A poster"', 'An article'], false)
+            ->assertDontSee('A department');
     }
 
     public function test_an_administrator_reorders_the_sections_and_hides_some(): void
@@ -50,6 +53,7 @@ class HomeLayoutTest extends TestCase
                 ['key' => 'slides', 'shown' => true],
                 ['key' => 'departments', 'shown' => false],
                 ['key' => 'posters', 'shown' => false],
+                ['key' => 'shortcuts', 'shown' => false],
             ]])
             ->call('save')
             ->assertHasNoFormErrors();
@@ -61,6 +65,20 @@ class HomeLayoutTest extends TestCase
             ->assertSeeInOrder(['<h1', 'An article', 'A notice', 'alt="A slide"'], false)
             ->assertDontSee('A department')
             ->assertDontSee('alt="A poster"', false);
+    }
+
+    public function test_the_shortcuts_lead_to_what_visitors_come_for_and_departments_can_be_switched_on(): void
+    {
+        $this->fillTheHomePage();
+
+        $this->get('/')
+            ->assertSee('href="'.route('schedule').'"', false)
+            ->assertSee('href="'.route('contact').'"', false)
+            ->assertSee('href="'.route('downloads').'"', false);
+
+        SiteSettings::save(['home.layout' => [['key' => 'departments', 'shown' => true]]]);
+
+        $this->get('/')->assertSee('A department')->assertSee('All departments');
     }
 
     public function test_the_heading_of_the_page_cannot_be_hidden(): void
@@ -79,7 +97,7 @@ class HomeLayoutTest extends TestCase
         // Saved before "articles" existed, say: it is added at the end, shown.
         SiteSettings::save(['home.layout' => [['key' => 'announcements', 'shown' => true], ['key' => 'hero', 'shown' => true]]]);
 
-        $this->assertSame(['announcements', 'hero', 'slides', 'posters', 'departments', 'articles'], HomeLayout::shown());
+        $this->assertSame(['announcements', 'hero', 'slides', 'shortcuts', 'posters', 'articles'], HomeLayout::shown());
     }
 
     public function test_whatever_is_saved_only_known_sections_are_drawn_each_once(): void
