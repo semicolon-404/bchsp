@@ -65,15 +65,30 @@
 
             <x-site.nav />
 
-            <div class="ml-auto flex shrink-0 items-center gap-2">
-                {{-- On a phone the language switch is in the footer, so the bar keeps to what fits. --}}
-                {{-- What staff use is kept apart from the public menu (resources/views/staff.blade.php). --}}
-                <a href="{{ route('staff') }}" class="hidden items-center gap-1 whitespace-nowrap px-2 text-sm text-muted no-underline hover:text-ink xl:flex">
-                    <x-heroicon-m-identification class="size-4" aria-hidden="true" />{{ __('For staff') }}
-                </a>
-                <x-site.language-switch class="hidden sm:grid" />
-                <x-site.theme-switch class="max-[419px]:hidden" />
-            </div>
+            {{--
+                Language, the light or dark look, and the way to the staff page are tucked behind one button,
+                so the bar holds only the menu and the emergency number. Closed by resources/js/menu.js like
+                the groups of the menu.
+            --}}
+            <details class="menu-group relative ml-auto shrink-0" data-menu>
+                <summary class="flex size-10 cursor-pointer list-none items-center justify-center rounded-md text-muted hover:bg-raised hover:text-ink" aria-label="{{ __('Language and display') }}" title="{{ __('Language and display') }}">
+                    <x-heroicon-o-adjustments-horizontal class="size-5" aria-hidden="true" />
+                </summary>
+                <div class="menu-list left-auto right-0 space-y-3 p-3">
+                    <div>
+                        <p class="mb-1 text-xs text-muted">{{ __('Language') }}</p>
+                        <x-site.language-switch />
+                    </div>
+                    <div>
+                        <p class="mb-1 text-xs text-muted">{{ __('Theme') }}</p>
+                        <x-site.theme-switch />
+                    </div>
+                    {{-- What staff use is kept apart from the public menu (resources/views/staff.blade.php). --}}
+                    <a href="{{ route('staff') }}" class="flex items-center gap-2 border-t border-line pt-3">
+                        <x-heroicon-m-identification class="size-4" aria-hidden="true" />{{ __('For staff') }}
+                    </a>
+                </div>
+            </details>
 
             @if ($emergency)
                 <a href="{{ $dial($emergency) }}" class="btn btn-danger shrink-0 min-h-10 px-4 py-2 text-sm max-sm:px-3">
@@ -133,13 +148,9 @@
         </div>
 
         <div class="border-t border-line">
-            <div class="wrap flex flex-wrap items-center justify-between gap-3 py-4">
+            <div class="wrap py-4">
                 {{-- The Buddhist year for a reader in Thai. --}}
                 <p class="font-mono text-sm text-muted">&copy; {{ app()->getLocale() === 'th' ? now()->year + 543 : now()->year }} {{ $name }}</p>
-                <div class="flex items-center gap-2">
-                    <x-site.language-switch class="sm:hidden" />
-                    <x-site.theme-switch class="min-[420px]:hidden" />
-                </div>
             </div>
         </div>
     </footer>

@@ -123,6 +123,7 @@
     "ITA page": "หน้า ITA",
     "Item": "รายการ",
     "Language": "ภาษา",
+    "Language and display": "ภาษาและการแสดงผล",
     "Last changed": "แก้ไขล่าสุด",
     "Leave blank to build it from the title. Changing it later breaks links that were already shared.": "เว้นว่างเพื่อให้สร้างจากหัวข้อ หากเปลี่ยนภายหลัง ลิงก์ที่เคยแชร์ไปจะใช้ไม่ได้",
     "Leave blank to keep the password they have.": "เว้นว่างไว้หากไม่ต้องการเปลี่ยนรหัสผ่าน",
