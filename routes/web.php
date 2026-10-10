@@ -4,6 +4,7 @@ use App\Http\Controllers\AnnouncementController;
 use App\Http\Controllers\BlogController;
 use App\Http\Controllers\DepartmentController;
 use App\Http\Controllers\ItaController;
+use App\Http\Controllers\ReportController;
 use App\Http\Controllers\SearchController;
 use App\Http\Controllers\SeoController;
 use App\Http\Controllers\SitePageController;
@@ -35,6 +36,10 @@ Route::view('/staff', 'staff')->name('staff');
 Route::get('/p/{page}', [SitePageController::class, 'show'])->name('pages.show');
 
 Route::get('/search', SearchController::class)->name('search');
+
+// The report for executives, to print or to open in Excel: for administrators (App\Http\Controllers\ReportController).
+Route::get('/admin/reports-print', [ReportController::class, 'print'])->name('reports.print');
+Route::get('/admin/reports-download', [ReportController::class, 'download'])->name('reports.download');
 
 // For search engines (App\Http\Controllers\SeoController).
 Route::get('/robots.txt', [SeoController::class, 'robots'])->name('robots');
