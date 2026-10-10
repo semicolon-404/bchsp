@@ -4,6 +4,8 @@ use App\Http\Controllers\AnnouncementController;
 use App\Http\Controllers\BlogController;
 use App\Http\Controllers\DepartmentController;
 use App\Http\Controllers\ItaController;
+use App\Http\Controllers\SearchController;
+use App\Http\Controllers\SeoController;
 use App\Http\Controllers\SitePageController;
 use App\Http\Middleware\SetLocale;
 use Illuminate\Support\Facades\Route;
@@ -29,6 +31,12 @@ Route::view('/staff', 'staff')->name('staff');
 
 // Pages of text written in the panel (System > Pages).
 Route::get('/p/{page}', [SitePageController::class, 'show'])->name('pages.show');
+
+Route::get('/search', SearchController::class)->name('search');
+
+// For search engines (App\Http\Controllers\SeoController).
+Route::get('/robots.txt', [SeoController::class, 'robots'])->name('robots');
+Route::get('/sitemap.xml', [SeoController::class, 'sitemap'])->name('sitemap');
 
 // The language switch (components/site/language-switch). Remembered for a year; read by the SetLocale middleware.
 Route::get('/language/{locale}', function (string $locale) {

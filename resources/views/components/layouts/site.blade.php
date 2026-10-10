@@ -5,7 +5,7 @@
 
     Without a title the page is named after the hospital alone.
 --}}
-@props(['title' => null, 'description' => null, 'noindex' => false])
+@props(['title' => null, 'description' => null, 'noindex' => false, 'image' => null])
 @php
     use App\Support\SiteSettings;
 
@@ -30,6 +30,33 @@
     @endif
     @if ($noindex)
         <meta name="robots" content="noindex">
+    @else
+        {{-- One address for a page, whatever was added to it; and how a link to it looks when shared. --}}
+        <link rel="canonical" href="{{ url()->current() }}">
+        <meta property="og:type" content="website">
+        <meta property="og:site_name" content="{{ $name }}">
+        <meta property="og:title" content="{{ $title ?: $name }}">
+        <meta property="og:url" content="{{ url()->current() }}">
+        <meta property="og:locale" content="{{ app()->getLocale() === 'th' ? 'th_TH' : 'en_US' }}">
+        @if ($description)
+            <meta property="og:description" content="{{ $description }}">
+        @endif
+        @if ($image ?: $logo)
+            <meta property="og:image" content="{{ url($image ?: $logo) }}">
+        @endif
+        @if (request()->routeIs('home'))
+            {{-- What the hospital is, for search engines: its name, address and numbers, from the site settings. --}}
+            <script type="application/ld+json">{!! json_encode(array_filter([
+                '@context' => 'https://schema.org',
+                '@type' => 'Hospital',
+                'name' => $name,
+                'url' => route('home'),
+                'telephone' => $phone,
+                'email' => $email,
+                'address' => $address ? ['@type' => 'PostalAddress', 'streetAddress' => $address, 'addressCountry' => 'TH'] : null,
+                'logo' => $logo ? url($logo) : null,
+            ]), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_AMP) !!}</script>
+        @endif
     @endif
     {{-- Runs before the first paint so a light-mode visitor never sees a dark flash. Same storage key as the admin panel; see resources/js/theme.js. --}}
     <script>
@@ -70,7 +97,11 @@
                 so the bar holds only the menu and the emergency number. Closed by resources/js/menu.js like
                 the groups of the menu.
             --}}
-            <details class="menu-group relative ml-auto shrink-0" data-menu>
+            <a href="{{ route('search') }}" class="ml-auto flex size-10 shrink-0 items-center justify-center rounded-md text-muted hover:bg-raised hover:text-ink" aria-label="{{ __('Search') }}" title="{{ __('Search') }}">
+                <x-heroicon-o-magnifying-glass class="size-5" aria-hidden="true" />
+            </a>
+
+            <details class="menu-group relative shrink-0" data-menu>
                 <summary class="flex size-10 cursor-pointer list-none items-center justify-center rounded-md text-muted hover:bg-raised hover:text-ink" aria-label="{{ __('Language and display') }}" title="{{ __('Language and display') }}">
                     <x-heroicon-o-adjustments-horizontal class="size-5" aria-hidden="true" />
                 </summary>

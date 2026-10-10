@@ -1,0 +1,63 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\Announcement;
+use App\Models\BlogPost;
+use App\Models\Department;
+use App\Models\ItaItem;
+use App\Models\SitePage;
+use Illuminate\Http\Response;
+
+/** Machine-readable files for search engines. */
+class SeoController extends Controller
+{
+    public function robots(): Response
+    {
+        $lines = [
+            'User-agent: *',
+            'Disallow: /admin',
+            // Of no use to the public (resources/views/staff.blade.php), and the language switch is not a page.
+            'Disallow: /staff',
+            'Disallow: /language/',
+            'Disallow: /search',
+            '',
+            'Sitemap: '.route('sitemap'),
+        ];
+
+        return response(implode("\n", $lines)."\n", 200, ['Content-Type' => 'text/plain; charset=UTF-8']);
+    }
+
+    /** Every page the public can open, with when it last changed where that is known. */
+    public function sitemap(): Response
+    {
+        $urls = collect([
+            ['loc' => route('home'), 'priority' => '1.0'],
+            ['loc' => route('announcements.index'), 'priority' => '0.9'],
+            ['loc' => route('blog.index'), 'priority' => '0.8'],
+            ['loc' => route('departments.index'), 'priority' => '0.7'],
+            ['loc' => route('contact'), 'priority' => '0.7'],
+            ['loc' => route('downloads'), 'priority' => '0.5'],
+        ]);
+
+        foreach (ItaItem::years() as $index => $year) {
+            $urls->push(['loc' => route('ita', $index === 0 ? [] : ['year' => $year]), 'priority' => '0.6']);
+        }
+
+        SitePage::published()->get(['slug', 'updated_at'])
+            ->each(fn (SitePage $page) => $urls->push(['loc' => route('pages.show', $page), 'lastmod' => $page->updated_at?->toAtomString(), 'priority' => '0.5']));
+
+        Department::shown()->get(['slug', 'updated_at'])
+            ->each(fn (Department $department) => $urls->push(['loc' => route('departments.show', $department), 'lastmod' => $department->updated_at?->toAtomString(), 'priority' => '0.5']));
+
+        Announcement::current()->inListOrder()->limit(5000)->get(['slug', 'updated_at'])
+            ->each(fn (Announcement $announcement) => $urls->push(['loc' => route('announcements.show', $announcement), 'lastmod' => $announcement->updated_at?->toAtomString(), 'priority' => '0.6']));
+
+        BlogPost::published()->latest('published_at')->limit(5000)->get(['slug', 'updated_at'])
+            ->each(fn (BlogPost $post) => $urls->push(['loc' => route('blog.show', $post), 'lastmod' => $post->updated_at?->toAtomString(), 'priority' => '0.6']));
+
+        return response()
+            ->view('seo.sitemap', ['urls' => $urls])
+            ->header('Content-Type', 'application/xml; charset=UTF-8');
+    }
+}

@@ -1,5 +1,5 @@
 {{-- /blog/{slug}: one article. --}}
-<x-layouts.site :title="$post->localTitle()" :description="$post->localExcerpt()">
+<x-layouts.site :title="$post->localTitle()" :description="$post->localExcerpt()" :image="$post->coverUrl()">
     <article class="wrap max-w-3xl py-10 sm:py-14">
         <p class="text-sm"><a href="{{ route('blog.index') }}" class="font-semibold text-brand underline">&larr; {{ __('All articles') }}</a></p>
 
