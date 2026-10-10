@@ -63,6 +63,8 @@
         </div>
     </section>
 
+    <x-site.banners part="banners" />
+
     @if ($announcements->isNotEmpty())
         <section class="border-b border-line bg-surface">
             <div class="wrap py-12 sm:py-16">
@@ -81,6 +83,8 @@
             </div>
         </section>
     @endif
+
+    <x-site.banners part="posters" />
 
     @if ($departments->isNotEmpty())
         <section class="border-b border-line">
@@ -119,4 +123,6 @@
             </div>
         </section>
     @endif
+
+    <x-site.banners part="popup" />
 </x-layouts.site>
