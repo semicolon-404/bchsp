@@ -16,6 +16,7 @@
     $address = SiteSettings::get('contact.address');
     $email = SiteSettings::get('contact.email');
     $social = SiteSettings::socialLinks();
+    $pages = App\Models\SitePage::footerLinks();
     $dial = fn (string $number) => 'tel:'.preg_replace('/[^0-9+]/', '', $number);
 @endphp
 <!DOCTYPE html>
@@ -86,6 +87,14 @@
                 <p class="text-lg font-semibold">{{ $name }}</p>
                 @if ($address)
                     <p class="mt-3 whitespace-pre-line text-muted">{{ $address }}</p>
+                @endif
+                {{-- Pages written in the panel that asked to be linked here (App\Models\SitePage). --}}
+                @if ($pages->isNotEmpty())
+                    <ul class="mt-4 space-y-2">
+                        @foreach ($pages as $page)
+                            <li><a href="{{ route('pages.show', $page) }}" class="text-ink underline decoration-line underline-offset-4 hover:text-brand">{{ $page->localTitle() }}</a></li>
+                        @endforeach
+                    </ul>
                 @endif
             </div>
 
