@@ -16,8 +16,8 @@
  * never a colour of their own, so the light look and a colour chosen in the panel reach everything.
  *
  * The site has the look of a developer's tool: near-black, one bright green, and the colours an
- * editor gives to code (the "syn" ones, from the Dracula palette). It opens dark; the light look
- * is one press away. Each pair of text and background here keeps a contrast of 4.5:1 or more.
+ * editor gives to code (the "syn" ones, from the Dracula palette). The values here are the dark look's;
+ * the light look, which the site opens in, re-points them below ([data-theme='light']). Each pair of text and background here keeps a contrast of 4.5:1 or more.
  */
 @theme {
     --font-sans: 'IBM Plex Sans Thai', 'Leelawadee UI', Tahoma, ui-sans-serif, system-ui, sans-serif;

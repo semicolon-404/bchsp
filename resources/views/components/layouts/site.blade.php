@@ -20,7 +20,7 @@
     $dial = fn (string $number) => 'tel:'.preg_replace('/[^0-9+]/', '', $number);
 @endphp
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" @class(['is-mourning' => App\Support\Theme::isMourning()])>
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" data-theme="light" @class(['is-mourning' => App\Support\Theme::isMourning()])>
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -58,11 +58,11 @@
             ]), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_AMP) !!}</script>
         @endif
     @endif
-    {{-- Runs before the first paint so a light-mode visitor never sees a dark flash. Same storage key as the admin panel; see resources/js/theme.js. --}}
+    {{-- Runs before the first paint so a dark-mode visitor never sees a light flash. The site opens light. Same storage key as the admin panel; see resources/js/theme.js. --}}
     <script>
         (function () {
-            var mode = 'dark';
-            try { mode = localStorage.getItem('theme') || 'dark'; } catch (e) {}
+            var mode = 'light';
+            try { mode = localStorage.getItem('theme') || 'light'; } catch (e) {}
             var light = mode === 'light' || (mode === 'system' && window.matchMedia('(prefers-color-scheme: light)').matches);
             document.documentElement.dataset.theme = light ? 'light' : 'dark';
         })();

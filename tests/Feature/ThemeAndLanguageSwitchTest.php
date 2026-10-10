@@ -21,11 +21,14 @@ class ThemeAndLanguageSwitchTest extends TestCase
             ->assertSee('Dark theme');
     }
 
-    public function test_the_site_opens_dark_and_the_choice_is_on_the_page_before_the_stylesheet(): void
+    public function test_the_site_opens_light_and_the_choice_is_on_the_page_before_the_stylesheet(): void
     {
         $page = $this->withVite()->get('/')->getContent();
 
-        $this->assertStringContainsString("localStorage.getItem('theme') || 'dark'", $page);
+        $this->assertStringContainsString("localStorage.getItem('theme') || 'light'", $page);
+        // Light even where scripts do not run.
+        $this->assertStringContainsString('data-theme="light"', $page);
+        $this->assertStringContainsString("const DEFAULT = 'light';", file_get_contents(resource_path('js/theme.js')));
         $this->assertLessThan(strpos($page, 'rel="stylesheet"'), strpos($page, "localStorage.getItem('theme')"));
 
         $css = file_get_contents(resource_path('css/app.css'));

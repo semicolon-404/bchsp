@@ -42,8 +42,8 @@ class AdminPanelProvider extends PanelProvider
             ->multiFactorAuthentication(fn () => [TwoStep::provider()], isRequired: true)
             ->multiFactorAuthenticationRequiredMiddlewareName(RequireTwoStepOfStaff::class)
             ->brandName(fn () => config('app.name'))
-            // The site opens dark unless the person chose otherwise; both share the same saved choice.
-            ->defaultThemeMode(ThemeMode::Dark)
+            // The site opens light unless the person chose otherwise; both share the same saved choice.
+            ->defaultThemeMode(ThemeMode::Light)
             // Each group is found by its English name (what the resources carry) and shown in the reader's language.
             ->navigationGroups(collect(['Announcements', 'ITA', 'Blog', 'Hospital', 'System'])
                 ->mapWithKeys(fn (string $group) => [$group => NavigationGroup::make(fn () => __($group))])

@@ -7,20 +7,23 @@
  * and app.css re-points the colour variables for [data-theme="light"].
  *
  * The first paint is set by a few lines in <head> (components/layouts/site),
- * so that a page never flashes in the wrong look. The site opens dark.
+ * so that a page never flashes in the wrong look. The site opens light; the dark look is one press away.
  */
 const KEY = 'theme';
 const MODES = ['light', 'dark', 'system'];
+
+/** What the site opens in until a visitor chooses: light is what most people, older eyes above all, read most easily. */
+const DEFAULT = 'light';
 const prefersLight = window.matchMedia('(prefers-color-scheme: light)');
 
 function saved() {
     try {
         const mode = localStorage.getItem(KEY);
 
-        return MODES.includes(mode) ? mode : 'dark';
+        return MODES.includes(mode) ? mode : DEFAULT;
     } catch {
         // Storage blocked: stay on the default for this visit.
-        return 'dark';
+        return DEFAULT;
     }
 }
 
