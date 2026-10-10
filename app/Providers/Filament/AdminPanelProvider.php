@@ -2,6 +2,8 @@
 
 namespace App\Providers\Filament;
 
+use App\Http\Middleware\RequireTwoStepOfStaff;
+use App\Support\TwoStep;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
@@ -28,6 +30,11 @@ class AdminPanelProvider extends PanelProvider
             ->id('admin')
             ->path('admin')
             ->login()
+            // Name, email, password, and two-step sign-in: a code from an authenticator app after the password.
+            // The panel is told "required" so the set-up page exists; RequireTwoStepOfStaff asks on each request whether it is.
+            ->profile(isSimple: false)
+            ->multiFactorAuthentication(fn () => [TwoStep::provider()], isRequired: true)
+            ->multiFactorAuthenticationRequiredMiddlewareName(RequireTwoStepOfStaff::class)
             ->brandName(fn () => config('app.name'))
             // Each group is found by its English name (what the resources carry) and shown in the reader's language.
             ->navigationGroups(collect(['System'])

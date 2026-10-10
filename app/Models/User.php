@@ -4,6 +4,10 @@ namespace App\Models;
 
 use App\Enums\Role;
 use Database\Factories\UserFactory;
+use Filament\Auth\MultiFactor\App\Concerns\InteractsWithAppAuthentication;
+use Filament\Auth\MultiFactor\App\Concerns\InteractsWithAppAuthenticationRecovery;
+use Filament\Auth\MultiFactor\App\Contracts\HasAppAuthentication;
+use Filament\Auth\MultiFactor\App\Contracts\HasAppAuthenticationRecovery;
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Panel;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -14,10 +18,13 @@ use Illuminate\Notifications\Notifiable;
  * Someone on the hospital's staff who can sign in to the panel. There are no
  * other accounts: the public reads the site without one, and nobody can sign up.
  */
-class User extends Authenticatable implements FilamentUser
+class User extends Authenticatable implements FilamentUser, HasAppAuthentication, HasAppAuthenticationRecovery
 {
     /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable;
+
+    // Two-step sign-in (App\Support\TwoStep): the secret and the recovery codes, kept encrypted and never serialised.
+    use InteractsWithAppAuthentication, InteractsWithAppAuthenticationRecovery;
 
     /**
      * The attributes that are mass assignable.

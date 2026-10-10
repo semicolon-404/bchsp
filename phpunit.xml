@@ -30,6 +30,8 @@
         <env name="PULSE_ENABLED" value="false"/>
         <env name="QUEUE_CONNECTION" value="sync"/>
         <env name="SESSION_DRIVER" value="array"/>
+        <!-- Off unless a test turns it on, so that a test of a screen is not first sent to set it up. -->
+        <env name="STAFF_TWO_STEP" value="false"/>
         <env name="TELESCOPE_ENABLED" value="false"/>
     </php>
 </phpunit>
