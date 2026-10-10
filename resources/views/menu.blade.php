@@ -11,7 +11,7 @@
             @foreach (App\Support\Menus::items('all') as $item)
                 <section class="card">
                     <h2 class="text-lg"><a href="{{ $item['url'] }}" class="flex items-center gap-2 text-ink no-underline hover:text-brand">
-                        <x-dynamic-component :component="'heroicon-o-'.$item['icon']" class="size-5 text-brand" aria-hidden="true" />{{ __($item['label']) }}</a></h2>
+                        <x-dynamic-component :component="'heroicon-o-'.$item['icon']" class="size-5 text-brand" aria-hidden="true" />{{ ($item['own'] ?? false) ? $item['label'] : __($item['label']) }}</a></h2>
                     @if ($item['children'])
                         <ul class="mt-3 space-y-1 border-l border-line pl-4">
                             @foreach ($item['children'] as $child)

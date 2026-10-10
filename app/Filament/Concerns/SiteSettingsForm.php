@@ -2,11 +2,13 @@
 
 namespace App\Filament\Concerns;
 
+use App\Support\Footer;
 use App\Support\HomeLayout;
 use App\Support\Menus;
 use App\Support\SiteSettings as Settings;
 use App\Support\Theme;
 use App\Support\Wording;
+use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Components\ColorPicker;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Hidden;
@@ -138,6 +140,64 @@ trait SiteSettingsForm
                     ->components([
                         self::menu('menu_top', 'top', __('Top bar'), __('Up to :count. On a phone these are not shown; the dock is there instead.', ['count' => Menus::max('top')])),
                         self::menu('menu_tabs', 'tabs', __('Dock on phones and tablets'), __('Up to :count.', ['count' => Menus::max('tabs')])),
+                        CheckboxList::make('menu_news_shown')
+                            ->label(__('"News" also lists'))
+                            ->options(array_map('__', Menus::NEWS_OPTIONAL))
+                            ->helperText(__('The types of announcement are always listed; arrange those under Announcements > Types.'))
+                            ->columnSpanFull(),
+                        Repeater::make('menu_links')
+                            ->label(__('Links of your own'))
+                            ->helperText(__('To another website or to a page of this one. Up to :count.', ['count' => Menus::MAX_OWN]))
+                            ->schema([
+                                TextInput::make('label')->label(__('Name'))->required()->maxLength(60),
+                                TextInput::make('label_en')->label(__('Name in English (optional)'))->maxLength(60),
+                                TextInput::make('url')->label(__('Web address'))->required()->url()->startsWith(['https://', 'http://'])->maxLength(500),
+                                Select::make('place')->label(__('Where it shows'))->options(array_map('__', Menus::OWN_PLACES))->default('top')->required()->selectablePlaceholder(false),
+                            ])
+                            ->columns(2)
+                            ->defaultItems(0)
+                            ->maxItems(Menus::MAX_OWN)
+                            ->addActionLabel(__('Add a link'))
+                            ->reorderableWithButtons()
+                            ->columnSpanFull(),
+                    ]),
+
+                Section::make(__('Footer'))
+                    ->description(__('The foot of every page. The address, phone numbers and social links there come from "Contact" and "Social media" below; the pages listed there are chosen under System > Pages.'))
+                    ->columns(2)
+                    ->collapsed()
+                    ->components([
+                        Textarea::make(self::field('footer.about'))
+                            ->label(__('A few words about the hospital'))
+                            ->rows(3)
+                            ->maxLength(500),
+                        Textarea::make(self::field('footer.about_en'))
+                            ->label(__('In English (optional)'))
+                            ->rows(3)
+                            ->maxLength(500),
+                        Repeater::make('footer_links')
+                            ->label(__('Links of your own'))
+                            ->helperText(__('Links with the same heading are shown together as a column. Up to :count.', ['count' => Footer::MAX_LINKS]))
+                            ->schema([
+                                TextInput::make('group')->label(__('Heading'))->maxLength(60)->placeholder(__('Related agencies'))
+                                    // The headings already in use are offered, so that one is not spelt two ways.
+                                    ->datalist(fn () => array_values(array_unique(array_filter(array_column(Footer::links(), 'group'))))),
+                                TextInput::make('label')->label(__('Name'))->required()->maxLength(100),
+                                TextInput::make('url')->label(__('Web address'))->required()->url()->startsWith(['https://', 'http://'])->maxLength(500),
+                            ])
+                            ->columns(3)
+                            ->defaultItems(0)
+                            ->maxItems(Footer::MAX_LINKS)
+                            ->addActionLabel(__('Add a link'))
+                            ->reorderableWithButtons()
+                            ->columnSpanFull(),
+                        TextInput::make(self::field('footer.copyright'))
+                            ->label(__('Line at the very bottom (optional)'))
+                            ->maxLength(200)
+                            ->helperText(__('Left blank: "©", the year and the name of the hospital.')),
+                        Toggle::make(self::field('footer.show_visits'))
+                            ->label(__('Show how many pages have been opened'))
+                            ->inline(false),
                     ]),
 
                 Section::make(__('Wording'))

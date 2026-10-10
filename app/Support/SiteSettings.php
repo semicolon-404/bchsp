@@ -33,6 +33,10 @@ class SiteSettings
 
     /** Settings with no config value behind them: read with SiteSettings::get(). */
     public const CONTENT = [
+        // The footer of every page, as an administrator arranged it (App\Support\Footer).
+        'footer.about', 'footer.about_en', 'footer.links', 'footer.copyright', 'footer.show_visits',
+        // Links of the administrator's own in the menus (App\Support\Menus).
+        'menu.links', 'menu.news_hidden',
         // The urgent notice across the top of every page (components/site/alert).
         'alert.enabled', 'alert.text', 'alert.text_en', 'alert.url',
         // Phrases an administrator rewrote: a list of rows (App\Support\Wording).

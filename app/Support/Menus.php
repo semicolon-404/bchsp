@@ -83,6 +83,13 @@ class Menus
             }
         }
 
+        // The administrator's own links come after the site's groups, in the bar and on the page that lists everything.
+        if ($menu !== 'tabs') {
+            foreach (self::ownLinks('top') as $index => $own) {
+                $items[] = ['key' => 'own-'.$index, 'label' => $own['label'], 'short' => $own['label'], 'icon' => 'link', 'url' => $own['url'], 'active' => false, 'children' => [], 'opens' => false, 'own' => true];
+            }
+        }
+
         return $items;
     }
 
@@ -109,6 +116,10 @@ class Menus
                 $children[] = $link(__('Clinic schedule'), route('schedule'), $request->routeIs('schedule'));
                 $children[] = $link(__('Departments'), route('departments.index'), $request->routeIs('departments.*'));
                 $children[] = $link(__('Contact us'), route('contact'), $request->routeIs('contact'));
+
+                foreach (self::ownLinks('about') as $own) {
+                    $children[] = $link($own['label'], $own['url']);
+                }
 
                 // Too many to drop from the bar: the bar's link leads to a page that lists them (/about).
                 return ['url' => route('about'), 'active' => $request->routeIs('about') || in_array(true, array_column($children, 'active'), true), 'children' => $children, 'opens' => false];
@@ -137,8 +148,18 @@ class Menus
                 $children = AnnouncementType::where('slug', '!=', self::PROCUREMENT)->orderBy('sort_order')->orderBy('name')->get()
                     ->map(fn (AnnouncementType $one) => $link($one->localName(), route('announcements.index', ['type' => $one->slug]), $type === $one->slug))
                     ->all();
-                $children[] = $link(__('Health articles'), route('blog.index'), $request->routeIs('blog.*'));
-                $children[] = $link(__('Downloads'), route('downloads'), $request->routeIs('downloads'));
+                // An administrator can leave these two out of the list (Site settings > Menus).
+                if (! in_array('articles', self::newsHidden(), true)) {
+                    $children[] = $link(__('Health articles'), route('blog.index'), $request->routeIs('blog.*'));
+                }
+
+                if (! in_array('downloads', self::newsHidden(), true)) {
+                    $children[] = $link(__('Downloads'), route('downloads'), $request->routeIs('downloads'));
+                }
+
+                foreach (self::ownLinks('news') as $own) {
+                    $children[] = $link($own['label'], $own['url']);
+                }
 
                 return [
                     'url' => route('announcements.index'),
@@ -162,6 +183,68 @@ class Menus
             case 'menu': return $simple('menu', 'menu');
             default: return null;
         }
+    }
+
+    /** Where a link of the administrator's own can be put => what the settings page calls it. */
+    public const OWN_PLACES = ['top' => 'In the top bar', 'about' => 'Under About us', 'news' => 'Under News'];
+
+    /** What News lists that can be left out => what the settings page calls it. */
+    public const NEWS_OPTIONAL = ['articles' => 'Health articles', 'downloads' => 'Downloads'];
+
+    /** How many links of their own an administrator can add. */
+    public const MAX_OWN = 12;
+
+    /**
+     * The administrator's own links for one place, each with its name in the reader's language.
+     *
+     * @return list<array{label: string, url: string}>
+     */
+    public static function ownLinks(string $place): array
+    {
+        $links = [];
+
+        foreach (self::cleanLinks(SiteSettings::get('menu.links')) as $row) {
+            if ($row['place'] === $place) {
+                $links[] = ['label' => app()->getLocale() === 'en' && $row['label_en'] !== '' ? $row['label_en'] : $row['label'], 'url' => $row['url']];
+            }
+        }
+
+        return $links;
+    }
+
+    /**
+     * Links fit to keep, whatever the form sent: a name, a web address, a place the site knows.
+     *
+     * @return list<array{label: string, label_en: string, url: string, place: string}>
+     */
+    public static function cleanLinks(mixed $rows): array
+    {
+        $links = [];
+
+        foreach (is_array($rows) ? $rows : [] as $row) {
+            $label = is_array($row) ? trim((string) ($row['label'] ?? '')) : '';
+            $url = is_array($row) ? trim((string) ($row['url'] ?? '')) : '';
+            $place = is_array($row) ? (string) ($row['place'] ?? 'top') : 'top';
+
+            // Only a web address is ever put into a link.
+            if ($label !== '' && preg_match('~^https?://[^\s"\'<>]+$~i', $url) && isset(self::OWN_PLACES[$place])) {
+                $links[] = ['label' => $label, 'label_en' => trim((string) ($row['label_en'] ?? '')), 'url' => $url, 'place' => $place];
+            }
+        }
+
+        return array_slice($links, 0, self::MAX_OWN);
+    }
+
+    /**
+     * What News lists that an administrator has left out.
+     *
+     * @return list<string>
+     */
+    public static function newsHidden(): array
+    {
+        $hidden = SiteSettings::get('menu.news_hidden');
+
+        return array_values(array_intersect(is_array($hidden) ? $hidden : [], array_keys(self::NEWS_OPTIONAL)));
     }
 
     /**

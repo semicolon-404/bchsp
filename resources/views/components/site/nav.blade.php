@@ -21,7 +21,9 @@
                 </ul>
             </details>
         @else
-            <a href="{{ $item['url'] }}" aria-current="{{ $item['active'] ? 'page' : 'false' }}" class="{{ $classes }}">{{ __($item['label']) }}</a>
+            {{-- A link of the administrator's own is shown as they named it, and opens in a new tab when it leaves the site. --}}
+            <a href="{{ $item['url'] }}" aria-current="{{ $item['active'] ? 'page' : 'false' }}" class="{{ $classes }}"
+               @if (($item['own'] ?? false) && parse_url($item['url'], PHP_URL_HOST) !== request()->getHost()) target="_blank" rel="noopener noreferrer" @endif>{{ ($item['own'] ?? false) ? $item['label'] : __($item['label']) }}</a>
         @endif
     @endforeach
 </nav>

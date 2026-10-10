@@ -137,9 +137,13 @@
     </main>
 
     <footer class="mt-16 border-t border-line bg-surface">
-        <div class="wrap grid gap-10 py-12 md:grid-cols-3">
+        {{-- As many columns as there is something for: the hospital, contact, social links, and the administrator's own groups of links (App\Support\Footer). --}}
+        <div class="wrap grid gap-10 py-12 sm:grid-cols-2 lg:grid-cols-[repeat(auto-fit,minmax(13rem,1fr))]">
             <div>
                 <p class="text-lg font-semibold">{{ $name }}</p>
+                @if ($about = App\Support\Footer::about())
+                    <p class="mt-3 whitespace-pre-line text-muted">{{ $about }}</p>
+                @endif
                 @if ($address)
                     <p class="mt-3 whitespace-pre-line text-muted">{{ $address }}</p>
                 @endif
@@ -178,15 +182,27 @@
                     </ul>
                 </div>
             @endif
+
+            @foreach (App\Support\Footer::groups() as $heading => $links)
+                <div>
+                    <h2 class="eyebrow">{{ $heading }}</h2>
+                    <ul class="mt-3 space-y-2">
+                        @foreach ($links as $link)
+                            <li><a href="{{ $link['url'] }}" @if (parse_url($link['url'], PHP_URL_HOST) !== request()->getHost()) target="_blank" rel="noopener noreferrer" @endif class="text-ink underline decoration-line underline-offset-4 hover:text-brand">{{ $link['label'] }}</a></li>
+                        @endforeach
+                    </ul>
+                </div>
+            @endforeach
         </div>
 
         <div class="border-t border-line">
             <div class="wrap flex flex-wrap items-center justify-between gap-x-6 gap-y-1 py-4 font-mono text-sm text-muted">
-                {{-- The Buddhist year for a reader in Thai. --}}
-                <p>&copy; {{ app()->getLocale() === 'th' ? now()->year + 543 : now()->year }} {{ $name }}</p>
+                <p>{{ App\Support\Footer::copyright() }}</p>
                 {{-- Pages opened, as plain totals: nothing is kept about who opened them (App\Support\Visits). --}}
-                @php($visits = App\Support\Visits::totals())
-                <p>{{ __('Pages opened: today :today · this month :month · in all :all', ['today' => number_format($visits['today']), 'month' => number_format($visits['month']), 'all' => number_format($visits['all'])]) }}</p>
+                @if (App\Support\Footer::showsVisits())
+                    @php($visits = App\Support\Visits::totals())
+                    <p>{{ __('Pages opened: today :today · this month :month · in all :all', ['today' => number_format($visits['today']), 'month' => number_format($visits['month']), 'all' => number_format($visits['all'])]) }}</p>
+                @endif
             </div>
         </div>
     </footer>

@@ -5,6 +5,7 @@ namespace App\Filament\Pages;
 use App\Filament\Concerns\AdminOnly;
 use App\Filament\Concerns\SiteSettingsForm;
 use App\Filament\Concerns\TranslatesTitle;
+use App\Support\Footer;
 use App\Support\HomeLayout;
 use App\Support\Menus;
 use App\Support\SiteSettings as Settings;
@@ -72,6 +73,13 @@ class SiteSettings extends Page
         unset($values['home__layout']);
         $values['home_layout'] = HomeLayout::rows();
 
+        // Lists are shown as rows; what News lists is shown as ticks on what is there, kept as what is left out.
+        unset($values['menu__links'], $values['menu__news_hidden'], $values['footer__links']);
+        $values['menu_links'] = Menus::cleanLinks(Settings::get('menu.links'));
+        $values['menu_news_shown'] = array_values(array_diff(array_keys(Menus::NEWS_OPTIONAL), Menus::newsHidden()));
+        $values['footer_links'] = Footer::links();
+        $values[self::field('footer.show_visits')] = Footer::showsVisits();
+
         unset($values['wording']);
         $values['wording_rows'] = Wording::rows();
 
@@ -88,6 +96,9 @@ class SiteSettings extends Page
 
         $values[Theme::DAYS] = array_map(fn (int $day) => Theme::hex($values['theme_day_'.$day] ?? null) ?? Theme::days()[$day], array_keys(Theme::DAY_COLOURS));
 
+        $values['menu.links'] = Menus::cleanLinks($values['menu_links'] ?? []);
+        $values['menu.news_hidden'] = array_values(array_diff(array_keys(Menus::NEWS_OPTIONAL), (array) ($values['menu_news_shown'] ?? [])));
+        $values['footer.links'] = Footer::links((array) ($values['footer_links'] ?? []));
         $values['wording'] = Wording::clean((array) ($values['wording_rows'] ?? []));
         $values['home.layout'] = HomeLayout::toStore((array) ($values['home_layout'] ?? []));
         $values['menu.top'] = Menus::toStore('top', (array) ($values['menu_top'] ?? []));

@@ -107,8 +107,8 @@ class ThemeAndLanguageSwitchTest extends TestCase
 
     public function test_the_year_is_the_buddhist_one_in_thai_and_the_common_one_in_english(): void
     {
-        $this->withUnencryptedCookie(SetLocale::COOKIE, 'th')->get('/')->assertSee('&copy; '.(now()->year + 543), false);
-        $this->withUnencryptedCookie(SetLocale::COOKIE, 'en')->get('/')->assertSee('&copy; '.now()->year.' ', false);
+        $this->withUnencryptedCookie(SetLocale::COOKIE, 'th')->get('/')->assertSee('© '.(now()->year + 543));
+        $this->withUnencryptedCookie(SetLocale::COOKIE, 'en')->get('/')->assertSee('© '.now()->year.' ');
     }
 
     public function test_the_language_can_be_changed_while_the_site_is_closed(): void
