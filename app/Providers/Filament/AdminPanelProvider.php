@@ -45,7 +45,7 @@ class AdminPanelProvider extends PanelProvider
             // The site opens dark unless the person chose otherwise; both share the same saved choice.
             ->defaultThemeMode(ThemeMode::Dark)
             // Each group is found by its English name (what the resources carry) and shown in the reader's language.
-            ->navigationGroups(collect(['System'])
+            ->navigationGroups(collect(['Blog', 'System'])
                 ->mapWithKeys(fn (string $group) => [$group => NavigationGroup::make(fn () => __($group))])
                 ->all())
             // The same colour as the site: its own green, or the one an administrator gave it (App\Support\Theme).
