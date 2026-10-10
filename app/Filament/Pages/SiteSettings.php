@@ -7,6 +7,7 @@ use App\Filament\Concerns\SiteSettingsForm;
 use App\Filament\Concerns\TranslatesTitle;
 use App\Support\Menus;
 use App\Support\SiteSettings as Settings;
+use App\Support\StaffLog;
 use App\Support\Theme;
 use BackedEnum;
 use Filament\Notifications\Notification;
@@ -81,7 +82,12 @@ class SiteSettings extends Page
         $values['menu.top'] = Menus::toStore('top', (array) ($values['menu_top'] ?? []));
         $values['menu.tabs'] = Menus::toStore('tabs', (array) ($values['menu_tabs'] ?? []));
 
+        $before = Settings::saved();
         Settings::save($values);
+        $after = Settings::saved();
+
+        // Which settings changed, for the access log.
+        StaffLog::settings(array_keys(array_filter($after, fn ($value, $key) => ($before[$key] ?? null) != $value, ARRAY_FILTER_USE_BOTH)));
 
         Notification::make()->success()->title(__('Settings saved'))->body(__('They apply from the next page anyone opens.'))->send();
     }
