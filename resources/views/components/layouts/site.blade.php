@@ -27,10 +27,13 @@
     @if ($description)
         <meta name="description" content="{{ $description }}">
     @endif
+    <x-site.prefs />
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body class="flex min-h-screen flex-col font-sans antialiased">
     <a href="#main" class="btn btn-brand sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50">{{ __('Skip to the content') }}</a>
+
+    <x-site.tools />
 
     <header class="sticky top-0 z-40 border-b border-line bg-page">
         <div class="wrap flex min-h-18 items-center justify-between gap-3 py-2">
@@ -42,7 +45,8 @@
                         <x-heroicon-s-plus class="size-7" />
                     </span>
                 @endif
-                <span class="truncate text-lg sm:text-xl">{{ $name }}</span>
+                {{-- A long name takes a second line on a phone; it is never cut short. --}}
+                <span class="text-base leading-snug sm:text-xl">{{ $name }}</span>
             </a>
 
             @if ($emergency)

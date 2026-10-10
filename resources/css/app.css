@@ -137,6 +137,36 @@
         color: var(--color-on-danger);
     }
 
+    /* A small control in the bar above the header: still 44px to touch, and plainly "on" when it is. */
+    .tool {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 2.75rem;
+        min-height: 2.75rem;
+        padding-inline: 0.5rem;
+        border-radius: 0.5rem;
+        font-weight: 600;
+        color: var(--color-ink);
+        cursor: pointer;
+        transition: background-color 150ms, color 150ms;
+    }
+
+    .tool:hover:not(:disabled) {
+        background: var(--color-line);
+    }
+
+    .tool:disabled {
+        color: var(--color-muted);
+        opacity: 0.5;
+        cursor: default;
+    }
+
+    .tool[aria-pressed='true'] {
+        background: var(--color-brand);
+        color: var(--color-on-brand);
+    }
+
     .card {
         background: var(--color-page);
         border: 1px solid var(--color-line);
