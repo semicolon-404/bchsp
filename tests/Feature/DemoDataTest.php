@@ -26,12 +26,15 @@ class DemoDataTest extends TestCase
         parent::setUp();
 
         Storage::fake('public');
+        DemoData::$manifestAt = storage_path('framework/testing/demo.json');
+        File::ensureDirectoryExists(dirname(DemoData::$manifestAt));
         File::delete(DemoData::manifest());
     }
 
     protected function tearDown(): void
     {
         File::delete(DemoData::manifest());
+        DemoData::$manifestAt = null;
 
         parent::tearDown();
     }
@@ -130,6 +133,11 @@ class DemoDataTest extends TestCase
         $this->assertFalse(DemoData::isFilled());
 
         $this->artisan('demo:clear')->expectsOutputToContain('no sample content')->assertSuccessful();
+    }
+
+    public function test_the_tests_do_not_touch_the_list_of_the_sites_own_sample_content(): void
+    {
+        $this->assertNotSame(storage_path('app/demo.json'), DemoData::manifest());
     }
 
     public function test_it_is_not_put_in_twice_and_not_on_a_live_site_without_being_told(): void

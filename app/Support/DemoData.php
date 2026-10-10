@@ -44,9 +44,12 @@ class DemoData
     /** @var array{models: array<class-string, list<int>>, files: list<string>, visits: list<array{0: string, 1: string, 2: int}>} */
     private array $made = ['models' => [], 'files' => [], 'visits' => []];
 
+    /** Where the list of what was made is kept, when not in the usual place. The tests keep their own: clearing the site's would leave its sample content with no way out. */
+    public static ?string $manifestAt = null;
+
     public static function manifest(): string
     {
-        return storage_path('app/demo.json');
+        return self::$manifestAt ?? storage_path('app/demo.json');
     }
 
     public static function isFilled(): bool
@@ -329,21 +332,41 @@ class DemoData
         $this->made['models'][$record::class][] = $record->getKey();
     }
 
-    /** A picture of a size and colour with what it stands for written on it, kept on the public disk. */
+    /**
+     * A picture of a size and colour with what it stands for written on it, kept on the public disk.
+     * The colour is muted and melts into its neighbours, like a desktop's wallpaper: easy on the eye
+     * beside the site's own colours, and still plainly not a photograph.
+     */
     private function picture(string $directory, string $label, int $width, int $height, array $colour): string
     {
-        $image = imagecreatetruecolor($width, $height);
+        // Greyed and lightened, then a few patches of nearby colours on a canvas of a few dots;
+        // stretching that to full size is what blends them.
+        $muted = fn (array $from, float $grey) => array_map(fn (int $part, int $pale) => (int) round($part * (1 - $grey) + $pale * $grey), $from, [226, 229, 234]);
         [$red, $green, $blue] = $colour;
-        imagefill($image, 0, 0, imagecolorallocate($image, $red, $green, $blue));
+        $patches = [$muted([$green, $blue, $red], 0.62), $muted([$blue, $red, $green], 0.7), $muted([255, 255, 255], 0.2), $muted($colour, 0.3)];
 
-        // Lighter bands, so that it is plain when a picture has been cropped or stretched.
-        for ($band = 0; $band < 6; $band++) {
-            imagefilledrectangle($image, 0, (int) ($height * $band / 6), $width, (int) ($height * $band / 6 + $height / 12), imagecolorallocatealpha($image, 255, 255, 255, 112));
+        $small = imagecreatetruecolor(6, 6);
+        imagefill($small, 0, 0, imagecolorallocate($small, ...$muted($colour, 0.5)));
+        mt_srand(crc32($label));
+        foreach ($patches as $patch) {
+            imagesetpixel($small, mt_rand(0, 5), mt_rand(0, 5), imagecolorallocate($small, ...$patch));
+            imagesetpixel($small, mt_rand(0, 5), mt_rand(0, 5), imagecolorallocate($small, ...$patch));
         }
+        mt_srand();
 
-        imagerectangle($image, 8, 8, $width - 9, $height - 9, imagecolorallocate($image, 255, 255, 255));
+        // In two steps: stretched in one, the six dots show as squares.
+        $middle = imagescale($small, 96, 96, IMG_BILINEAR_FIXED);
+        for ($pass = 0; $pass < 12; $pass++) {
+            imagefilter($middle, IMG_FILTER_GAUSSIAN_BLUR);
+        }
+        $image = imagescale($middle, $width, $height, IMG_BILINEAR_FIXED);
+        imagedestroy($small);
+        imagedestroy($middle);
 
-        $white = imagecolorallocate($image, 255, 255, 255);
+        // A fine line just inside the edge, so that it is plain when a picture has been cropped.
+        imagerectangle($image, 8, 8, $width - 9, $height - 9, imagecolorallocatealpha($image, 255, 255, 255, 50));
+
+        $ink = imagecolorallocate($image, 30, 41, 59);
         $size = "$width × $height";
         $font = collect(self::FONTS)->first(fn (string $path) => is_file($path));
 
@@ -352,10 +375,10 @@ class DemoData
 
             foreach ([[self::MARK, 0.42], [Str::limit($label, 44), 0.52], [$size, 0.62]] as [$text, $at]) {
                 $box = imagettfbbox($points, 0, $font, $text);
-                imagettftext($image, $points, 0, (int) (($width - ($box[2] - $box[0])) / 2), (int) ($height * $at), $white, $font, $text);
+                imagettftext($image, $points, 0, (int) (($width - ($box[2] - $box[0])) / 2), (int) ($height * $at), $ink, $font, $text);
             }
         } else {
-            imagestring($image, 5, 40, (int) ($height / 2), 'SAMPLE '.$size, $white);
+            imagestring($image, 5, 40, (int) ($height / 2), 'SAMPLE '.$size, $ink);
         }
 
         ob_start();
