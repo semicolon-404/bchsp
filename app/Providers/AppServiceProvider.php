@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Support\SiteSettings;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -19,6 +20,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        // What an administrator changed on the panel's "Site settings" page replaces the config values of the same name.
+        SiteSettings::apply();
     }
 }
