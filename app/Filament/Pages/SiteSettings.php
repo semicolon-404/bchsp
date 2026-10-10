@@ -10,6 +10,7 @@ use App\Support\Menus;
 use App\Support\SiteSettings as Settings;
 use App\Support\StaffLog;
 use App\Support\Theme;
+use App\Support\Wording;
 use BackedEnum;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
@@ -71,6 +72,9 @@ class SiteSettings extends Page
         unset($values['home__layout']);
         $values['home_layout'] = HomeLayout::rows();
 
+        unset($values['wording']);
+        $values['wording_rows'] = Wording::rows();
+
         $this->form->fill($values);
     }
 
@@ -84,6 +88,7 @@ class SiteSettings extends Page
 
         $values[Theme::DAYS] = array_map(fn (int $day) => Theme::hex($values['theme_day_'.$day] ?? null) ?? Theme::days()[$day], array_keys(Theme::DAY_COLOURS));
 
+        $values['wording'] = Wording::clean((array) ($values['wording_rows'] ?? []));
         $values['home.layout'] = HomeLayout::toStore((array) ($values['home_layout'] ?? []));
         $values['menu.top'] = Menus::toStore('top', (array) ($values['menu_top'] ?? []));
         $values['menu.tabs'] = Menus::toStore('tabs', (array) ($values['menu_tabs'] ?? []));

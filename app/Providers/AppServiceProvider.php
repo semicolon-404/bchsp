@@ -4,7 +4,9 @@ namespace App\Providers;
 
 use App\Support\SiteSettings;
 use App\Support\StaffLog;
+use App\Support\Wording;
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Translation\Translator;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -13,7 +15,13 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        // Phrases an administrator rewrote in the panel win over the language files (App\Support\Wording).
+        $this->app->extend('translator', function (Translator $translator) {
+            $wording = new Wording($translator->getLoader(), $translator->getLocale());
+            $wording->setFallback($translator->getFallback());
+
+            return $wording;
+        });
     }
 
     /**

@@ -6,6 +6,7 @@ use App\Support\HomeLayout;
 use App\Support\Menus;
 use App\Support\SiteSettings as Settings;
 use App\Support\Theme;
+use App\Support\Wording;
 use Filament\Forms\Components\ColorPicker;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Hidden;
@@ -115,6 +116,33 @@ trait SiteSettingsForm
                     ->components([
                         self::menu('menu_top', 'top', __('Top bar'), __('Up to :count. On a phone these are not shown; the dock is there instead.', ['count' => Menus::max('top')])),
                         self::menu('menu_tabs', 'tabs', __('Dock on phones and tablets'), __('Up to :count.', ['count' => Menus::max('tabs')])),
+                    ]),
+
+                Section::make(__('Wording'))
+                    ->description(__('Change what the site says, without touching its files. Search for a phrase as it reads on the site, in Thai or English, and write what it should say instead. Leave a language empty to keep its usual wording.'))
+                    ->collapsed()
+                    ->components([
+                        Repeater::make('wording_rows')
+                            ->label(__('Wording'))
+                            ->hiddenLabel()
+                            ->helperText(__('Keep words that begin with a colon, such as :name or :count, as they are: the site fills them in.'))
+                            ->addActionLabel(__('Rewrite a phrase'))
+                            ->defaultItems(0)
+                            ->maxItems(Wording::MAX)
+                            ->reorderable(false)
+                            ->columns(2)
+                            ->itemLabel(fn (array $state): ?string => filled($state['key'] ?? null) ? (string) str($state['key'])->limit(70) : null)
+                            ->components([
+                                Select::make('key')
+                                    ->label(__('The phrase'))
+                                    ->searchable()
+                                    ->required()
+                                    ->getSearchResultsUsing(fn (string $search): array => Wording::search($search))
+                                    ->getOptionLabelUsing(fn (?string $value): ?string => $value === null ? null : Wording::label($value))
+                                    ->columnSpanFull(),
+                                Textarea::make('th')->label(__('In Thai'))->rows(2)->maxLength(500),
+                                Textarea::make('en')->label(__('In English'))->rows(2)->maxLength(500),
+                            ]),
                     ]),
 
                 Section::make(__('The hospital'))

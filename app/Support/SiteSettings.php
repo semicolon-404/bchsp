@@ -33,6 +33,8 @@ class SiteSettings
 
     /** Settings with no config value behind them: read with SiteSettings::get(). */
     public const CONTENT = [
+        // Phrases an administrator rewrote: a list of rows (App\Support\Wording).
+        'wording',
         // The order of the home page's sections and which are hidden: a list of rows, or nothing (App\Support\HomeLayout).
         'home.layout',
         // The top bar's links and the phone dock's tabs, when an administrator arranged them: lists of places (App\Support\Menus).
@@ -189,6 +191,7 @@ class SiteSettings
         }
 
         Cache::memo()->forget(self::CACHE_KEY);
+        Wording::refresh();
         self::apply();
     }
 }
