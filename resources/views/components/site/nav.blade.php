@@ -10,7 +10,7 @@
         <a href="{{ route($link['route']) }}" aria-current="{{ $active ? 'page' : 'false' }}"
            @class([
                // nowrap: a label of two words stays on one line however full the bar is.
-               'flex items-center whitespace-nowrap px-3 font-medium no-underline transition-colors hover:text-ink',
+               'flex items-center whitespace-nowrap px-3 text-sm no-underline transition-colors hover:text-ink',
                'text-ink shadow-[inset_0_-2px_0_var(--color-brand)]' => $active,
                'text-muted' => ! $active,
            ])>

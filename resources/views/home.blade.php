@@ -21,7 +21,7 @@
                     <span class="size-2 animate-pulse-dot rounded-full bg-brand" aria-hidden="true"></span>
                     {{ __('Caring for the community') }}
                 </p>
-                <h1 class="mt-6 text-3xl sm:text-5xl">{{ $name }}</h1>
+                <h1 class="mt-6 text-3xl leading-tight sm:text-4xl md:text-5xl">{{ $name }}</h1>
                 <p class="mx-auto mt-5 max-w-xl text-lg text-muted lg:mx-0">{{ __('News, announcements and services of the hospital, in one place.') }}</p>
 
                 @if ($phone || $emergency)

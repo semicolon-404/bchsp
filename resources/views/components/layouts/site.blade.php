@@ -46,17 +46,17 @@
     <a href="#main" class="btn btn-brand sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50">{{ __('Skip to the content') }}</a>
 
     <header class="sticky top-0 z-40 border-b border-line bg-page/90 backdrop-blur">
-        <div class="wrap flex min-h-14 items-center gap-3 py-2">
+        <div class="wrap flex min-h-16 items-center gap-3 py-2">
             <a href="{{ route('home') }}" class="flex min-w-0 items-center gap-3 font-semibold text-ink no-underline">
                 @if ($logo)
-                    <img src="{{ $logo }}" alt="" class="h-10 w-auto shrink-0">
+                    <img src="{{ $logo }}" alt="" class="h-8 w-auto shrink-0">
                 @else
-                    <span class="flex size-10 shrink-0 items-center justify-center rounded-md bg-brand text-on-brand" aria-hidden="true">
-                        <x-heroicon-s-plus class="size-6" />
+                    <span class="flex size-8 shrink-0 items-center justify-center rounded bg-brand text-on-brand" aria-hidden="true">
+                        <x-heroicon-s-plus class="size-5" />
                     </span>
                 @endif
                 {{-- A long name takes a second line on a phone; it is never cut short. --}}
-                <span class="text-base leading-snug sm:text-lg">{{ $name }}</span>
+                <span class="leading-snug">{{ $name }}</span>
             </a>
 
             <x-site.nav />
@@ -68,8 +68,8 @@
             </div>
 
             @if ($emergency)
-                <a href="{{ $dial($emergency) }}" class="btn btn-danger shrink-0 max-sm:px-3">
-                    <x-heroicon-s-phone class="size-5" aria-hidden="true" />
+                <a href="{{ $dial($emergency) }}" class="btn btn-danger shrink-0 min-h-10 px-4 py-2 text-sm max-sm:px-3">
+                    <x-heroicon-s-phone class="size-4" aria-hidden="true" />
                     <span><span class="hidden sm:inline">{{ __('Emergency') }} </span><span class="font-mono">{{ $emergency }}</span></span>
                 </a>
             @endif

@@ -78,9 +78,8 @@
 }
 
 @layer base {
-    /* 18px where a browser's own size is 16px: the whole site is sized in rem, so it all follows. */
+    /* The browser's own size of words (16px unless the visitor set another): nothing is enlarged. */
     html {
-        font-size: 112.5%;
         scroll-behavior: smooth;
     }
 
@@ -91,7 +90,7 @@
         background-repeat: no-repeat;
         color: var(--color-ink);
         /* Thai carries marks above and below the line; tight lines make them collide. */
-        line-height: 1.75;
+        line-height: 1.65;
     }
 
     h1, h2, h3 {
@@ -140,15 +139,16 @@ html.is-mourning {
         }
     }
 
-    /* Buttons are at least 48px tall: a finger, or a hand that shakes, still lands on them. */
+    /* The size and shape of the buttons of the page this look is taken from. Still 44px tall: a finger lands on them. */
     .btn {
         display: inline-flex;
         align-items: center;
         justify-content: center;
         gap: 0.5rem;
-        min-height: 3rem;
-        padding: 0.5rem 1.5rem;
-        border-radius: 9999px;
+        min-height: 2.75rem;
+        padding: 0.625rem 1.5rem;
+        border-radius: 6px;
+        font-size: 0.9375rem;
         border: 1px solid transparent;
         font-weight: 600;
         text-decoration: none;
@@ -279,7 +279,6 @@ html.is-mourning {
 
     /* What staff wrote in the panel's editor (an article, a page): its own headings, lists, links and pictures. */
     .rich {
-        font-size: 1.05rem;
         overflow-wrap: anywhere;
     }
 
@@ -396,7 +395,7 @@ html.is-mourning {
         padding: 1rem;
         overflow-x: auto;
         font-family: var(--font-mono);
-        font-size: 0.9rem;
-        line-height: 1.9;
+        font-size: 0.875rem;
+        line-height: 1.8;
     }
 }
