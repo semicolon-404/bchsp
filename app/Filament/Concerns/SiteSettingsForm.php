@@ -2,11 +2,13 @@
 
 namespace App\Filament\Concerns;
 
+use App\Support\HomeLayout;
 use App\Support\Menus;
 use App\Support\SiteSettings as Settings;
 use App\Support\Theme;
 use Filament\Forms\Components\ColorPicker;
 use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Radio;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
@@ -82,6 +84,28 @@ trait SiteSettingsForm
                             ->label(__('Mourning: the whole site in black and white'))
                             ->helperText(__('Every page and picture turns grey, here in the panel too, until this is switched off again.'))
                             ->columnSpanFull(),
+                    ]),
+
+                Section::make(__('Home page layout'))
+                    ->description(__('Put the sections of the home page in the order you want, and switch off the ones you do not want.'))
+                    ->collapsed()
+                    ->components([
+                        Repeater::make('home_layout')
+                            ->label(__('Home page layout'))
+                            ->hiddenLabel()
+                            ->helperText(__('A section with nothing in it (no slide, no article yet) takes no room, shown or not.'))
+                            ->addable(false)
+                            ->deletable(false)
+                            ->reorderableWithButtons()
+                            ->itemLabel(fn (array $state): string => __(HomeLayout::SECTIONS[$state['key'] ?? ''] ?? ''))
+                            ->components([
+                                Hidden::make('key'),
+                                Toggle::make('shown')
+                                    ->label(__('Shown'))
+                                    // The heading of the page and the phone buttons cannot be hidden.
+                                    ->disabled(fn (Get $get): bool => in_array($get('key'), HomeLayout::LOCKED, true))
+                                    ->dehydrated(),
+                            ]),
                     ]),
 
                 Section::make(__('Menus'))

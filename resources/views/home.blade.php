@@ -1,4 +1,7 @@
-{{-- The home page. Its sections (announcements, articles, departments...) are added as each is built. --}}
+{{--
+    The home page: its sections in the order an administrator gave them, without the ones switched off
+    (App\Support\HomeLayout; System > Site settings > "Home page layout"). A section with nothing in it takes no room.
+--}}
 @php
     use App\Support\SiteSettings;
 
@@ -16,8 +19,13 @@
     $articles = App\Models\BlogPost::published()->with('category')->latest('published_at')->limit(3)->get();
 @endphp
 <x-layouts.site :description="__('News, announcements and services of :name.', ['name' => $name])">
+    @foreach (App\Support\HomeLayout::shown() as $section)
+    @switch($section)
+    @case('slides')
     <x-site.banners part="banners" />
+    @break
 
+    @case('hero')
     <section class="border-b border-line">
         <div class="wrap grid items-center gap-10 py-14 sm:py-20 lg:grid-cols-2">
             <div class="text-center lg:text-left">
@@ -64,7 +72,9 @@
             @endif
         </div>
     </section>
+    @break
 
+    @case('announcements')
     @if ($announcements->isNotEmpty())
         <section class="border-b border-line bg-surface">
             <div class="wrap py-12 sm:py-16">
@@ -83,9 +93,13 @@
             </div>
         </section>
     @endif
+    @break
 
+    @case('posters')
     <x-site.banners part="posters" />
+    @break
 
+    @case('departments')
     @if ($departments->isNotEmpty())
         <section class="border-b border-line">
             <div class="wrap py-12 sm:py-16">
@@ -104,7 +118,9 @@
             </div>
         </section>
     @endif
+    @break
 
+    @case('articles')
     @if ($articles->isNotEmpty())
         <section class="border-b border-line">
             <div class="wrap py-12 sm:py-16">
@@ -123,6 +139,9 @@
             </div>
         </section>
     @endif
+    @break
+    @endswitch
+    @endforeach
 
     <x-site.banners part="popup" />
 </x-layouts.site>
