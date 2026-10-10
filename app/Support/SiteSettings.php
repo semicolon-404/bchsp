@@ -33,6 +33,8 @@ class SiteSettings
 
     /** Settings with no config value behind them: read with SiteSettings::get(). */
     public const CONTENT = [
+        // The urgent notice across the top of every page (components/site/alert).
+        'alert.enabled', 'alert.text', 'alert.text_en', 'alert.url',
         // Phrases an administrator rewrote: a list of rows (App\Support\Wording).
         'wording',
         // The order of the home page's sections and which are hidden: a list of rows, or nothing (App\Support\HomeLayout).

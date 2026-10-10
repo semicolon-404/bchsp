@@ -76,6 +76,8 @@
 <body class="has-dock flex min-h-screen flex-col font-sans antialiased">
     <a href="#main" class="btn btn-brand sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50">{{ __('Skip to the content') }}</a>
 
+    <x-site.alert />
+
     <header class="sticky top-0 z-40 border-b border-line bg-page/90 backdrop-blur">
         <div class="wrap flex min-h-16 items-center gap-3 py-2">
             <a href="{{ route('home') }}" class="flex min-w-0 items-center gap-3 font-semibold text-ink no-underline">

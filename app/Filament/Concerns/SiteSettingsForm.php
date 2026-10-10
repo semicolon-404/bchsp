@@ -34,6 +34,28 @@ trait SiteSettingsForm
         return $schema
             ->statePath('data')
             ->components([
+                Section::make(__('Urgent notice'))
+                    ->description(__('One line across the top of every page, for what visitors must know today: a clinic that is closed, a change of hours. Remember to switch it off afterwards.'))
+                    ->columns(2)
+                    ->components([
+                        Toggle::make(self::field('alert.enabled'))
+                            ->label(__('Show the notice'))
+                            ->columnSpanFull(),
+                        Textarea::make(self::field('alert.text'))
+                            ->label(__('What it says'))
+                            ->rows(2)
+                            ->maxLength(200)
+                            ->requiredIfAccepted(self::field('alert.enabled'))
+                            ->placeholder(__('The dental clinic is closed this Friday, 17 October.')),
+                        Textarea::make(self::field('alert.text_en'))
+                            ->label(__('In English (optional)'))
+                            ->rows(2)
+                            ->maxLength(200),
+                        self::link('alert.url', __('Link (optional)'), 'https://…')
+                            ->helperText(__('An announcement with the details, for example.'))
+                            ->columnSpanFull(),
+                    ]),
+
                 Section::make(__('Maintenance'))
                     ->description(__('Close the website while something is being worked on. Administrators carry on as usual; visitors see a short "Back soon" page with the phone numbers.'))
                     ->columns(2)
