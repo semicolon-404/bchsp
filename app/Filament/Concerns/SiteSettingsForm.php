@@ -22,6 +22,20 @@ trait SiteSettingsForm
         return $schema
             ->statePath('data')
             ->components([
+                Section::make(__('Maintenance'))
+                    ->description(__('Close the website while something is being worked on. Administrators carry on as usual; visitors see a short "Back soon" page with the phone numbers.'))
+                    ->columns(2)
+                    ->components([
+                        Toggle::make(self::field('maintenance.enabled'))
+                            ->label(__('Closed for maintenance'))
+                            ->helperText(__('Visitors are stopped at once. Remember to switch it off again.')),
+                        Textarea::make(self::field('maintenance.message'))
+                            ->label(__('What the page says (optional)'))
+                            ->rows(2)
+                            ->maxLength(300)
+                            ->placeholder(__('We are working on the website right now. Please come back in a little while.')),
+                    ]),
+
                 Section::make(__('The hospital'))
                     ->description(__('The name and logo shown at the top of every page and in this panel.'))
                     ->columns(2)

@@ -33,6 +33,8 @@ class SiteSettings
 
     /** Settings with no config value behind them: read with SiteSettings::get(). */
     public const CONTENT = [
+        // Closed to visitors while something is being worked on (App\Http\Middleware\MaintenanceMode).
+        'maintenance.enabled', 'maintenance.message',
         // The hospital's logo: a path on the public disk, or nothing.
         'site.logo',
         'contact.address', 'contact.phone', 'contact.emergency_phone', 'contact.email',

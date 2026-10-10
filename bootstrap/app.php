@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\MaintenanceMode;
 use App\Http\Middleware\SecurityHeaders;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -14,6 +15,8 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware) {
         // On every response, the panel's included.
         $middleware->append(SecurityHeaders::class);
+        // After the session, so that it knows an administrator when it sees one.
+        $middleware->web(append: MaintenanceMode::class);
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //
