@@ -1,0 +1,17 @@
+{
+    "Added": "เพิ่มเมื่อ",
+    "Administrator": "ผู้ดูแลระบบ",
+    "An author writes and publishes content. An administrator can also change settings, menus and staff.": "ผู้เขียนเนื้อหาเขียนและเผยแพร่เนื้อหาได้ ผู้ดูแลระบบยังแก้การตั้งค่า เมนู และรายชื่อเจ้าหน้าที่ได้ด้วย",
+    "At least 8 characters. Tell them to change it after the first sign-in.": "อย่างน้อย 8 ตัวอักษร แจ้งให้เจ้าของบัญชีเปลี่ยนหลังเข้าสู่ระบบครั้งแรก",
+    "Author": "ผู้เขียนเนื้อหา",
+    "Email": "อีเมล",
+    "Leave blank to keep the password they have.": "เว้นว่างไว้หากไม่ต้องการเปลี่ยนรหัสผ่าน",
+    "Name": "ชื่อ",
+    "Password": "รหัสผ่าน",
+    "Role": "บทบาท",
+    "Staff": "เจ้าหน้าที่",
+    "System": "ระบบ",
+    "What they sign in with.": "ใช้สำหรับเข้าสู่ระบบ",
+    "staff": "เจ้าหน้าที่",
+    "staff member": "เจ้าหน้าที่"
+}

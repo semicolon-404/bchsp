@@ -6,6 +6,7 @@ use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
+use Filament\Navigation\NavigationGroup;
 use Filament\Pages\Dashboard;
 use Filament\Panel;
 use Filament\PanelProvider;
@@ -28,6 +29,10 @@ class AdminPanelProvider extends PanelProvider
             ->path('admin')
             ->login()
             ->brandName(fn () => config('app.name'))
+            // Each group is found by its English name (what the resources carry) and shown in the reader's language.
+            ->navigationGroups(collect(['System'])
+                ->mapWithKeys(fn (string $group) => [$group => NavigationGroup::make(fn () => __($group))])
+                ->all())
             ->colors([
                 'primary' => Color::Amber,
             ])
