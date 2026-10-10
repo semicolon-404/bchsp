@@ -71,7 +71,7 @@
             <form method="dialog" class="flex justify-end p-2">
                 <button class="btn btn-line min-h-10 px-3 py-1 text-sm" autofocus><x-heroicon-m-x-mark class="size-5" aria-hidden="true" />{{ __('Close') }}</button>
             </form>
-            {!! $picture($popup, 'max-h-[75vh] w-full object-contain') !!}
+            {!! $picture($popup, 'mx-auto max-h-[calc(100vh-7rem)] w-auto max-w-full object-contain') !!}
         </dialog>
     @endif
 @endif

@@ -15,7 +15,7 @@ import { existsSync, mkdirSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
-const PAGES = ['/', '/announcements', '/blog', '/departments', '/contact', '/about', '/schedule', '/downloads', '/ita', '/menu', '/staff', '/p/history', '/p/structure', '/p/privacy', '/search?q=%E0%B9%82%E0%B8%A3%E0%B8%87%E0%B8%9E%E0%B8%A2%E0%B8%B2%E0%B8%9A%E0%B8%B2%E0%B8%A5'];
+const PAGES = (process.env.FIT_PAGES ?? '/,/announcements,/blog,/departments,/contact,/about,/schedule,/downloads,/ita,/menu,/staff,/search?q=test').split(',');
 
 const SCREENS = [
     ['phone', 360, 740],
@@ -105,7 +105,10 @@ for (const page of PAGES) {
             console.log(`${fits ? 'ok  ' : 'FAIL'} ${page.padEnd(8)} ${name.padEnd(12)} ${look.padEnd(5)} page ${measured.page}px in a window of ${measured.window}px`);
 
             const picture = await send('Page.captureScreenshot', { format: 'png' });
-            writeFileSync(join(out, `${page === '/' ? 'home' : page.replace(/\W+/g, '-').replace(/^-/, '')}-${name}-${look}.png`), Buffer.from(picture.data, 'base64'));
+            // A long Thai address would make a file name longer than Windows allows: the start of it is enough to tell pages apart.
+            const file = page === '/' ? 'home' : `${String(PAGES.indexOf(page)).padStart(2, '0')}-${page.replace(/\W+/g, '-').replace(/^-/, '').slice(0, 40)}`;
+
+            writeFileSync(join(out, `${file}-${name}-${look}.png`), Buffer.from(picture.data, 'base64'));
         }
     }
 }
