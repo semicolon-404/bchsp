@@ -20,14 +20,28 @@
 @if ($part === 'banners')
     @php($banners = Banner::showingAs('banner'))
     @if ($banners->isNotEmpty())
-        {{-- With more than one, people swipe or scroll sideways between them; each snaps into place. --}}
-        <section class="border-b border-line" aria-label="{{ __('Banners') }}">
-            <div class="wrap py-6">
-                <ul class="flex snap-x snap-mandatory gap-4 overflow-x-auto">
+        {{--
+            The slides staff change most often, so they are the first thing on the page. Each picture is shown
+            whole, whatever its shape. They can be swiped; resources/js/slider.js adds the arrows, the dots and
+            moving on by itself.
+        --}}
+        <section class="border-b border-line bg-surface" aria-label="{{ __('Banners') }}" aria-roledescription="carousel" data-slider>
+            <div class="wrap relative py-4 sm:py-6">
+                <ul class="slider-track" data-slider-track>
                     @foreach ($banners as $banner)
-                        <li class="w-full shrink-0 snap-center overflow-hidden rounded-xl border border-line">{!! $picture($banner, 'aspect-[16/5] w-full object-cover') !!}</li>
+                        <li class="flex w-full shrink-0 snap-center items-center justify-center" aria-roledescription="slide" aria-label="{{ $loop->iteration }} / {{ $loop->count }}">{!! $picture($banner, 'mx-auto max-h-[70vh] w-auto max-w-full rounded-xl object-contain') !!}</li>
                     @endforeach
                 </ul>
+
+                @if ($banners->count() > 1)
+                    <button type="button" class="slider-arrow left-2 sm:left-8" data-slider-prev aria-label="{{ __('Previous slide') }}"><x-heroicon-m-chevron-left class="size-6" aria-hidden="true" /></button>
+                    <button type="button" class="slider-arrow right-2 sm:right-8" data-slider-next aria-label="{{ __('Next slide') }}"><x-heroicon-m-chevron-right class="size-6" aria-hidden="true" /></button>
+                    <div class="mt-3 flex justify-center gap-2">
+                        @foreach ($banners as $banner)
+                            <button type="button" class="slider-dot" data-slider-dot aria-current="{{ $loop->first ? 'true' : 'false' }}" aria-label="{{ __('Slide :number', ['number' => $loop->iteration]) }}"></button>
+                        @endforeach
+                    </div>
+                @endif
             </div>
         </section>
     @endif

@@ -23,12 +23,12 @@ class Banner extends Model
 
     /** Where it goes => what the panel calls it. */
     public const PLACES = [
-        'banner' => 'Wide banner at the top of the home page',
+        'banner' => 'Slide at the top of the home page',
         'poster' => 'Poster in the grid of posters',
     ];
 
     /** More than this at once and nobody reaches the last one. */
-    public const SHOWN_AT_ONCE = ['banner' => 5, 'poster' => 8];
+    public const SHOWN_AT_ONCE = ['banner' => 8, 'poster' => 8];
 
     protected $fillable = ['title', 'image_path', 'url', 'placement', 'is_popup', 'starts_at', 'ends_at', 'is_active', 'position'];
 

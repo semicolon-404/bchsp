@@ -40,13 +40,14 @@ class BannerResource extends Resource
 
     protected static string|UnitEnum|null $navigationGroup = 'Announcements';
 
-    protected static ?string $navigationLabel = 'Banners and posters';
+    protected static ?string $navigationLabel = 'Slides and posters';
 
-    protected static ?string $modelLabel = 'banner or poster';
+    protected static ?string $modelLabel = 'slide or poster';
 
-    protected static ?string $pluralModelLabel = 'banners and posters';
+    protected static ?string $pluralModelLabel = 'slides and posters';
 
-    protected static ?int $navigationSort = 3;
+    // First in its group: it is what staff change most often.
+    protected static ?int $navigationSort = 0;
 
     protected static ?string $recordTitleAttribute = 'title';
 
@@ -64,7 +65,7 @@ class BannerResource extends Resource
                     ->visibility('public')
                     ->maxSize(8192)
                     ->required()
-                    ->helperText(__('A wide banner: about 1600 × 500 pixels; anything outside that shape is cut off. A poster: any shape, shown whole. Up to 8 MB; it is made smaller by itself.'))
+                    ->helperText(__('Any shape: the picture is shown whole. A wide picture (about 1600 × 600) fills a slide best. Up to 8 MB; it is made smaller by itself.'))
                     ->columnSpanFull(),
                 TextInput::make('title')
                     ->label(__('What it says'))
@@ -123,7 +124,7 @@ class BannerResource extends Resource
                     ->description(fn (Banner $record) => $record->url),
                 TextColumn::make('placement')
                     ->label(__('Where'))
-                    ->formatStateUsing(fn (string $state) => __($state === 'poster' ? 'Poster' : 'Banner'))
+                    ->formatStateUsing(fn (string $state) => __($state === 'poster' ? 'Poster' : 'Slide'))
                     ->badge()
                     ->color('gray'),
                 IconColumn::make('is_popup')

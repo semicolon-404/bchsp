@@ -221,6 +221,54 @@ html.is-mourning {
         color: var(--color-brand);
     }
 
+    /* The slides at the top of the home page (components/site/banners): a strip that scrolls sideways and snaps. */
+    .slider-track {
+        display: flex;
+        overflow-x: auto;
+        scroll-snap-type: x mandatory;
+        scrollbar-width: none;
+    }
+
+    .slider-track::-webkit-scrollbar {
+        display: none;
+    }
+
+    .slider-arrow {
+        position: absolute;
+        top: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 2.75rem;
+        height: 2.75rem;
+        transform: translateY(-50%);
+        border: 1px solid var(--color-line);
+        border-radius: 9999px;
+        background: color-mix(in srgb, var(--color-page) 85%, transparent);
+        color: var(--color-ink);
+        cursor: pointer;
+    }
+
+    .slider-arrow:hover {
+        border-color: var(--color-brand);
+        color: var(--color-brand);
+    }
+
+    /* A dot is small to look at and 24px to press. */
+    .slider-dot {
+        width: 1.5rem;
+        height: 1.5rem;
+        border: 0.5rem solid transparent;
+        border-radius: 9999px;
+        background: var(--color-line);
+        background-clip: padding-box;
+        cursor: pointer;
+    }
+
+    .slider-dot[aria-current='true'] {
+        background-color: var(--color-brand);
+    }
+
     /* The poster that opens over the home page (components/site/banners): centred, never larger than the screen. */
     .popup {
         width: min(36rem, calc(100vw - 2rem));

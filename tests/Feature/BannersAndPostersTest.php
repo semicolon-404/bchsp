@@ -31,6 +31,26 @@ class BannersAndPostersTest extends TestCase
             ->assertDontSee('<dialog', false);
     }
 
+    public function test_the_slides_come_first_on_the_page_and_have_arrows_and_dots_only_when_there_is_more_than_one(): void
+    {
+        Banner::factory()->create(['title' => 'Only slide']);
+
+        $page = $this->get('/')->getContent();
+
+        $this->assertLessThan(strpos($page, '<h1'), strpos($page, 'data-slider'));
+        $this->assertStringNotContainsString('data-slider-next', $page);
+
+        Banner::factory()->create(['title' => 'Second slide']);
+
+        $page = $this->get('/')->getContent();
+
+        $this->assertStringContainsString('aria-label="Next slide"', $page);
+        $this->assertSame(2, substr_count($page, 'data-slider-dot'));
+        // Shown whole, whatever its shape: nothing is cropped.
+        $this->assertStringContainsString('object-contain', $page);
+        $this->assertStringNotContainsString('object-cover', $page);
+    }
+
     public function test_one_shows_only_while_it_is_switched_on_and_inside_its_dates(): void
     {
         Banner::factory()->create(['title' => 'Switched off', 'is_active' => false]);
@@ -46,12 +66,12 @@ class BannersAndPostersTest extends TestCase
 
     public function test_no_more_show_at_once_than_anyone_would_reach(): void
     {
-        Banner::factory()->count(7)->create();
+        Banner::factory()->count(10)->create();
         Banner::factory()->poster()->count(10)->create();
 
         $page = $this->get('/')->getContent();
 
-        $this->assertSame(5 + 8, substr_count($page, '<img '));
+        $this->assertSame(8 + 8, substr_count($page, '<img '));
     }
 
     public function test_a_link_to_another_site_opens_in_a_new_tab_and_one_to_this_site_does_not(): void
@@ -135,6 +155,6 @@ class BannersAndPostersTest extends TestCase
     {
         app()->setLocale('th');
 
-        $this->actingAs(User::factory()->create())->get('/admin/banners')->assertOk()->assertSee('แบนเนอร์และโปสเตอร์');
+        $this->actingAs(User::factory()->create())->get('/admin/banners')->assertOk()->assertSee('สไลด์และโปสเตอร์');
     }
 }

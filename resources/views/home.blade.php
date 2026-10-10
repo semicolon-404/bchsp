@@ -16,6 +16,8 @@
     $articles = App\Models\BlogPost::published()->with('category')->latest('published_at')->limit(3)->get();
 @endphp
 <x-layouts.site :description="__('News, announcements and services of :name.', ['name' => $name])">
+    <x-site.banners part="banners" />
+
     <section class="border-b border-line">
         <div class="wrap grid items-center gap-10 py-14 sm:py-20 lg:grid-cols-2">
             <div class="text-center lg:text-left">
@@ -62,8 +64,6 @@
             @endif
         </div>
     </section>
-
-    <x-site.banners part="banners" />
 
     @if ($announcements->isNotEmpty())
         <section class="border-b border-line bg-surface">
