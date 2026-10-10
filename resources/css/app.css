@@ -1,12 +1,146 @@
 @import 'tailwindcss';
+/* The site's typeface, served from the site itself: no visitor's address is handed to a font service. */
+@import '@fontsource-variable/noto-sans-thai/wght.css';
 
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 @source '../../storage/framework/views/*.php';
 @source "../**/*.blade.php";
 @source "../**/*.js";
-@source "../**/*.vue";
 
+/*
+ * The colours every page is drawn with. Pages use these names (bg-page, text-ink, bg-brand...),
+ * never a colour of their own, so the dark look and a colour chosen in the panel reach everything.
+ *
+ * Light is the look the site opens in: black on white is what most people, older eyes above all,
+ * read most easily. Each pair of text and background here keeps a contrast of 4.5:1 or more.
+ */
 @theme {
-    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
-        'Segoe UI Symbol', 'Noto Color Emoji';
+    --font-sans: 'Noto Sans Thai Variable', 'Noto Sans Thai', 'Leelawadee UI', Tahoma, ui-sans-serif, system-ui, sans-serif;
+
+    --color-page: #ffffff;
+    --color-surface: #f1f6f6;
+    --color-line: #c9d6d6;
+    --color-ink: #14201f;
+    --color-muted: #435556;
+    --color-brand: #0f6b66;
+    --color-brand-soft: #0b524e;
+    --color-on-brand: #ffffff;
+    --color-danger: #b42318;
+    --color-on-danger: #ffffff;
+}
+
+:root[data-theme='dark'] {
+    --color-page: #0d1415;
+    --color-surface: #162022;
+    --color-line: #33464a;
+    --color-ink: #eef4f4;
+    --color-muted: #b6c6c7;
+    --color-brand: #3fd0c2;
+    --color-brand-soft: #7de3d8;
+    --color-on-brand: #04201d;
+    --color-danger: #ffb4a8;
+    --color-on-danger: #3b0a05;
+    color-scheme: dark;
+}
+
+@layer base {
+    /* 18px where a browser's own size is 16px: the whole site is sized in rem, so it all follows. */
+    html {
+        font-size: 112.5%;
+        scroll-behavior: smooth;
+    }
+
+    body {
+        background: var(--color-page);
+        color: var(--color-ink);
+        /* Thai carries marks above and below the line; tight lines make them collide. */
+        line-height: 1.75;
+    }
+
+    h1, h2, h3 {
+        line-height: 1.35;
+        text-wrap: balance;
+    }
+
+    /* Always visible to someone using a keyboard, on any background. */
+    :focus-visible {
+        outline: 3px solid var(--color-brand);
+        outline-offset: 3px;
+        border-radius: 4px;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        html {
+            scroll-behavior: auto;
+        }
+
+        *, *::before, *::after {
+            transition-duration: 0.01ms !important;
+            animation-duration: 0.01ms !important;
+        }
+    }
+}
+
+@layer components {
+    /* The width of a page's content, with room at the sides on a phone. */
+    .wrap {
+        width: 100%;
+        max-width: 72rem;
+        margin-inline: auto;
+        padding-inline: 1rem;
+    }
+
+    @media (min-width: 640px) {
+        .wrap {
+            padding-inline: 1.5rem;
+        }
+    }
+
+    /* Buttons are at least 48px tall: a finger, or a hand that shakes, still lands on them. */
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        min-height: 3rem;
+        padding: 0.5rem 1.25rem;
+        border-radius: 0.75rem;
+        border: 2px solid transparent;
+        font-weight: 600;
+        text-decoration: none;
+        cursor: pointer;
+        transition: background-color 150ms, border-color 150ms, color 150ms;
+    }
+
+    .btn-brand {
+        background: var(--color-brand);
+        color: var(--color-on-brand);
+    }
+
+    .btn-brand:hover {
+        background: var(--color-brand-soft);
+    }
+
+    .btn-line {
+        border-color: var(--color-line);
+        color: var(--color-ink);
+        background: var(--color-page);
+    }
+
+    .btn-line:hover {
+        border-color: var(--color-brand);
+        color: var(--color-brand);
+    }
+
+    .btn-danger {
+        background: var(--color-danger);
+        color: var(--color-on-danger);
+    }
+
+    .card {
+        background: var(--color-page);
+        border: 1px solid var(--color-line);
+        border-radius: 1rem;
+        padding: 1.5rem;
+    }
 }
