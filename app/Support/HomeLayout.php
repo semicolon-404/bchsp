@@ -16,8 +16,9 @@ class HomeLayout
 
     /** Section => the name the settings page gives it. In the order the page has until someone arranges it. */
     public const SECTIONS = [
-        'slides' => 'Slides, with the introduction to the site as the first',
-        'today' => 'Open today',
+        'slides' => 'Slides',
+        'hero' => 'Name of the hospital and phone buttons',
+        'shortcuts' => 'Shortcuts to what visitors come for',
         'announcements' => 'Announcements',
         'posters' => 'Posters',
         'departments' => 'Departments',
@@ -30,8 +31,8 @@ class HomeLayout
      */
     public const OFF_AT_FIRST = ['departments'];
 
-    /** Cannot be hidden: its first slide holds the page's heading, the buttons to call the hospital and the ways into the site. */
-    public const LOCKED = ['slides'];
+    /** Cannot be hidden: it holds the page's heading and the buttons to call the hospital. */
+    public const LOCKED = ['hero'];
 
     /**
      * The sections that are shown, in order: what resources/views/home.blade.php draws.

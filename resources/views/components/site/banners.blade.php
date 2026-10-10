@@ -2,7 +2,7 @@
     What staff put on the home page for a while (App\Models\Banner): the wide banners across the top,
     the grid of posters, and the one poster that opens over the page.
 
-    <x-site.banners part="banners">the first slide</x-site.banners>   <x-site.banners part="posters" />   <x-site.banners part="popup" />
+    <x-site.banners part="banners" />   <x-site.banners part="posters" />   <x-site.banners part="popup" />
 --}}
 @props(['part'])
 @php
@@ -19,33 +19,32 @@
 
 @if ($part === 'banners')
     @php($banners = Banner::showingAs('banner'))
-    @php($count = $banners->count() + 1)
-    {{--
-        The carousel at the top of the home page. What is handed in (the slot) is its first slide: the site's
-        own introduction, drawn by the page. The pictures staff put up follow it, each shown whole, whatever
-        its shape. It can be swiped; resources/js/slider.js adds the arrows, the dots and moving on by itself.
-        The first slide has buttons on it, so it is held longer than the pictures before moving on.
-    --}}
-    <section class="border-b border-line bg-surface" aria-label="{{ __('Banners') }}" aria-roledescription="carousel" data-slider>
-        <div class="wrap relative py-4 sm:py-6">
-            <ul class="slider-track" data-slider-track>
-                <li class="w-full shrink-0 snap-center" aria-roledescription="slide" aria-label="1 / {{ $count }}" data-slider-hold="10000">{{ $slot }}</li>
-                @foreach ($banners as $banner)
-                    <li class="flex w-full shrink-0 snap-center items-center justify-center" aria-roledescription="slide" aria-label="{{ $loop->iteration + 1 }} / {{ $count }}">{!! $picture($banner, 'mx-auto max-h-[70vh] w-auto max-w-full rounded-xl object-contain') !!}</li>
-                @endforeach
-            </ul>
+    @if ($banners->isNotEmpty())
+        {{--
+            The slides staff change most often, so they are the first thing on the page. Each picture is shown
+            whole, whatever its shape. They can be swiped; resources/js/slider.js adds the arrows, the dots and
+            moving on by itself.
+        --}}
+        <section class="border-b border-line bg-surface" aria-label="{{ __('Banners') }}" aria-roledescription="carousel" data-slider>
+            <div class="wrap relative py-4 sm:py-6">
+                <ul class="slider-track" data-slider-track>
+                    @foreach ($banners as $banner)
+                        <li class="flex w-full shrink-0 snap-center items-center justify-center" aria-roledescription="slide" aria-label="{{ $loop->iteration }} / {{ $loop->count }}">{!! $picture($banner, 'mx-auto max-h-[70vh] w-auto max-w-full rounded-xl object-contain') !!}</li>
+                    @endforeach
+                </ul>
 
-            @if ($count > 1)
-                <button type="button" class="slider-arrow left-2 sm:left-8" data-slider-prev aria-label="{{ __('Previous slide') }}"><x-heroicon-m-chevron-left class="size-6" aria-hidden="true" /></button>
-                <button type="button" class="slider-arrow right-2 sm:right-8" data-slider-next aria-label="{{ __('Next slide') }}"><x-heroicon-m-chevron-right class="size-6" aria-hidden="true" /></button>
-                <div class="mt-3 flex justify-center gap-2">
-                    @for ($slide = 1; $slide <= $count; $slide++)
-                        <button type="button" class="slider-dot" data-slider-dot aria-current="{{ $slide === 1 ? 'true' : 'false' }}" aria-label="{{ __('Slide :number', ['number' => $slide]) }}"></button>
-                    @endfor
-                </div>
-            @endif
-        </div>
-    </section>
+                @if ($banners->count() > 1)
+                    <button type="button" class="slider-arrow left-2 sm:left-8" data-slider-prev aria-label="{{ __('Previous slide') }}"><x-heroicon-m-chevron-left class="size-6" aria-hidden="true" /></button>
+                    <button type="button" class="slider-arrow right-2 sm:right-8" data-slider-next aria-label="{{ __('Next slide') }}"><x-heroicon-m-chevron-right class="size-6" aria-hidden="true" /></button>
+                    <div class="mt-3 flex justify-center gap-2">
+                        @foreach ($banners as $banner)
+                            <button type="button" class="slider-dot" data-slider-dot aria-current="{{ $loop->first ? 'true' : 'false' }}" aria-label="{{ __('Slide :number', ['number' => $loop->iteration]) }}"></button>
+                        @endforeach
+                    </div>
+                @endif
+            </div>
+        </section>
+    @endif
 @elseif ($part === 'posters')
     @php($posters = Banner::showingAs('poster'))
     @if ($posters->isNotEmpty())

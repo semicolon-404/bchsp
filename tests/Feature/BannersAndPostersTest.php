@@ -5,7 +5,6 @@ namespace Tests\Feature;
 use App\Filament\Resources\Banners\Pages\ManageBanners;
 use App\Models\Banner;
 use App\Models\User;
-use App\Support\SiteSettings;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
@@ -18,8 +17,7 @@ class BannersAndPostersTest extends TestCase
 
     public function test_the_home_page_has_none_of_it_until_something_is_put_up(): void
     {
-        // The carousel is there with its first slide alone: no arrows, no pictures.
-        $this->get('/')->assertOk()->assertSee('data-slider', false)->assertDontSee('data-slider-next', false)->assertDontSee('<img ', false)->assertDontSee('Campaigns and notices')->assertDontSee('<dialog', false);
+        $this->get('/')->assertOk()->assertDontSee('aria-label="Banners"', false)->assertDontSee('Campaigns and notices')->assertDontSee('<dialog', false);
     }
 
     public function test_banners_and_posters_show_in_their_own_places_in_order(): void
@@ -33,32 +31,21 @@ class BannersAndPostersTest extends TestCase
             ->assertDontSee('<dialog', false);
     }
 
-    public function test_the_first_slide_introduces_the_site_and_the_pictures_follow_it(): void
+    public function test_the_slides_come_first_on_the_page_and_have_arrows_and_dots_only_when_there_is_more_than_one(): void
     {
-        SiteSettings::save(['app.name' => 'Buachet Hospital', 'contact.phone' => '044-579076']);
+        Banner::factory()->create(['title' => 'Only slide']);
 
-        // Alone, the introduction needs no arrows or dots.
         $page = $this->get('/')->getContent();
-        preg_match('/<li[^>]*data-slider-hold="10000"[^>]*>(.*?)<\/li>/s', $page, $first);
 
-        $this->assertStringContainsString('<h1', $first[1]);
-        $this->assertStringContainsString('Buachet Hospital', $first[1]);
-        $this->assertStringContainsString('tel:044579076', $first[1]);
-        foreach ([route('schedule'), route('announcements.index'), route('ita'), route('contact')] as $door) {
-            $this->assertStringContainsString('href="'.$door.'"', $first[1]);
-        }
-        $this->assertStringContainsString('aria-label="1 / 1"', $page);
+        $this->assertLessThan(strpos($page, '<h1'), strpos($page, 'data-slider'));
         $this->assertStringNotContainsString('data-slider-next', $page);
 
-        Banner::factory()->create(['title' => 'A poster about flu vaccine']);
-        Banner::factory()->create(['title' => 'Another']);
+        Banner::factory()->create(['title' => 'Second slide']);
 
         $page = $this->get('/')->getContent();
 
-        $this->assertLessThan(strpos($page, 'alt="A poster about flu vaccine"'), strpos($page, '<h1'));
         $this->assertStringContainsString('aria-label="Next slide"', $page);
-        $this->assertSame(3, substr_count($page, 'data-slider-dot'));
-        $this->assertStringContainsString('aria-label="2 / 3"', $page);
+        $this->assertSame(2, substr_count($page, 'data-slider-dot'));
         // Shown whole, whatever its shape: nothing is cropped.
         $this->assertStringContainsString('object-contain', $page);
         $this->assertStringNotContainsString('object-cover', $page);

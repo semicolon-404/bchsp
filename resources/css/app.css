@@ -224,9 +224,6 @@ html.is-mourning {
     /* The slides at the top of the home page (components/site/banners): a strip that scrolls sideways and snaps. */
     .slider-track {
         display: flex;
-        /* Every slide as tall as the tallest, so the page below does not jump as they change. */
-        align-items: stretch;
-        min-height: min(30rem, 70vh);
         overflow-x: auto;
         scroll-snap-type: x mandatory;
         scrollbar-width: none;

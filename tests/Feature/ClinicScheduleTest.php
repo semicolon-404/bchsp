@@ -56,12 +56,11 @@ class ClinicScheduleTest extends TestCase
 
         $page = $this->get('/')
             ->assertOk()
-            ->assertSeeInOrder(['Open today', 'Tuesday', 'The whole week', 'Morning diabetes', 'Open now', 'Afternoon dental'])
+            ->assertSeeInOrder(['Open today', 'Tuesday', 'Morning diabetes', 'Open now', 'Afternoon dental', 'The whole week'])
             ->assertDontSee('Wednesday only')
+            // Real information takes the place of the decoration.
+            ->assertDontSee('contact.ts')
             ->getContent();
-
-        // Straight under the slides, before anything else.
-        $this->assertLessThan(strpos($page, 'Open today'), strpos($page, 'data-slider-track'));
 
         $this->assertSame(1, substr_count($page, 'Open now'));
 
@@ -84,11 +83,11 @@ class ClinicScheduleTest extends TestCase
         $this->assertFalse($session->isOpenNow());
     }
 
-    public function test_until_there_is_a_schedule_the_home_page_has_no_such_section(): void
+    public function test_until_there_is_a_schedule_the_home_page_keeps_its_contact_details(): void
     {
         SiteSettings::save(['contact.phone' => '044-579076']);
 
-        $this->get('/')->assertOk()->assertDontSee('Open today');
+        $this->get('/')->assertSee('contact.ts')->assertDontSee('Open today');
         $this->get('/schedule')->assertOk()->assertSee('Nothing has been added here yet.');
     }
 
