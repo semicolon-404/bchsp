@@ -154,6 +154,56 @@ class AnnouncementsTest extends TestCase
             ->assertSee('Not showing to the public right now');
     }
 
+    public function test_each_type_wears_a_mark_of_its_own_in_the_list_the_chips_and_the_page(): void
+    {
+        $this->assertSame(['megaphone', 'clipboard-document-list', 'briefcase'], AnnouncementType::orderBy('sort_order')->get()->map->icon()->all());
+        $this->assertSame('var(--color-syn-string)', $this->type('procurement')->colour());
+
+        $bid = Announcement::factory()->for($this->type('procurement'), 'type')->create(['title' => 'Winning bid']);
+        Announcement::factory()->for($this->type('jobs'), 'type')->create(['title' => 'Hiring']);
+        $orphan = Announcement::factory()->create(['title' => 'No type']);
+
+        $list = $this->get('/announcements')->assertOk()->getContent();
+
+        // The colour of each kind is on its mark and on its name; the name is always written out as well.
+        $this->assertGreaterThanOrEqual(3, substr_count($list, 'var(--color-syn-string)'));
+        $this->assertGreaterThanOrEqual(3, substr_count($list, 'var(--color-syn-variable)'));
+        $this->assertStringContainsString('Procurement', $list);
+
+        $this->get(route('announcements.show', $bid))->assertSee('var(--color-syn-string)', false);
+        $this->get(route('announcements.show', $orphan))->assertOk();
+        $this->get('/')->assertSee('var(--color-syn-string)', false);
+    }
+
+    public function test_a_mark_is_only_ever_one_of_the_symbols_and_colours_on_offer(): void
+    {
+        $type = AnnouncementType::factory()->create(['icon' => '../../x"><script>', 'tone' => 'red;background:url(x)']);
+
+        $this->assertSame('megaphone', $type->icon());
+        $this->assertSame('var(--color-brand)', $type->colour());
+
+        Announcement::factory()->for($type, 'type')->create();
+        $this->get('/announcements')->assertOk()->assertDontSee('url(x)', false);
+    }
+
+    public function test_an_administrator_gives_a_type_its_symbol_and_colour(): void
+    {
+        $this->actingAs(User::factory()->admin()->create());
+
+        Livewire::test(ManageAnnouncementTypes::class)
+            ->callAction('create', ['name' => 'Training', 'icon' => 'academic-cap', 'tone' => 'green', 'sort_order' => 5])
+            ->assertHasNoFormErrors();
+
+        $type = AnnouncementType::where('name', 'Training')->firstOrFail();
+
+        $this->assertSame('academic-cap', $type->icon());
+        $this->assertSame('var(--color-syn-function)', $type->colour());
+
+        Livewire::test(ManageAnnouncementTypes::class)
+            ->callAction('create', ['name' => 'Bad', 'icon' => 'not-an-icon', 'tone' => 'green', 'sort_order' => 6])
+            ->assertHasFormErrors(['icon']);
+    }
+
     public function test_the_types_filter_the_list(): void
     {
         Announcement::factory()->for($this->type('procurement'), 'type')->create(['title' => 'Winning bid for office supplies']);

@@ -15,7 +15,7 @@
             <nav class="mt-6 flex flex-wrap gap-2" aria-label="{{ __('Types') }}">
                 <a href="{{ $with(['type' => null]) }}" @class(['chip', 'is-on' => ! $type]) aria-current="{{ $type ? 'false' : 'page' }}">{{ __('All') }}</a>
                 @foreach ($types as $one)
-                    <a href="{{ $with(['type' => $one->slug, 'year' => null]) }}" @class(['chip', 'is-on' => $type?->is($one)]) aria-current="{{ $type?->is($one) ? 'page' : 'false' }}">{{ $one->localName() }}</a>
+                    <a href="{{ $with(['type' => $one->slug, 'year' => null]) }}" @class(['chip gap-2', 'is-on' => $type?->is($one)]) aria-current="{{ $type?->is($one) ? 'page' : 'false' }}"><x-site.type-mark :type="$one" bare />{{ $one->localName() }}</a>
                 @endforeach
             </nav>
         @endif

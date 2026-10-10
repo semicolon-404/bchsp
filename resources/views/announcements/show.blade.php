@@ -14,7 +14,7 @@
         @endif
 
         @if ($announcement->type)
-            <p class="eyebrow mt-6"><a href="{{ route('announcements.index', ['type' => $announcement->type->slug]) }}" class="text-brand no-underline">{{ $announcement->type->localName() }}</a></p>
+            <p class="eyebrow mt-6"><a href="{{ route('announcements.index', ['type' => $announcement->type->slug]) }}" class="inline-flex items-center gap-2 no-underline" style="color: {{ $announcement->type->colour() }}"><x-site.type-mark :type="$announcement->type" bare />{{ $announcement->type->localName() }}</a></p>
         @endif
         <h1 class="mt-2 text-2xl sm:text-3xl">{{ $announcement->localTitle() }}</h1>
         <p class="mt-3 font-mono text-sm text-muted">

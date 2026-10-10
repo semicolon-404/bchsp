@@ -9,6 +9,7 @@ use App\Models\AnnouncementType;
 use BackedEnum;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\EditAction;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
@@ -52,6 +53,19 @@ class AnnouncementTypeResource extends Resource
                 TextInput::make('name_en')
                     ->label(__('Name in English (optional)'))
                     ->maxLength(80),
+                Select::make('icon')
+                    ->label(__('Symbol'))
+                    ->options(array_map('__', AnnouncementType::ICONS))
+                    ->default('megaphone')
+                    ->required()
+                    ->selectablePlaceholder(false)
+                    ->helperText(__('Shown beside every announcement of this type, so that readers know the type at a glance.')),
+                Select::make('tone')
+                    ->label(__('Colour of the symbol'))
+                    ->options(array_map(fn (array $tone) => __($tone[0]), AnnouncementType::TONES))
+                    ->default('accent')
+                    ->required()
+                    ->selectablePlaceholder(false),
                 TextInput::make('sort_order')
                     ->label(__('Order'))
                     ->numeric()
@@ -72,6 +86,7 @@ class AnnouncementTypeResource extends Resource
                 TextColumn::make('name')
                     ->label(__('Name'))
                     ->searchable()
+                    ->icon(fn (AnnouncementType $record) => 'heroicon-o-'.$record->icon())
                     ->description(fn (AnnouncementType $record) => $record->name_en),
                 TextColumn::make('announcements_count')
                     ->label(__('Announcements'))
