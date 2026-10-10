@@ -164,7 +164,7 @@ class PicturesAndAlbumsTest extends TestCase
         app()->setLocale('th');
         $this->actingAs(User::factory()->create());
 
-        $this->get('/admin/announcements/create')->assertSee('ภาพประกาศ')->assertSee('แสดงภาพนี้ในสไลด์หน้าแรกด้วย');
+        $this->get('/admin/announcements/create')->assertSee('ภาพหน้าปก / ภาพประกาศ')->assertSee('แสดงภาพนี้ในสไลด์หน้าแรกด้วย');
         $this->get('/admin/blog-posts/create')->assertSee('อัลบั้มภาพ');
     }
 }

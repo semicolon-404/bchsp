@@ -53,10 +53,10 @@ class ItaItem extends Model
         // Written out, not as arrow functions: forget() answers false when there was nothing to forget,
         // and a listener that answers false stops the ones after it (the removal of the files, below).
         static::saved(function () {
-            Cache::forget(self::YEARS_KEY);
+            Cache::memo()->forget(self::YEARS_KEY);
         });
         static::deleted(function () {
-            Cache::forget(self::YEARS_KEY);
+            Cache::memo()->forget(self::YEARS_KEY);
         });
 
         // The files belong to the item alone: one taken off it, or the whole item deleted, removes them.
@@ -88,7 +88,7 @@ class ItaItem extends Model
      */
     public static function years(): array
     {
-        return Cache::rememberForever(self::YEARS_KEY, fn () => static::where('is_active', true)->distinct()->orderByDesc('year')->pluck('year')->map(fn ($year) => (int) $year)->all());
+        return Cache::memo()->rememberForever(self::YEARS_KEY, fn () => static::where('is_active', true)->distinct()->orderByDesc('year')->pluck('year')->map(fn ($year) => (int) $year)->all());
     }
 
     /**

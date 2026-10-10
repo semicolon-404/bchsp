@@ -3,7 +3,9 @@
     use App\Models\ClinicSession;
 
     $today = now()->dayOfWeek;
-    $week = collect(ClinicSession::DAYS)->map(fn (string $name, int $day) => ClinicSession::heldOn($day));
+    // Read once and dealt out to the days: asking again for each day was seven of the same question.
+    $sessions = ClinicSession::shown()->with('department')->get();
+    $week = collect(ClinicSession::DAYS)->map(fn (string $name, int $day) => $sessions->filter(fn (ClinicSession $session) => $session->isHeldOn($day))->values());
 @endphp
 <x-layouts.site :title="__('Clinic schedule')" :description="__('When each clinic and service of :name is open during the week.', ['name' => App\Support\SiteSettings::name()])">
     <div class="wrap max-w-4xl py-10 sm:py-14">

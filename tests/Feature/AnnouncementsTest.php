@@ -317,6 +317,27 @@ class AnnouncementsTest extends TestCase
         $this->assertStringNotContainsString('<script>alert("t")', $this->get('/announcements')->getContent());
     }
 
+    public function test_the_list_can_be_looked_at_as_cards_with_covers_and_the_choice_is_kept(): void
+    {
+        Announcement::factory()->create(['title' => 'With a cover', 'image_path' => 'announcements/pictures/cover.webp', 'starts_at' => now()]);
+        Announcement::factory()->count(16)->create(['starts_at' => now()->subDay()]);
+
+        // Rows unless asked; anything else in the address is rows too.
+        $this->get('/announcements')->assertOk()->assertDontSee('object-cover object-top', false)
+            ->assertSee('href="'.route('announcements.index', ['view' => 'cards']).'"', false);
+        $this->get('/announcements?view=nonsense')->assertOk()->assertDontSee('object-cover object-top', false);
+
+        $this->get('/announcements?view=cards')
+            ->assertOk()
+            ->assertSee('announcements/pictures/cover.webp" alt="" loading="lazy" class="aspect-[4/3] w-full object-cover object-top"', false)
+            // The types, the search and the next page all keep the cards.
+            ->assertSee('href="'.e(route('announcements.index', ['type' => 'procurement', 'view' => 'cards'])).'"', false)
+            ->assertSee('<input type="hidden" name="view" value="cards">', false)
+            ->assertSee('view=cards&amp;page=2', false)
+            // And the way back to rows.
+            ->assertSee('href="'.route('announcements.index').'" class="chip gap-2"', false);
+    }
+
     public function test_the_home_page_shows_the_four_at_the_top_of_the_list_and_the_way_to_the_rest(): void
     {
         $this->get('/')->assertDontSee('All announcements');
@@ -330,7 +351,7 @@ class AnnouncementsTest extends TestCase
             ->assertSee('Notice from 4 days ago')
             ->assertDontSee('Notice from 5 days ago')
             ->assertSee('All announcements')
-            ->assertSee('href="'.route('announcements.index', ['type' => 'procurement']).'" class="btn btn-line mt-8">Go to Procurement', false);
+            ->assertSee('href="'.route('announcements.index', ['type' => 'procurement']).'" class="btn btn-brand mt-8">Go to Procurement', false);
     }
 
     public function test_a_reader_in_english_gets_the_english_where_there_is_some_and_thai_dates_are_buddhist(): void

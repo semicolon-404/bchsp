@@ -54,10 +54,10 @@ class SitePage extends Model
 
     private static function forgetLists(): void
     {
-        Cache::forget(self::FOOTER_KEY);
+        Cache::memo()->forget(self::FOOTER_KEY);
 
         foreach (array_keys(self::SECTIONS) as $section) {
-            Cache::forget(self::MENU_KEY.$section);
+            Cache::memo()->forget(self::MENU_KEY.$section);
         }
     }
 
@@ -69,7 +69,7 @@ class SitePage extends Model
      */
     public static function menuLinks(string $section): Collection
     {
-        return Cache::rememberForever(self::MENU_KEY.$section, fn () => static::published()
+        return Cache::memo()->rememberForever(self::MENU_KEY.$section, fn () => static::published()
             ->where('section', $section)
             ->orderBy('position')
             ->orderBy('id')
@@ -93,7 +93,7 @@ class SitePage extends Model
      */
     public static function footerLinks(): Collection
     {
-        return Cache::rememberForever(self::FOOTER_KEY, fn () => static::published()
+        return Cache::memo()->rememberForever(self::FOOTER_KEY, fn () => static::published()
             ->where('show_in_footer', true)
             ->orderBy('position')
             ->orderBy('id')

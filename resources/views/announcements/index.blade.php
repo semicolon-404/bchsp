@@ -1,10 +1,11 @@
 {{--
     /announcements: every announcement that is out, pinned ones first, then the newest. It is also the archive:
     one that has ended stays here. Narrowed by type (the row of chips), by fiscal year and by a word in the title.
+    Shown as rows, or as cards with each one's cover (?view=cards): the choice is in the address, and kept from page to page.
 --}}
 @php
     // The address of this list with one thing changed, the rest kept; the page number starts over.
-    $with = fn (array $change) => route('announcements.index', array_filter(array_merge(['type' => $type?->slug, 'year' => $year, 'q' => $term], $change), fn ($value) => filled($value)));
+    $with = fn (array $change) => route('announcements.index', array_filter(array_merge(['type' => $type?->slug, 'year' => $year, 'q' => $term, 'view' => $look === 'cards' ? 'cards' : null], $change), fn ($value) => filled($value)));
 @endphp
 <x-layouts.site :title="($type ? $type->localName() : __('Announcements')).($year ? ' '.$year : '')" :description="__('Announcements, procurement notices and job openings from :name.', ['name' => App\Support\SiteSettings::name()])">
     <div class="wrap py-10 sm:py-14">
@@ -24,6 +25,9 @@
         <form action="{{ route('announcements.index') }}" method="get" role="search" class="mt-4 flex flex-wrap items-end gap-3">
             @if ($type)
                 <input type="hidden" name="type" value="{{ $type->slug }}">
+            @endif
+            @if ($look === 'cards')
+                <input type="hidden" name="view" value="cards">
             @endif
             <label class="block">
                 <span class="mb-1 block text-sm text-muted">{{ __('Fiscal year') }}</span>
@@ -45,14 +49,28 @@
             @endif
         </form>
 
-        <p class="mt-6 text-sm text-muted" role="status">{{ trans_choice('{0} No announcements match.|{1} :count announcement|[2,*] :count announcements', $announcements->total(), ['count' => number_format($announcements->total())]) }}</p>
+        <div class="mt-6 flex flex-wrap items-center justify-between gap-3">
+            <p class="text-sm text-muted" role="status">{{ trans_choice('{0} No announcements match.|{1} :count announcement|[2,*] :count announcements', $announcements->total(), ['count' => number_format($announcements->total())]) }}</p>
+            <nav class="flex gap-2" aria-label="{{ __('Way of looking') }}">
+                <a href="{{ $with(['view' => null, 'page' => $announcements->currentPage() > 1 ? $announcements->currentPage() : null]) }}" @class(['chip gap-2', 'is-on' => $look === 'list']) aria-current="{{ $look === 'list' ? 'true' : 'false' }}"><x-heroicon-m-list-bullet class="size-4" aria-hidden="true" />{{ __('Rows') }}</a>
+                <a href="{{ $with(['view' => 'cards', 'page' => $announcements->currentPage() > 1 ? $announcements->currentPage() : null]) }}" @class(['chip gap-2', 'is-on' => $look === 'cards']) aria-current="{{ $look === 'cards' ? 'true' : 'false' }}"><x-heroicon-m-squares-2x2 class="size-4" aria-hidden="true" />{{ __('Cards') }}</a>
+            </nav>
+        </div>
 
         @if ($announcements->isNotEmpty())
-            <ul class="card mt-3 p-0">
-                @foreach ($announcements as $announcement)
-                    <x-site.announcement-row :announcement="$announcement" />
-                @endforeach
-            </ul>
+            @if ($look === 'cards')
+                <ul class="mt-3 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                    @foreach ($announcements as $announcement)
+                        <li><x-site.announcement-card :announcement="$announcement" /></li>
+                    @endforeach
+                </ul>
+            @else
+                <ul class="card mt-3 p-0">
+                    @foreach ($announcements as $announcement)
+                        <x-site.announcement-row :announcement="$announcement" />
+                    @endforeach
+                </ul>
+            @endif
 
             <div class="mt-10">{{ $announcements->links('components.site.pagination') }}</div>
         @endif

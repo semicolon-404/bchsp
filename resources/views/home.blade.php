@@ -17,19 +17,22 @@
     // Today's clinics take the place beside the heading; the contact details drawn as code are what shows until a schedule exists.
     $sessions = App\Models\ClinicSession::today();
 
-    $announcements = App\Models\Announcement::current()->with('type')->inListOrder()->limit(4)->get();
-    $departments = App\Models\Department::shown()->limit(6)->get();
-    $articles = App\Models\BlogPost::published()->with('category')->latest('published_at')->limit(3)->get();
+    // Only what the sections that are switched on will draw is read.
+    $sections = App\Support\HomeLayout::shown();
+    $announcements = in_array('announcements', $sections, true) ? App\Models\Announcement::current()->with('type')->inListOrder()->limit(4)->get() : collect();
+    $departments = in_array('departments', $sections, true) ? App\Models\Department::shown()->limit(6)->get() : collect();
+    $articles = in_array('articles', $sections, true) ? App\Models\BlogPost::published()->with('category')->latest('published_at')->limit(3)->get() : collect();
 @endphp
 <x-layouts.site :description="__('News, announcements and services of :name.', ['name' => $name])">
-    @foreach (App\Support\HomeLayout::shown() as $section)
+    @foreach ($sections as $section)
     @switch($section)
     @case('slides')
     <x-site.banners part="banners" />
     @break
 
     @case('hero')
-    <section class="border-b border-line">
+    {{-- Like every section of this page it fills the window, less the header: one thing to look at at a time. --}}
+    <section class="home-screen border-b border-line">
         <div class="wrap grid items-center gap-10 py-14 sm:py-20 lg:grid-cols-2">
             <div class="text-center lg:text-left">
                 <p class="inline-flex items-center gap-2 rounded-full border border-line bg-surface px-3 py-1 text-sm text-muted">
@@ -112,17 +115,17 @@
             [route('schedule'), 'calendar-days', 'Clinic schedule', 'Which clinic is open on which day, and at what time.'],
             [route('contact'), 'map-pin', 'Contact and map', 'Address, phone numbers, opening hours and a map.'],
         ] as $index => [$address, $icon, $label, $about])
-            <section @class(['border-b border-line', 'bg-surface' => $index % 2 === 0]) aria-labelledby="door-{{ $index }}">
+            <section @class(['home-screen border-b border-line', 'bg-surface' => $index % 2 === 0]) aria-labelledby="door-{{ $index }}">
                 <div class="wrap grid items-center gap-8 py-16 sm:py-24 md:grid-cols-2">
                     <div @class(['text-center md:text-left', 'md:order-2' => $index % 2 === 1])>
                         <p class="eyebrow">{{ str_pad((string) ($index + 1), 2, '0', STR_PAD_LEFT) }}</p>
-                        <h2 id="door-{{ $index }}" class="mt-2 text-2xl sm:text-3xl">{{ __($label) }}</h2>
+                        <h2 id="door-{{ $index }}" class="mt-3 text-3xl sm:text-4xl md:text-5xl">{{ __($label) }}</h2>
                         <p class="mx-auto mt-4 max-w-md text-lg text-muted md:mx-0">{{ __($about) }}</p>
-                        <a href="{{ $address }}" class="btn btn-line mt-8">{{ __('Go to :name', ['name' => __($label)]) }} &rarr;</a>
+                        <a href="{{ $address }}" class="btn btn-brand mt-8">{{ __('Go to :name', ['name' => __($label)]) }} &rarr;</a>
                     </div>
                     <div class="hidden justify-center md:flex" aria-hidden="true">
-                        <span class="flex size-40 items-center justify-center rounded-3xl border border-line bg-raised text-brand">
-                            <x-dynamic-component :component="'heroicon-o-'.$icon" class="size-16" />
+                        <span class="flex size-56 items-center justify-center rounded-3xl border border-line bg-raised text-brand lg:size-72">
+                            <x-dynamic-component :component="'heroicon-o-'.$icon" class="size-24 lg:size-28" />
                         </span>
                     </div>
                 </div>
@@ -134,13 +137,13 @@
     @case('announcements')
     @if ($announcements->isNotEmpty())
         {{-- The one part that shows some of what is inside: the newest few. The whole list, with its kinds and years, is a page of its own. --}}
-        <section class="border-b border-line">
+        <section class="home-screen border-b border-line">
             <div class="wrap grid items-center gap-8 py-16 sm:py-24 md:grid-cols-2">
                 <div class="text-center md:text-left">
                     <p class="eyebrow">{{ __('Announcements') }}</p>
-                    <h2 class="mt-2 text-2xl sm:text-3xl">{{ __('News') }}</h2>
+                    <h2 class="mt-3 text-3xl sm:text-4xl md:text-5xl">{{ __('News') }}</h2>
                     <p class="mx-auto mt-4 max-w-md text-lg text-muted md:mx-0">{{ __('News and announcements from the hospital, the newest first.') }}</p>
-                    <a href="{{ route('announcements.index') }}" class="btn btn-line mt-8">{{ __('All announcements') }} &rarr;</a>
+                    <a href="{{ route('announcements.index') }}" class="btn btn-brand mt-8">{{ __('All announcements') }} &rarr;</a>
                 </div>
                 <ul class="card p-0">
                     @foreach ($announcements as $announcement)

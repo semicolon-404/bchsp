@@ -254,6 +254,20 @@ html.is-mourning {
         color: var(--color-brand);
     }
 
+    /*
+     * A section of the home page: as tall as the window less the header, its content in the middle.
+     * Taller when its content is; on a short window (a phone on its side) no lower than its content needs.
+     */
+    .home-screen {
+        display: flex;
+        align-items: center;
+        min-height: calc(100svh - 4rem);
+    }
+
+    .home-screen > * {
+        width: 100%;
+    }
+
     /* A dot is small to look at and 24px to press. */
     .slider-dot {
         width: 1.5rem;

@@ -9,11 +9,14 @@ use Illuminate\View\View;
 
 /**
  * The announcements as visitors read them: the list, which is also the archive,
- * narrowed by type, by fiscal year and by a word in the title; and one announcement with its files.
+ * narrowed by type, by fiscal year and by a word in the title, as rows or as cards; and one announcement with its files.
  */
 class AnnouncementController extends Controller
 {
     private const PER_PAGE = 15;
+
+    /** The ways the list can be looked at: rows, or cards with each announcement's cover. */
+    public const VIEWS = ['list', 'cards'];
 
     public function index(Request $request): View
     {
@@ -31,6 +34,7 @@ class AnnouncementController extends Controller
             'year' => $year,
             'years' => $years,
             'term' => $term,
+            'look' => in_array($request->query('view'), self::VIEWS, true) ? $request->query('view') : self::VIEWS[0],
             'announcements' => Announcement::published()
                 ->with('type')
                 ->when($type, fn ($query) => $query->where('announcement_type_id', $type->id))
