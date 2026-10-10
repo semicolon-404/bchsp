@@ -133,6 +133,7 @@ class BlogTest extends TestCase
 
     public function test_the_home_page_shows_the_three_newest_articles(): void
     {
+        $this->showOnHome('articles');
         $this->get('/')->assertDontSee('All articles');
 
         foreach ([4, 3, 2, 1] as $days) {

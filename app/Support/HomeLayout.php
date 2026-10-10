@@ -17,8 +17,8 @@ class HomeLayout
     /** Section => the name the settings page gives it. In the order the page has until someone arranges it. */
     public const SECTIONS = [
         'hero' => 'Name of the hospital and phone buttons',
-        'shortcuts' => 'Shortcuts to what visitors come for',
         'announcements' => 'Announcements',
+        'shortcuts' => 'A section for each part of the site',
         // The pictures come after what people came to read, as a section of their own: slides, then the grid of posters.
         'slides' => 'Slides',
         'posters' => 'Posters',
@@ -27,10 +27,11 @@ class HomeLayout
     ];
 
     /**
-     * Off until an administrator switches them on. The list of departments is reference material, not
-     * what the home page is for: it has a page of its own and a shortcut to it.
+     * Off until an administrator switches them on. The home page is kept open and short: the hospital's name,
+     * the newest announcements, and a section for each part of the site that says what it is and leads to it. The pictures, the articles and the
+     * departments are read on their own pages, which the doors lead to.
      */
-    public const OFF_AT_FIRST = ['departments'];
+    public const OFF_AT_FIRST = ['slides', 'posters', 'departments', 'articles'];
 
     /** Cannot be hidden: it holds the page's heading and the buttons to call the hospital. */
     public const LOCKED = ['hero'];

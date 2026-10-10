@@ -43,6 +43,7 @@ class PicturesAndAlbumsTest extends TestCase
 
     public function test_an_announcements_picture_can_be_among_the_slides_and_leads_to_the_announcement(): void
     {
+        $this->showOnHome('slides');
         Banner::factory()->create(['title' => 'A slide of its own', 'image_path' => 'banners/own.webp']);
         $in = Announcement::factory()->create(['title' => 'Flu vaccine week', 'image_path' => 'announcements/pictures/flu.webp', 'in_slider' => true, 'ends_at' => now()->addDays(3)]);
         Announcement::factory()->create(['title' => 'Not asked for', 'image_path' => 'announcements/pictures/quiet.webp']);

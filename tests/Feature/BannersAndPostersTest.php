@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Filament\Resources\Banners\Pages\ManageBanners;
 use App\Models\Banner;
 use App\Models\User;
+use App\Support\SiteSettings;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
@@ -15,9 +16,33 @@ class BannersAndPostersTest extends TestCase
 {
     use RefreshDatabase;
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        // The home page is kept short: its pictures show there once an administrator switches them on.
+        $this->showOnHome('slides', 'posters');
+    }
+
+    public function test_the_pictures_are_off_the_home_page_at_first_and_on_a_page_of_their_own(): void
+    {
+        SiteSettings::save(['home.layout' => null]);
+        Banner::factory()->create(['title' => 'A slide']);
+        Banner::factory()->poster()->create(['title' => 'A poster']);
+
+        $this->get('/')->assertOk()->assertDontSee('alt="A slide"', false)->assertDontSee('alt="A poster"', false)->assertSee('href="'.route('posters').'"', false);
+
+        $this->get('/posters')->assertOk()->assertSeeInOrder(['alt="A slide"', 'alt="A poster"'], false);
+        $this->get('/sitemap.xml')->assertSee(route('posters'));
+
+        Banner::query()->delete();
+
+        $this->get('/posters')->assertOk()->assertSee('Nothing has been added here yet.');
+    }
+
     public function test_the_home_page_has_none_of_it_until_something_is_put_up(): void
     {
-        $this->get('/')->assertOk()->assertDontSee('aria-label="Banners"', false)->assertDontSee('Campaigns and notices')->assertDontSee('<dialog', false);
+        $this->get('/')->assertOk()->assertDontSee('aria-label="Banners"', false)->assertDontSee('<h2 class="mt-2 text-2xl sm:text-3xl">Campaigns and notices', false)->assertDontSee('<dialog', false);
     }
 
     public function test_banners_and_posters_show_in_their_own_places_in_order(): void

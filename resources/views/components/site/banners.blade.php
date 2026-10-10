@@ -3,6 +3,7 @@
     the grid of posters, and the one poster that opens over the page.
 
     <x-site.banners part="banners" />   <x-site.banners part="posters" />   <x-site.banners part="popup" />
+    <x-site.banners part="all" />       every slide and poster in one grid, for the page of their own (/posters)
 --}}
 @props(['part'])
 @php
@@ -79,6 +80,20 @@
                 </ul>
             </div>
         </section>
+    @endif
+@elseif ($part === 'all')
+    @php($pictures = Banner::slides()->concat(Banner::showingAs('poster')))
+    @if ($pictures->isNotEmpty())
+        <ul class="mt-8 grid grid-cols-2 gap-4 lg:grid-cols-4">
+            @foreach ($pictures as $poster)
+                <li class="card overflow-hidden p-0">
+                    {!! $framed($poster, 'aspect-[3/4]') !!}
+                    <p class="line-clamp-2 border-t border-line px-3 py-2 text-sm">{{ $poster->title }}</p>
+                </li>
+            @endforeach
+        </ul>
+    @else
+        <p class="card mt-8 text-muted">{{ __('Nothing has been added here yet.') }}</p>
     @endif
 @elseif ($part === 'popup')
     @php($popup = Banner::popup())

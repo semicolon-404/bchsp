@@ -317,20 +317,20 @@ class AnnouncementsTest extends TestCase
         $this->assertStringNotContainsString('<script>alert("t")', $this->get('/announcements')->getContent());
     }
 
-    public function test_the_home_page_shows_the_eight_at_the_top_of_the_list_and_the_way_to_each_kind(): void
+    public function test_the_home_page_shows_the_four_at_the_top_of_the_list_and_the_way_to_the_rest(): void
     {
         $this->get('/')->assertDontSee('All announcements');
 
-        foreach (range(1, 9) as $days) {
+        foreach (range(1, 5) as $days) {
             Announcement::factory()->create(['title' => "Notice from $days days ago", 'starts_at' => now()->subDays($days)]);
         }
 
         $this->get('/')
             ->assertSee('Notice from 1 days ago')
-            ->assertSee('Notice from 8 days ago')
-            ->assertDontSee('Notice from 9 days ago')
+            ->assertSee('Notice from 4 days ago')
+            ->assertDontSee('Notice from 5 days ago')
             ->assertSee('All announcements')
-            ->assertSee('href="'.route('announcements.index', ['type' => AnnouncementType::orderBy('sort_order')->first()->slug]).'" class="chip gap-2"', false);
+            ->assertSee('href="'.route('announcements.index', ['type' => 'procurement']).'" class="btn btn-line mt-8">Go to Procurement', false);
     }
 
     public function test_a_reader_in_english_gets_the_english_where_there_is_some_and_thai_dates_are_buddhist(): void

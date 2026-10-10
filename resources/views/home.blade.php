@@ -17,8 +17,7 @@
     // Today's clinics take the place beside the heading; the contact details drawn as code are what shows until a schedule exists.
     $sessions = App\Models\ClinicSession::today();
 
-    $announcements = App\Models\Announcement::current()->with('type')->inListOrder()->limit(8)->get();
-    $types = App\Models\AnnouncementType::orderBy('sort_order')->orderBy('name')->get();
+    $announcements = App\Models\Announcement::current()->with('type')->inListOrder()->limit(4)->get();
     $departments = App\Models\Department::shown()->limit(6)->get();
     $articles = App\Models\BlogPost::published()->with('category')->latest('published_at')->limit(3)->get();
 @endphp
@@ -101,50 +100,49 @@
     @break
 
     @case('shortcuts')
-    {{-- What people come to a hospital's site for, one press away. --}}
-    <section class="border-b border-line" aria-label="{{ __('Shortcuts') }}">
-        <div class="wrap grid grid-cols-2 gap-3 py-6 lg:grid-cols-4">
-            @foreach ([
-                ['schedule', 'calendar-days', 'Clinic schedule', 'What is open, and when'],
-                ['contact', 'map-pin', 'Contact and map', 'Address, phone, how to get here'],
-                ['departments.index', 'building-office-2', 'Departments', 'Where each one is'],
-                ['downloads', 'arrow-down-tray', 'Forms and documents', 'To download'],
-            ] as [$route, $icon, $label, $hint])
-                <a href="{{ route($route) }}" class="card flex items-center gap-3 px-4 py-4 text-ink no-underline">
-                    <span class="flex size-10 shrink-0 items-center justify-center rounded-lg bg-raised text-brand" aria-hidden="true">
-                        <x-dynamic-component :component="'heroicon-o-'.$icon" class="size-5" />
-                    </span>
-                    <span class="min-w-0">
-                        <span class="block font-medium">{{ __($label) }}</span>
-                        <span class="hidden text-sm text-muted sm:block">{{ __($hint) }}</span>
-                    </span>
-                </a>
-            @endforeach
-        </div>
-    </section>
+    {{--
+        A section for each part of the site, one under another: what it is, in a sentence, and the way in.
+        Nothing is listed here: each thing is read on its own page. The sides and the backgrounds alternate.
+    --}}
+    <div role="group" aria-label="{{ __('Shortcuts') }}">
+        @foreach ([
+            [route('announcements.index', ['type' => 'procurement']), 'clipboard-document-list', 'Procurement', 'Procurement plans, invitations to bid and results, by fiscal year.'],
+            [route('posters'), 'photo', 'Campaigns and notices', 'Campaign posters and one-page notices from the hospital.'],
+            [route('blog.index'), 'book-open', 'Health knowledge and news', 'Health knowledge, and photographs of what the hospital has been doing.'],
+            [route('schedule'), 'calendar-days', 'Clinic schedule', 'Which clinic is open on which day, and at what time.'],
+            [route('contact'), 'map-pin', 'Contact and map', 'Address, phone numbers, opening hours and a map.'],
+        ] as $index => [$address, $icon, $label, $about])
+            <section @class(['border-b border-line', 'bg-surface' => $index % 2 === 0]) aria-labelledby="door-{{ $index }}">
+                <div class="wrap grid items-center gap-8 py-16 sm:py-24 md:grid-cols-2">
+                    <div @class(['text-center md:text-left', 'md:order-2' => $index % 2 === 1])>
+                        <p class="eyebrow">{{ str_pad((string) ($index + 1), 2, '0', STR_PAD_LEFT) }}</p>
+                        <h2 id="door-{{ $index }}" class="mt-2 text-2xl sm:text-3xl">{{ __($label) }}</h2>
+                        <p class="mx-auto mt-4 max-w-md text-lg text-muted md:mx-0">{{ __($about) }}</p>
+                        <a href="{{ $address }}" class="btn btn-line mt-8">{{ __('Go to :name', ['name' => __($label)]) }} &rarr;</a>
+                    </div>
+                    <div class="hidden justify-center md:flex" aria-hidden="true">
+                        <span class="flex size-40 items-center justify-center rounded-3xl border border-line bg-raised text-brand">
+                            <x-dynamic-component :component="'heroicon-o-'.$icon" class="size-16" />
+                        </span>
+                    </div>
+                </div>
+            </section>
+        @endforeach
+    </div>
     @break
 
     @case('announcements')
     @if ($announcements->isNotEmpty())
-        <section class="border-b border-line bg-surface">
-            <div class="wrap py-12 sm:py-16">
-                <div class="flex flex-wrap items-end justify-between gap-3">
-                    <div>
-                        <p class="eyebrow">{{ __('Announcements') }}</p>
-                        <h2 class="mt-2 text-2xl sm:text-3xl">{{ __('Announcements from the hospital') }}</h2>
-                    </div>
-                    <a href="{{ route('announcements.index') }}" class="btn btn-line">{{ __('All announcements') }} &rarr;</a>
+        {{-- The one part that shows some of what is inside: the newest few. The whole list, with its kinds and years, is a page of its own. --}}
+        <section class="border-b border-line">
+            <div class="wrap grid items-center gap-8 py-16 sm:py-24 md:grid-cols-2">
+                <div class="text-center md:text-left">
+                    <p class="eyebrow">{{ __('Announcements') }}</p>
+                    <h2 class="mt-2 text-2xl sm:text-3xl">{{ __('News') }}</h2>
+                    <p class="mx-auto mt-4 max-w-md text-lg text-muted md:mx-0">{{ __('News and announcements from the hospital, the newest first.') }}</p>
+                    <a href="{{ route('announcements.index') }}" class="btn btn-line mt-8">{{ __('All announcements') }} &rarr;</a>
                 </div>
-                {{-- The kinds of announcement, each with its mark: one press to the list of that kind. --}}
-                @if ($types->isNotEmpty())
-                    <nav class="mt-6 flex flex-wrap gap-2" aria-label="{{ __('Types') }}">
-                        @foreach ($types as $type)
-                            <a href="{{ route('announcements.index', ['type' => $type->slug]) }}" class="chip gap-2"><x-site.type-mark :type="$type" bare />{{ $type->localName() }}</a>
-                        @endforeach
-                    </nav>
-                @endif
-                {{-- Two columns on a wide screen: eight announcements in the height of four. --}}
-                <ul class="card mt-6 grid bg-page p-0 lg:grid-cols-2 lg:[&>li:nth-child(odd)]:border-r lg:[&>li:nth-last-child(2):nth-child(odd)]:border-b-0">
+                <ul class="card p-0">
                     @foreach ($announcements as $announcement)
                         <x-site.announcement-row :announcement="$announcement" />
                     @endforeach

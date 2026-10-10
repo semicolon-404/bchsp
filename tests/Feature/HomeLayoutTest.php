@@ -31,13 +31,19 @@ class HomeLayoutTest extends TestCase
     {
         $this->fillTheHomePage();
 
-        // The list of departments is off at first: it is not what the home page is for.
-        // The name of the hospital first; the pictures come after what people came to read.
-        $this->assertSame(['hero', 'shortcuts', 'announcements', 'slides', 'posters', 'articles'], HomeLayout::shown());
+        // Kept open: the name of the hospital, the newest announcements, then a section for each part of the site.
+        // The pictures, the articles and the departments are off at first, and read on their own pages.
+        $this->assertSame(['hero', 'announcements', 'shortcuts'], HomeLayout::shown());
 
         $this->get('/')
-            ->assertSeeInOrder(['<h1', 'aria-label="Shortcuts"', 'A notice', 'alt="A slide"', 'alt="A poster"', 'An article'], false)
-            ->assertDontSee('A department');
+            ->assertSeeInOrder(['<h1', 'A notice', 'aria-label="Shortcuts"', 'id="door-0"', 'id="door-4"'], false)
+            ->assertDontSee('id="door-5"', false)
+            ->assertDontSee('alt="A slide"', false)->assertDontSee('alt="A poster"', false)->assertDontSee('An article')->assertDontSee('A department');
+
+        // Switched on, each takes its usual place: the pictures after what people came to read.
+        $this->showOnHome('slides', 'posters', 'articles');
+
+        $this->get('/')->assertSeeInOrder(['<h1', 'A notice', 'aria-label="Shortcuts"', 'alt="A slide"', 'alt="A poster"', 'An article'], false);
     }
 
     public function test_an_administrator_reorders_the_sections_and_hides_some(): void
@@ -95,10 +101,10 @@ class HomeLayoutTest extends TestCase
     {
         $this->assertNull(HomeLayout::toStore(HomeLayout::rows()));
 
-        // Saved before "articles" existed, say: it is added at the end, shown.
+        // Saved before "shortcuts" existed, say: it is added at the end, shown.
         SiteSettings::save(['home.layout' => [['key' => 'announcements', 'shown' => true], ['key' => 'hero', 'shown' => true]]]);
 
-        $this->assertSame(['announcements', 'hero', 'shortcuts', 'slides', 'posters', 'articles'], HomeLayout::shown());
+        $this->assertSame(['announcements', 'hero', 'shortcuts'], HomeLayout::shown());
     }
 
     public function test_whatever_is_saved_only_known_sections_are_drawn_each_once(): void
