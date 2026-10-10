@@ -22,14 +22,15 @@ class Menus
      */
     public const PLACES = [
         'home' => ['home', 'Home', 'Home', 'home', 'home'],
+        'announcements' => ['announcements.index', 'Announcements', 'Announcements', 'megaphone', 'announcements.*'],
         'blog' => ['blog.index', 'Articles', 'Articles', 'newspaper', 'blog.*'],
     ];
 
     /** Menu => [setting, what it holds when untouched, how many it can hold]. */
     private const MENUS = [
-        'top' => ['menu.top', ['home', 'blog'], 7],
+        'top' => ['menu.top', ['home', 'announcements', 'blog'], 7],
         // Five: more than that and a thumb misses.
-        'tabs' => ['menu.tabs', ['home', 'blog'], 5],
+        'tabs' => ['menu.tabs', ['home', 'announcements', 'blog'], 5],
     ];
 
     public static function max(string $menu): int

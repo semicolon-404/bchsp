@@ -11,6 +11,7 @@
     // What the "editor window" lists: only what has been filled in.
     $facts = array_filter(['phone' => $phone, 'emergency' => $emergency, 'email' => $email]);
 
+    $announcements = App\Models\Announcement::current()->with('type')->inListOrder()->limit(6)->get();
     $articles = App\Models\BlogPost::published()->with('category')->latest('published_at')->limit(3)->get();
 @endphp
 <x-layouts.site :description="__('News, announcements and services of :name.', ['name' => $name])">
@@ -60,6 +61,25 @@
             @endif
         </div>
     </section>
+
+    @if ($announcements->isNotEmpty())
+        <section class="border-b border-line bg-surface">
+            <div class="wrap py-12 sm:py-16">
+                <div class="flex flex-wrap items-end justify-between gap-3">
+                    <div>
+                        <p class="eyebrow">{{ __('Announcements') }}</p>
+                        <h2 class="mt-2 text-2xl sm:text-3xl">{{ __('Announcements from the hospital') }}</h2>
+                    </div>
+                    <a href="{{ route('announcements.index') }}" class="btn btn-line">{{ __('All announcements') }} &rarr;</a>
+                </div>
+                <ul class="card mt-8 bg-page p-0">
+                    @foreach ($announcements as $announcement)
+                        <x-site.announcement-row :announcement="$announcement" />
+                    @endforeach
+                </ul>
+            </div>
+        </section>
+    @endif
 
     @if ($articles->isNotEmpty())
         <section class="border-b border-line">

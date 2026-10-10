@@ -18,12 +18,12 @@ class MenusTest extends TestCase
 
     public function test_until_someone_arranges_them_the_menus_are_what_they_always_were(): void
     {
-        $this->assertSame(['home', 'blog'], Menus::keys('top'));
-        $this->assertSame(['home', 'blog'], Menus::keys('tabs'));
+        $this->assertSame(['home', 'announcements', 'blog'], Menus::keys('top'));
+        $this->assertSame(['home', 'announcements', 'blog'], Menus::keys('tabs'));
 
         $this->get('/')
             ->assertOk()
-            ->assertSeeInOrder(['aria-label="Main"', route('home'), 'Home', route('blog.index'), 'Articles'], false)
+            ->assertSeeInOrder(['aria-label="Main"', route('home'), 'Home', route('announcements.index'), 'Announcements', route('blog.index'), 'Articles'], false)
             ->assertSee('class="dock lg:hidden"', false);
     }
 
@@ -43,7 +43,7 @@ class MenusTest extends TestCase
 
         Livewire::test(SettingsPage::class)
             // A list in a form is kept under made-up keys; what matters is its rows in order.
-            ->assertFormSet(fn (array $state) => array_values($state['menu_top']) === [['key' => 'home'], ['key' => 'blog']])
+            ->assertFormSet(fn (array $state) => array_values($state['menu_top']) === [['key' => 'home'], ['key' => 'announcements'], ['key' => 'blog']])
             ->fillForm(['menu_top' => [['key' => 'blog'], ['key' => 'home']], 'menu_tabs' => [['key' => 'home']]])
             ->call('save')
             ->assertHasNoFormErrors();
@@ -71,7 +71,7 @@ class MenusTest extends TestCase
     public function test_only_known_places_are_kept_each_once_and_no_more_than_fit(): void
     {
         $this->assertSame(['blog'], Menus::toStore('top', ['blog', 'blog', 'no-such', ['key' => 'blog'], null, 7]));
-        $this->assertNull(Menus::toStore('top', ['home', 'blog']));
+        $this->assertNull(Menus::toStore('top', ['home', 'announcements', 'blog']));
         $this->assertNull(Menus::toStore('tabs', []));
 
         SiteSettings::save(['menu.top' => ['<script>', 'blog']]);
