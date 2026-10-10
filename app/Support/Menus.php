@@ -2,38 +2,58 @@
 
 namespace App\Support;
 
+use App\Models\AnnouncementType;
+use App\Models\SitePage;
 use Illuminate\Support\Facades\Route;
 
 /**
- * The site's two main menus, as an administrator arranged them (System > Site
- * settings > "Menus"): the links in the top bar of a wide screen, and the tabs
- * of the dock at the bottom of a phone or tablet.
+ * The site's menus: the bar at the top of a wide screen, the dock at the bottom
+ * of a phone or tablet, and the page that lists everything (/menu).
  *
- * Each is an ordered pick from PLACES. Until an administrator changes one,
- * nothing is saved and the menu is what it always was (the lists in MENUS below).
+ * The public menu is kept to what a government hospital's site is expected to
+ * show, in groups:
  *
- * To add a place: give it a line in PLACES, and put it in a default list if it
- * should be there from the start.
+ *   Home · About us · ITA · News · Procurement
+ *
+ * "About us" opens onto the pages an administrator filed there (System > Pages),
+ * the departments and the contact page. "News" opens onto the kinds of
+ * announcement, the articles and the downloads. What staff use (their own
+ * services) is not in the public menu at all: it has a page of its own, /staff.
+ *
+ * An administrator chooses which groups are in the bar and in the dock, and in
+ * what order (System > Site settings > "Menus"). Until one is changed nothing
+ * is saved and the menu is what it always was (MENUS below).
  */
 class Menus
 {
+    /** The kind of announcement that has a place of its own in the menu. */
+    public const PROCUREMENT = 'procurement';
+
     /**
-     * Place => [route name, label, short label for a tab, heroicon, pattern of routes that mark it current].
+     * Place => [label, short label for a tab, heroicon]. Where each leads, and what it opens onto, is in place().
      */
     public const PLACES = [
-        'home' => ['home', 'Home', 'Home', 'home', 'home'],
-        'announcements' => ['announcements.index', 'Announcements', 'Announcements', 'megaphone', 'announcements.*'],
-        'blog' => ['blog.index', 'Articles', 'Articles', 'newspaper', 'blog.*'],
-        'departments' => ['departments.index', 'Departments', 'Departments', 'building-office-2', 'departments.*'],
-        'downloads' => ['downloads', 'Downloads', 'Downloads', 'arrow-down-tray', 'downloads'],
-        'contact' => ['contact', 'Contact us', 'Contact', 'phone', 'contact'],
+        'home' => ['Home', 'Home', 'home'],
+        'about' => ['About us', 'About', 'information-circle'],
+        'ita' => ['ITA', 'ITA', 'shield-check'],
+        'news' => ['News', 'News', 'megaphone'],
+        'procurement' => ['Procurement', 'Procurement', 'clipboard-document-list'],
+        'blog' => ['Articles', 'Articles', 'newspaper'],
+        'departments' => ['Departments', 'Departments', 'building-office-2'],
+        'downloads' => ['Downloads', 'Downloads', 'arrow-down-tray'],
+        'contact' => ['Contact us', 'Contact', 'phone'],
+        'staff' => ['For staff', 'Staff', 'identification'],
+        // The page that lists everything: how a phone reaches what its dock has no room for.
+        'menu' => ['Menu', 'Menu', 'bars-3'],
     ];
 
     /** Menu => [setting, what it holds when untouched, how many it can hold]. */
     private const MENUS = [
-        'top' => ['menu.top', ['home', 'announcements', 'blog', 'departments', 'downloads', 'contact'], 7],
+        'top' => ['menu.top', ['home', 'about', 'ita', 'news', 'procurement'], 7],
         // Five: more than that and a thumb misses.
-        'tabs' => ['menu.tabs', ['home', 'announcements', 'blog', 'departments', 'contact'], 5],
+        'tabs' => ['menu.tabs', ['home', 'news', 'procurement', 'ita', 'menu'], 5],
+        // Everything the public comes for, for the page that lists it all. Not arranged by anyone.
+        'all' => [null, ['home', 'about', 'ita', 'news', 'procurement'], 99],
     ];
 
     public static function max(string $menu): int
@@ -44,22 +64,77 @@ class Menus
     /**
      * The menu as it should be drawn.
      *
-     * @return list<array{key: string, route: string, label: string, short: string, icon: string, pattern: string}>
+     * @return list<array{key: string, label: string, short: string, icon: string, url: string, active: bool, children: list<array{label: string, url: string, active: bool}>}>
      */
     public static function items(string $menu): array
     {
         $items = [];
 
         foreach (self::keys($menu) as $key) {
-            [$route, $label, $short, $icon, $pattern] = self::PLACES[$key];
+            if ($place = self::place($key)) {
+                [$label, $short, $icon] = self::PLACES[$key];
 
-            // A place whose page has been taken out of the site is left out rather than breaking every page.
-            if (Route::has($route)) {
-                $items[] = compact('key', 'route', 'label', 'short', 'icon', 'pattern');
+                $items[] = compact('key', 'label', 'short', 'icon') + $place;
             }
         }
 
         return $items;
+    }
+
+    /**
+     * Where a place leads, whether the visitor is in it right now, and what it opens onto.
+     * Null for a place that has nothing to show (its page taken out of the site, no procurement type).
+     *
+     * @return array{url: string, active: bool, children: list<array{label: string, url: string, active: bool}>}|null
+     */
+    private static function place(string $key): ?array
+    {
+        $request = request();
+        $type = $request->routeIs('announcements.index') ? $request->query('type') : null;
+        $link = fn (string $label, string $url, bool $active = false) => compact('label', 'url', 'active');
+        $simple = fn (string $route, string $pattern) => Route::has($route)
+            ? ['url' => route($route), 'active' => $request->routeIs($pattern), 'children' => []]
+            : null;
+
+        switch ($key) {
+            case 'about':
+                $children = SitePage::menuLinks('about')
+                    ->map(fn (SitePage $page) => $link($page->localTitle(), route('pages.show', $page), $request->routeIs('pages.show') && $request->route('page')?->is($page)))
+                    ->all();
+                $children[] = $link(__('Departments'), route('departments.index'), $request->routeIs('departments.*'));
+                $children[] = $link(__('Contact us'), route('contact'), $request->routeIs('contact'));
+
+                return ['url' => $children[0]['url'], 'active' => in_array(true, array_column($children, 'active'), true), 'children' => $children];
+
+            case 'news':
+                $children = AnnouncementType::where('slug', '!=', self::PROCUREMENT)->orderBy('sort_order')->orderBy('name')->get()
+                    ->map(fn (AnnouncementType $one) => $link($one->localName(), route('announcements.index', ['type' => $one->slug]), $type === $one->slug))
+                    ->all();
+                $children[] = $link(__('Health articles'), route('blog.index'), $request->routeIs('blog.*'));
+                $children[] = $link(__('Downloads'), route('downloads'), $request->routeIs('downloads'));
+
+                return [
+                    'url' => route('announcements.index'),
+                    // Any announcement is news, except the list of procurement notices, which has its own place.
+                    'active' => ($request->routeIs('announcements.*') && $type !== self::PROCUREMENT) || $request->routeIs('blog.*', 'downloads'),
+                    'children' => $children,
+                ];
+
+            case 'procurement':
+                return AnnouncementType::where('slug', self::PROCUREMENT)->exists()
+                    ? ['url' => route('announcements.index', ['type' => self::PROCUREMENT]), 'active' => $type === self::PROCUREMENT, 'children' => []]
+                    : null;
+
+            case 'home': return $simple('home', 'home');
+            case 'ita': return $simple('ita', 'ita');
+            case 'blog': return $simple('blog.index', 'blog.*');
+            case 'departments': return $simple('departments.index', 'departments.*');
+            case 'downloads': return $simple('downloads', 'downloads');
+            case 'contact': return $simple('contact', 'contact');
+            case 'staff': return $simple('staff', 'staff');
+            case 'menu': return $simple('menu', 'menu');
+            default: return null;
+        }
     }
 
     /**
@@ -70,7 +145,7 @@ class Menus
     public static function keys(string $menu): array
     {
         [$setting, $default] = self::MENUS[$menu];
-        $saved = SiteSettings::get($setting);
+        $saved = $setting ? SiteSettings::get($setting) : null;
 
         return is_array($saved) && $saved !== [] ? self::clean($menu, $saved) : $default;
     }
@@ -96,7 +171,7 @@ class Menus
      */
     private static function clean(string $menu, array $keys): array
     {
-        // The settings page sends rows (['key' => 'blog']); what is stored is the bare keys.
+        // The settings page sends rows (['key' => 'news']); what is stored is the bare keys.
         $keys = array_map(fn ($key) => is_array($key) ? ($key['key'] ?? null) : $key, $keys);
         $keys = array_filter($keys, fn ($key) => is_string($key) && isset(self::PLACES[$key]));
 

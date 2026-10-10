@@ -13,6 +13,7 @@ use Filament\Actions\Action;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\EditAction;
 use Filament\Forms\Components\RichEditor;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Resources\Resource;
@@ -79,6 +80,11 @@ class SitePageResource extends Resource
                             ->unique(ignoreRecord: true)
                             ->validationMessages(['regex' => __('Use lowercase English letters, numbers and hyphens only, e.g. "about" or "vision-mission".')])
                             ->helperText(__('Lowercase English, e.g. "about". Changing it later breaks links that were already shared.')),
+                        Select::make('section')
+                            ->label(__('List it in the menu under'))
+                            ->options(array_map('__', SitePage::SECTIONS))
+                            ->placeholder(__('Not in the menu'))
+                            ->helperText(__('Pages listed in the menu are in the order below, lowest first.')),
                         Toggle::make('is_published')
                             ->label(__('Published'))
                             ->default(true)
@@ -87,7 +93,7 @@ class SitePageResource extends Resource
                             ->label(__('Link to it in the footer'))
                             ->default(true),
                         TextInput::make('position')
-                            ->label(__('Order in the footer'))
+                            ->label(__('Order'))
                             ->numeric()
                             ->integer()
                             ->minValue(0)
@@ -117,6 +123,11 @@ class SitePageResource extends Resource
                     ->label(__('Title'))
                     ->searchable()
                     ->description(fn (SitePage $record) => '/p/'.$record->slug),
+                TextColumn::make('section')
+                    ->label(__('In the menu'))
+                    ->formatStateUsing(fn (?string $state) => __(SitePage::SECTIONS[$state] ?? $state))
+                    ->badge()
+                    ->placeholder('—'),
                 IconColumn::make('is_published')
                     ->label(__('Published'))
                     ->boolean(),

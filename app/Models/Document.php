@@ -30,9 +30,12 @@ class Document extends Model
         'application/vnd.openxmlformats-officedocument.presentationml.presentation' => 'PowerPoint',
     ];
 
-    protected $fillable = ['title', 'title_en', 'group', 'file_path', 'file_name', 'is_active', 'sort_order'];
+    /** The page a document is offered on => what the panel calls it. */
+    public const SECTIONS = ['downloads' => 'Downloads page', 'ita' => 'ITA page'];
 
-    protected $attributes = ['is_active' => true, 'sort_order' => 0];
+    protected $fillable = ['title', 'title_en', 'section', 'year', 'group', 'file_path', 'file_name', 'is_active', 'sort_order'];
+
+    protected $attributes = ['section' => 'downloads', 'is_active' => true, 'sort_order' => 0];
 
     protected function casts(): array
     {

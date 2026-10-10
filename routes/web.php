@@ -20,6 +20,11 @@ Route::get('/departments/{department}', [DepartmentController::class, 'show'])->
 
 Route::view('/contact', 'contact')->name('contact');
 Route::view('/downloads', 'downloads')->name('downloads');
+Route::view('/ita', 'ita')->name('ita');
+
+// Everything on the site in one list (the dock's "Menu" tab), and the page of services for staff.
+Route::view('/menu', 'menu')->name('menu');
+Route::view('/staff', 'staff')->name('staff');
 
 // Pages of text written in the panel (System > Pages).
 Route::get('/p/{page}', [SitePageController::class, 'show'])->name('pages.show');

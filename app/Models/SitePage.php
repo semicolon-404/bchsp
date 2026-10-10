@@ -28,7 +28,12 @@ class SitePage extends Model
 
     private const FOOTER_KEY = 'site-pages:footer';
 
-    protected $fillable = ['slug', 'title', 'title_en', 'body', 'body_en', 'is_published', 'show_in_footer', 'position'];
+    /** Where in the menu a page can be filed => what the panel calls it (App\Support\Menus). */
+    public const SECTIONS = ['about' => 'About us'];
+
+    private const MENU_KEY = 'site-pages:menu:';
+
+    protected $fillable = ['slug', 'section', 'title', 'title_en', 'body', 'body_en', 'is_published', 'show_in_footer', 'position'];
 
     protected $attributes = ['is_published' => true, 'show_in_footer' => true, 'position' => 0];
 
@@ -43,8 +48,32 @@ class SitePage extends Model
     protected static function booted(): void
     {
         // The footer of every page lists these, so the list is kept until one changes.
-        static::saved(fn () => Cache::forget(self::FOOTER_KEY));
-        static::deleted(fn () => Cache::forget(self::FOOTER_KEY));
+        static::saved(fn () => static::forgetLists());
+        static::deleted(fn () => static::forgetLists());
+    }
+
+    private static function forgetLists(): void
+    {
+        Cache::forget(self::FOOTER_KEY);
+
+        foreach (array_keys(self::SECTIONS) as $section) {
+            Cache::forget(self::MENU_KEY.$section);
+        }
+    }
+
+    /**
+     * The published pages filed under a group of the menu, in the administrator's order.
+     * Every page of the site draws the menu, so the list is kept until a page changes.
+     *
+     * @return Collection<int, SitePage>
+     */
+    public static function menuLinks(string $section): Collection
+    {
+        return Cache::rememberForever(self::MENU_KEY.$section, fn () => static::published()
+            ->where('section', $section)
+            ->orderBy('position')
+            ->orderBy('id')
+            ->get(['id', 'slug', 'title', 'title_en']));
     }
 
     public function getRouteKeyName(): string

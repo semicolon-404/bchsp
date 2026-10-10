@@ -5,7 +5,7 @@
 
     Without a title the page is named after the hospital alone.
 --}}
-@props(['title' => null, 'description' => null])
+@props(['title' => null, 'description' => null, 'noindex' => false])
 @php
     use App\Support\SiteSettings;
 
@@ -27,6 +27,9 @@
     <title>{{ $title ? $title.' · '.$name : $name }}</title>
     @if ($description)
         <meta name="description" content="{{ $description }}">
+    @endif
+    @if ($noindex)
+        <meta name="robots" content="noindex">
     @endif
     {{-- Runs before the first paint so a light-mode visitor never sees a dark flash. Same storage key as the admin panel; see resources/js/theme.js. --}}
     <script>
@@ -64,6 +67,10 @@
 
             <div class="ml-auto flex shrink-0 items-center gap-2">
                 {{-- On a phone the language switch is in the footer, so the bar keeps to what fits. --}}
+                {{-- What staff use is kept apart from the public menu (resources/views/staff.blade.php). --}}
+                <a href="{{ route('staff') }}" class="hidden items-center gap-1 whitespace-nowrap px-2 text-sm text-muted no-underline hover:text-ink xl:flex">
+                    <x-heroicon-m-identification class="size-4" aria-hidden="true" />{{ __('For staff') }}
+                </a>
                 <x-site.language-switch class="hidden sm:grid" />
                 <x-site.theme-switch class="max-[419px]:hidden" />
             </div>

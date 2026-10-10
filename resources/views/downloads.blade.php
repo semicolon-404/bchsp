@@ -1,6 +1,6 @@
 {{-- /downloads: the files the hospital offers, under the headings staff gave them; those without one come last. --}}
 @php
-    $groups = App\Models\Document::shown()->get()->groupBy(fn ($document) => (string) $document->group)->sortKeysUsing(fn ($a, $b) => [$a === '', $a] <=> [$b === '', $b]);
+    $groups = App\Models\Document::shown()->where('section', 'downloads')->get()->groupBy(fn ($document) => (string) $document->group)->sortKeysUsing(fn ($a, $b) => [$a === '', $a] <=> [$b === '', $b]);
 @endphp
 <x-layouts.site :title="__('Downloads')" :description="__('Forms and documents to download from :name.', ['name' => App\Support\SiteSettings::name()])">
     <div class="wrap max-w-4xl py-10 sm:py-14">
