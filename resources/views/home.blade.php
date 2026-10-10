@@ -12,6 +12,7 @@
     $facts = array_filter(['phone' => $phone, 'emergency' => $emergency, 'email' => $email]);
 
     $announcements = App\Models\Announcement::current()->with('type')->inListOrder()->limit(6)->get();
+    $departments = App\Models\Department::shown()->limit(6)->get();
     $articles = App\Models\BlogPost::published()->with('category')->latest('published_at')->limit(3)->get();
 @endphp
 <x-layouts.site :description="__('News, announcements and services of :name.', ['name' => $name])">
@@ -77,6 +78,25 @@
                         <x-site.announcement-row :announcement="$announcement" />
                     @endforeach
                 </ul>
+            </div>
+        </section>
+    @endif
+
+    @if ($departments->isNotEmpty())
+        <section class="border-b border-line">
+            <div class="wrap py-12 sm:py-16">
+                <div class="flex flex-wrap items-end justify-between gap-3">
+                    <div>
+                        <p class="eyebrow">{{ __('Departments') }}</p>
+                        <h2 class="mt-2 text-2xl sm:text-3xl">{{ __('Departments and services') }}</h2>
+                    </div>
+                    <a href="{{ route('departments.index') }}" class="btn btn-line">{{ __('All departments') }} &rarr;</a>
+                </div>
+                <div class="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                    @foreach ($departments as $department)
+                        <x-site.department-card :department="$department" />
+                    @endforeach
+                </div>
             </div>
         </section>
     @endif

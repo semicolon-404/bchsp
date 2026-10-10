@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AnnouncementController;
 use App\Http\Controllers\BlogController;
+use App\Http\Controllers\DepartmentController;
 use App\Http\Controllers\SitePageController;
 use App\Http\Middleware\SetLocale;
 use Illuminate\Support\Facades\Route;
@@ -13,6 +14,9 @@ Route::get('/announcements/{announcement}', [AnnouncementController::class, 'sho
 
 Route::get('/blog', [BlogController::class, 'index'])->name('blog.index');
 Route::get('/blog/{post}', [BlogController::class, 'show'])->name('blog.show');
+
+Route::get('/departments', [DepartmentController::class, 'index'])->name('departments.index');
+Route::get('/departments/{department}', [DepartmentController::class, 'show'])->name('departments.show');
 
 // Pages of text written in the panel (System > Pages).
 Route::get('/p/{page}', [SitePageController::class, 'show'])->name('pages.show');

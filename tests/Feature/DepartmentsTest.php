@@ -1,0 +1,151 @@
+<?php
+
+namespace Tests\Feature;
+
+use App\Filament\Resources\Departments\Pages\ManageDepartments;
+use App\Http\Middleware\SetLocale;
+use App\Models\Department;
+use App\Models\User;
+use Database\Seeders\DepartmentSeeder;
+use Filament\Actions\EditAction;
+use Filament\Actions\Testing\TestAction;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
+use Livewire\Livewire;
+use Tests\TestCase;
+
+class DepartmentsTest extends TestCase
+{
+    use RefreshDatabase;
+
+    public function test_the_departments_are_listed_in_the_administrators_order(): void
+    {
+        Department::factory()->create(['name' => 'Pharmacy', 'sort_order' => 2]);
+        Department::factory()->create(['name' => 'Emergency', 'sort_order' => 1]);
+        Department::factory()->create(['name' => 'Hidden unit', 'is_active' => false]);
+
+        $this->get('/departments')
+            ->assertOk()
+            ->assertSeeInOrder(['Emergency', 'Pharmacy'])
+            ->assertDontSee('Hidden unit');
+    }
+
+    public function test_a_department_shows_where_it_is_its_hours_and_a_number_that_can_be_dialled(): void
+    {
+        $department = Department::factory()->create([
+            'name' => 'Dental', 'description' => "Fillings and extractions.\nBy appointment.",
+            'location' => 'Building 2, first floor', 'phone' => '044-579076 ต่อ 120', 'hours' => 'Mon–Fri 08.15–15.30',
+        ]);
+
+        $this->get(route('departments.show', $department))
+            ->assertOk()
+            ->assertSee('<title>Dental · ', false)
+            ->assertSee('Building 2, first floor')
+            ->assertSee('Mon–Fri 08.15–15.30')
+            ->assertSee('044-579076 ต่อ 120')
+            ->assertSee('href="tel:044579076"', false)
+            ->assertSee('Fillings and extractions.');
+    }
+
+    public function test_what_was_not_filled_in_is_left_out(): void
+    {
+        $department = Department::factory()->create(['name' => 'Records']);
+
+        $this->assertNull($department->dialUrl());
+        $this->get(route('departments.show', $department))->assertOk()->assertDontSee('Opening hours')->assertDontSee('tel:', false);
+    }
+
+    public function test_one_that_is_switched_off_is_seen_only_by_an_administrator(): void
+    {
+        $department = Department::factory()->create(['is_active' => false]);
+
+        $this->get(route('departments.show', $department))->assertNotFound();
+        $this->actingAs(User::factory()->create())->get(route('departments.show', $department))->assertNotFound();
+        $this->actingAs(User::factory()->admin()->create())->get(route('departments.show', $department))->assertOk();
+    }
+
+    public function test_nothing_typed_into_a_department_is_run_by_the_readers_browser(): void
+    {
+        $department = Department::factory()->create(['name' => 'Unit', 'description' => '<script>alert(1)</script>', 'hours' => '<img src=x onerror=alert(2)>']);
+
+        $page = $this->get(route('departments.show', $department))->assertOk()->getContent();
+
+        $this->assertStringNotContainsString('<script>alert(1)', $page);
+        $this->assertStringNotContainsString('<img src=x', $page);
+    }
+
+    public function test_the_home_page_shows_the_first_six(): void
+    {
+        $this->get('/')->assertDontSee('All departments');
+
+        foreach (range(1, 7) as $order) {
+            Department::factory()->create(['name' => "Unit number $order", 'sort_order' => $order]);
+        }
+
+        $this->get('/')->assertSee('Unit number 6')->assertDontSee('Unit number 7')->assertSee('All departments');
+    }
+
+    public function test_a_reader_in_english_gets_the_english_name_where_there_is_one(): void
+    {
+        $department = Department::factory()->create(['name' => 'กลุ่มงานเภสัชกรรม', 'name_en' => 'Pharmacy']);
+
+        $this->withUnencryptedCookie(SetLocale::COOKIE, 'en')->get('/departments')->assertSee('Pharmacy')->assertDontSee('กลุ่มงานเภสัชกรรม');
+        $this->withUnencryptedCookie(SetLocale::COOKIE, 'th')->get('/departments')->assertSee('กลุ่มงานเภสัชกรรม');
+        $this->assertSame('กลุ่มงานเภสัชกรรม', $department->slug);
+    }
+
+    public function test_an_administrator_adds_one_with_a_picture_and_it_goes_to_the_end(): void
+    {
+        Storage::fake('public');
+        $this->actingAs(User::factory()->admin()->create());
+        Department::factory()->create(['sort_order' => 4]);
+
+        Livewire::test(ManageDepartments::class)
+            ->callAction('create', ['name' => 'Dental', 'phone' => '044-579076', 'image_path' => UploadedFile::fake()->image('room.jpg', 2000, 1200)])
+            ->assertHasNoFormErrors();
+
+        $department = Department::where('name', 'Dental')->firstOrFail();
+
+        $this->assertSame(5, $department->sort_order);
+        $this->assertStringEndsWith('.webp', $department->image_path);
+        Storage::disk('public')->assertExists($department->image_path);
+
+        $department->delete();
+        Storage::disk('public')->assertMissing($department->image_path);
+    }
+
+    public function test_an_administrator_hides_one_from_the_site(): void
+    {
+        $this->actingAs(User::factory()->admin()->create());
+        $department = Department::factory()->create(['name' => 'Closed unit']);
+
+        Livewire::test(ManageDepartments::class)
+            ->callAction(TestAction::make(EditAction::class)->table($department), ['is_active' => false])
+            ->assertHasNoFormErrors();
+
+        auth()->logout();
+        $this->get('/departments')->assertDontSee('Closed unit');
+    }
+
+    public function test_the_starting_list_is_added_once_and_never_over_what_staff_changed(): void
+    {
+        $this->seed(DepartmentSeeder::class);
+
+        $this->assertSame(12, Department::count());
+        $this->assertSame('กลุ่มงานบริหารทั่วไป', Department::shown()->first()->name);
+
+        Department::query()->where('sort_order', '>', 1)->delete();
+        $this->seed(DepartmentSeeder::class);
+
+        $this->assertSame(1, Department::count());
+    }
+
+    public function test_only_an_administrator_manages_departments_and_the_screen_reads_in_thai(): void
+    {
+        app()->setLocale('th');
+
+        $this->actingAs(User::factory()->create())->get('/admin/departments')->assertForbidden();
+        $this->actingAs(User::factory()->admin()->create())->get('/admin/departments')->assertOk()->assertSee('หน่วยงาน')->assertSee('เวลาทำการ');
+    }
+}
