@@ -42,6 +42,7 @@ class Menus
         'news' => ['News', 'News', 'megaphone'],
         'procurement' => ['Procurement', 'Procurement', 'clipboard-document-list'],
         'blog' => ['Articles', 'Articles', 'newspaper'],
+        'schedule' => ['Clinic schedule', 'Schedule', 'calendar-days'],
         'departments' => ['Departments', 'Departments', 'building-office-2'],
         'downloads' => ['Downloads', 'Downloads', 'arrow-down-tray'],
         'contact' => ['Contact us', 'Contact', 'phone'],
@@ -105,6 +106,7 @@ class Menus
                 $children = SitePage::menuLinks('about')
                     ->map(fn (SitePage $page) => $link($page->localTitle(), route('pages.show', $page), $request->routeIs('pages.show') && $request->route('page')?->is($page)))
                     ->all();
+                $children[] = $link(__('Clinic schedule'), route('schedule'), $request->routeIs('schedule'));
                 $children[] = $link(__('Departments'), route('departments.index'), $request->routeIs('departments.*'));
                 $children[] = $link(__('Contact us'), route('contact'), $request->routeIs('contact'));
 
@@ -152,6 +154,7 @@ class Menus
 
             case 'home': return $simple('home', 'home');
             case 'blog': return $simple('blog.index', 'blog.*');
+            case 'schedule': return $simple('schedule', 'schedule');
             case 'departments': return $simple('departments.index', 'departments.*');
             case 'downloads': return $simple('downloads', 'downloads');
             case 'contact': return $simple('contact', 'contact');

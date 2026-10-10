@@ -23,6 +23,7 @@ Route::get('/departments/{department}', [DepartmentController::class, 'show'])->
 
 Route::view('/about', 'about')->name('about');
 Route::view('/contact', 'contact')->name('contact');
+Route::view('/schedule', 'schedule')->name('schedule');
 Route::view('/downloads', 'downloads')->name('downloads');
 Route::get('/ita/{year?}', [ItaController::class, 'show'])->whereNumber('year')->name('ita');
 

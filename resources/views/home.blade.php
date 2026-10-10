@@ -14,6 +14,9 @@
     // What the "editor window" lists: only what has been filled in.
     $facts = array_filter(['phone' => $phone, 'emergency' => $emergency, 'email' => $email]);
 
+    // Today's clinics take the place beside the heading; the contact details drawn as code are what shows until a schedule exists.
+    $sessions = App\Models\ClinicSession::today();
+
     $announcements = App\Models\Announcement::current()->with('type')->inListOrder()->limit(6)->get();
     $departments = App\Models\Department::shown()->limit(6)->get();
     $articles = App\Models\BlogPost::published()->with('category')->latest('published_at')->limit(3)->get();
@@ -53,8 +56,30 @@
                 @endif
             </div>
 
+            @if ($sessions->isNotEmpty())
+                {{-- What visitors most often phone to ask: what is open today. Drawn as an editor's window, read as a list. --}}
+                <section class="code-block" aria-labelledby="today-heading">
+                    <div class="code-header">
+                        <span class="code-dot bg-danger" aria-hidden="true"></span>
+                        <span class="code-dot bg-syn-string" aria-hidden="true"></span>
+                        <span class="code-dot bg-syn-function" aria-hidden="true"></span>
+                        <h2 id="today-heading" class="ml-3 text-sm font-medium text-muted">{{ __('Open today') }} · {{ __(App\Models\ClinicSession::DAYS[now()->dayOfWeek]) }}</h2>
+                    </div>
+                    <ul class="px-4 py-2">
+                        @foreach ($sessions->take(7) as $session)
+                            <li class="flex items-baseline gap-3 border-b border-line py-2 last:border-b-0">
+                                <span class="w-28 shrink-0 font-mono text-sm text-syn-string">{{ $session->hours() }}</span>
+                                <span class="min-w-0 flex-1">{{ $session->localName() }}</span>
+                                @if ($session->isOpenNow())
+                                    <span class="shrink-0 font-mono text-xs font-semibold text-syn-function">{{ __('Open now') }}</span>
+                                @endif
+                            </li>
+                        @endforeach
+                    </ul>
+                    <p class="border-t border-line px-4 py-3 text-sm"><a href="{{ route('schedule') }}" class="font-semibold text-brand underline">{{ __('The whole week') }} &rarr;</a></p>
+                </section>
             {{-- The same contact details again, drawn as a file open in an editor. Decoration: screen readers skip it. --}}
-            @if ($facts)
+            @elseif ($facts)
                 <div class="code-block" aria-hidden="true">
                     <div class="code-header">
                         <span class="code-dot bg-danger"></span>
