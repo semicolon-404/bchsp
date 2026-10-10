@@ -2,14 +2,21 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
+use App\Enums\Role;
+use Database\Factories\UserFactory;
+use Filament\Models\Contracts\FilamentUser;
+use Filament\Panel;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
-class User extends Authenticatable
+/**
+ * Someone on the hospital's staff who can sign in to the panel. There are no
+ * other accounts: the public reads the site without one, and nobody can sign up.
+ */
+class User extends Authenticatable implements FilamentUser
 {
-    /** @use HasFactory<\Database\Factories\UserFactory> */
+    /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable;
 
     /**
@@ -21,6 +28,7 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'role',
     ];
 
     /**
@@ -33,6 +41,8 @@ class User extends Authenticatable
         'remember_token',
     ];
 
+    protected $attributes = ['role' => Role::Author->value];
+
     /**
      * Get the attributes that should be cast.
      *
@@ -43,6 +53,18 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'role' => Role::class,
         ];
+    }
+
+    /** Every account belongs to staff, so every account may open the panel; what it shows depends on the role. */
+    public function canAccessPanel(Panel $panel): bool
+    {
+        return true;
+    }
+
+    public function isAdmin(): bool
+    {
+        return $this->role === Role::Admin;
     }
 }
