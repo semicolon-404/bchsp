@@ -21,7 +21,7 @@ use Symfony\Component\HttpFoundation\Response;
 class MaintenanceMode
 {
     /** What stays reachable so that staff can sign in and an administrator can switch it off. */
-    private const OPEN = ['admin', 'admin/*', 'livewire/*', 'up'];
+    private const OPEN = ['admin', 'admin/*', 'livewire/*', 'language/*', 'up'];
 
     public function handle(Request $request, Closure $next): Response
     {

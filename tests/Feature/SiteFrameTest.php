@@ -67,9 +67,9 @@ class SiteFrameTest extends TestCase
             ->assertSee('rel="noopener noreferrer"', false);
     }
 
-    public function test_the_year_is_the_buddhist_one(): void
+    public function test_the_year_is_shown(): void
     {
-        $this->get('/')->assertSee((string) (now()->year + 543));
+        $this->get('/')->assertSee((string) now()->year);
     }
 
     public function test_the_page_reads_in_thai(): void

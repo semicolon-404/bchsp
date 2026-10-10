@@ -35,8 +35,8 @@ class SiteSettings
     public const CONTENT = [
         // Closed to visitors while something is being worked on (App\Http\Middleware\MaintenanceMode).
         'maintenance.enabled', 'maintenance.message',
-        // The hospital's logo: a path on the public disk, or nothing.
-        'site.logo',
+        // The hospital's name for a reader in English, and its logo: a path on the public disk, or nothing.
+        'site.name_en', 'site.logo',
         'contact.address', 'contact.phone', 'contact.emergency_phone', 'contact.email',
         'social.facebook', 'social.line', 'social.youtube',
     ];
@@ -89,6 +89,14 @@ class SiteSettings
         $value = self::saved()[$key] ?? null;
 
         return $value === null || $value === '' ? $default : $value;
+    }
+
+    /** The hospital's name in the reader's language: the English one for a reader in English, when there is one. */
+    public static function name(): string
+    {
+        $english = app()->getLocale() === 'en' ? self::get('site.name_en') : null;
+
+        return is_string($english) ? $english : (string) config('app.name');
     }
 
     /** The address of the logo an administrator uploaded, or null when there is none. */

@@ -5,6 +5,7 @@ namespace App\Providers\Filament;
 use App\Filament\Auth\Login;
 use App\Http\Middleware\RequireTwoStepOfStaff;
 use App\Support\TwoStep;
+use Filament\Enums\ThemeMode;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
@@ -38,6 +39,8 @@ class AdminPanelProvider extends PanelProvider
             ->multiFactorAuthentication(fn () => [TwoStep::provider()], isRequired: true)
             ->multiFactorAuthenticationRequiredMiddlewareName(RequireTwoStepOfStaff::class)
             ->brandName(fn () => config('app.name'))
+            // The site opens dark unless the person chose otherwise; both share the same saved choice.
+            ->defaultThemeMode(ThemeMode::Dark)
             // Each group is found by its English name (what the resources carry) and shown in the reader's language.
             ->navigationGroups(collect(['System'])
                 ->mapWithKeys(fn (string $group) => [$group => NavigationGroup::make(fn () => __($group))])

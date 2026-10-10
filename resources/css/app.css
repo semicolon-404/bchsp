@@ -1,6 +1,10 @@
 @import 'tailwindcss';
-/* The site's typeface, served from the site itself: no visitor's address is handed to a font service. */
-@import '@fontsource-variable/noto-sans-thai/wght.css';
+/* The site's typefaces, served from the site itself: no visitor's address is handed to a font service. */
+@import '@fontsource/ibm-plex-sans-thai/400.css';
+@import '@fontsource/ibm-plex-sans-thai/500.css';
+@import '@fontsource/ibm-plex-sans-thai/600.css';
+@import '@fontsource/ibm-plex-sans-thai/700.css';
+@import '@fontsource-variable/jetbrains-mono/wght.css';
 
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 @source '../../storage/framework/views/*.php';
@@ -9,38 +13,68 @@
 
 /*
  * The colours every page is drawn with. Pages use these names (bg-page, text-ink, bg-brand...),
- * never a colour of their own, so the dark look and a colour chosen in the panel reach everything.
+ * never a colour of their own, so the light look and a colour chosen in the panel reach everything.
  *
- * Light is the look the site opens in: black on white is what most people, older eyes above all,
- * read most easily. Each pair of text and background here keeps a contrast of 4.5:1 or more.
+ * The site has the look of a developer's tool: near-black, one bright green, and the colours an
+ * editor gives to code (the "syn" ones, from the Dracula palette). It opens dark; the light look
+ * is one press away. Each pair of text and background here keeps a contrast of 4.5:1 or more.
  */
 @theme {
-    --font-sans: 'Noto Sans Thai Variable', 'Noto Sans Thai', 'Leelawadee UI', Tahoma, ui-sans-serif, system-ui, sans-serif;
+    --font-sans: 'IBM Plex Sans Thai', 'Leelawadee UI', Tahoma, ui-sans-serif, system-ui, sans-serif;
+    /* Thai inside a line of "code" falls back to the sans face: the mono one has no Thai. */
+    --font-mono: 'JetBrains Mono Variable', 'IBM Plex Sans Thai', ui-monospace, Consolas, monospace;
 
+    --color-page: #0d0d0d;
+    --color-surface: #161616;
+    --color-raised: #1e1e1e;
+    --color-line: #2e2e33;
+    --color-ink: #e4e4e7;
+    --color-muted: #a1a1aa;
+    --color-brand: #39ff14;
+    --color-brand-soft: #2ed10f;
+    --color-on-brand: #000000;
+    --color-danger: #ff6b6b;
+    --color-on-danger: #1a0000;
+
+    --color-syn-keyword: #ff79c6;
+    --color-syn-string: #f1fa8c;
+    --color-syn-function: #50fa7b;
+    --color-syn-comment: #8a97c7;
+    --color-syn-variable: #bd93f9;
+
+    --animate-pulse-dot: pulse-dot 2s ease-in-out infinite;
+
+    @keyframes pulse-dot {
+        50% {
+            opacity: 0.35;
+        }
+    }
+}
+
+:root {
+    color-scheme: dark;
+}
+
+:root[data-theme='light'] {
     --color-page: #ffffff;
-    --color-surface: #f1f6f6;
-    --color-line: #c9d6d6;
-    --color-ink: #14201f;
-    --color-muted: #435556;
-    --color-brand: #0f6b66;
-    --color-brand-soft: #0b524e;
+    --color-surface: #f4f4f5;
+    --color-raised: #e9e9ec;
+    --color-line: #cfcfd6;
+    --color-ink: #18181b;
+    --color-muted: #52525b;
+    --color-brand: #15803d;
+    --color-brand-soft: #166534;
     --color-on-brand: #ffffff;
     --color-danger: #b42318;
     --color-on-danger: #ffffff;
-}
 
-:root[data-theme='dark'] {
-    --color-page: #0d1415;
-    --color-surface: #162022;
-    --color-line: #33464a;
-    --color-ink: #eef4f4;
-    --color-muted: #b6c6c7;
-    --color-brand: #3fd0c2;
-    --color-brand-soft: #7de3d8;
-    --color-on-brand: #04201d;
-    --color-danger: #ffb4a8;
-    --color-on-danger: #3b0a05;
-    color-scheme: dark;
+    --color-syn-keyword: #be185d;
+    --color-syn-string: #854d0e;
+    --color-syn-function: #15803d;
+    --color-syn-comment: #5b6478;
+    --color-syn-variable: #6d28d9;
+
+    color-scheme: light;
 }
 
 @layer base {
@@ -50,14 +84,18 @@
         scroll-behavior: smooth;
     }
 
+    /* A soft wash of the brand colour behind the top of every page. */
     body {
         background: var(--color-page);
+        background-image: radial-gradient(70rem 26rem at 50% -12rem, color-mix(in srgb, var(--color-brand) 11%, transparent), transparent 70%);
+        background-repeat: no-repeat;
         color: var(--color-ink);
         /* Thai carries marks above and below the line; tight lines make them collide. */
         line-height: 1.75;
     }
 
     h1, h2, h3 {
+        font-weight: 600;
         line-height: 1.35;
         text-wrap: balance;
     }
@@ -77,6 +115,7 @@
         *, *::before, *::after {
             transition-duration: 0.01ms !important;
             animation-duration: 0.01ms !important;
+            animation-iteration-count: 1 !important;
         }
     }
 }
@@ -103,13 +142,13 @@
         justify-content: center;
         gap: 0.5rem;
         min-height: 3rem;
-        padding: 0.5rem 1.25rem;
-        border-radius: 0.75rem;
-        border: 2px solid transparent;
+        padding: 0.5rem 1.5rem;
+        border-radius: 9999px;
+        border: 1px solid transparent;
         font-weight: 600;
         text-decoration: none;
         cursor: pointer;
-        transition: background-color 150ms, border-color 150ms, color 150ms;
+        transition: background-color 200ms, border-color 200ms, color 200ms, box-shadow 200ms;
     }
 
     .btn-brand {
@@ -119,12 +158,13 @@
 
     .btn-brand:hover {
         background: var(--color-brand-soft);
+        box-shadow: 0 0 20px color-mix(in srgb, var(--color-brand) 30%, transparent);
     }
 
     .btn-line {
         border-color: var(--color-line);
         color: var(--color-ink);
-        background: var(--color-page);
+        background: transparent;
     }
 
     .btn-line:hover {
@@ -137,40 +177,93 @@
         color: var(--color-on-danger);
     }
 
-    /* A small control in the bar above the header: still 44px to touch, and plainly "on" when it is. */
-    .tool {
-        display: inline-flex;
+    /* Two or three choices side by side, the chosen one lit (the theme and language switches). */
+    .switch {
+        display: grid;
+        gap: 0.125rem;
+        padding: 0.125rem;
+        border: 1px solid var(--color-line);
+        border-radius: 9999px;
+        background: var(--color-surface);
+    }
+
+    .switch > * {
+        display: flex;
         align-items: center;
         justify-content: center;
-        min-width: 2.75rem;
-        min-height: 2.75rem;
-        padding-inline: 0.5rem;
-        border-radius: 0.5rem;
+        min-width: 2.25rem;
+        min-height: 2.25rem;
+        padding-inline: 0.625rem;
+        border-radius: 9999px;
+        font-size: 0.8rem;
         font-weight: 600;
-        color: var(--color-ink);
+        color: var(--color-muted);
+        text-decoration: none;
         cursor: pointer;
         transition: background-color 150ms, color 150ms;
     }
 
-    .tool:hover:not(:disabled) {
-        background: var(--color-line);
+    .switch > *:hover {
+        color: var(--color-ink);
     }
 
-    .tool:disabled {
-        color: var(--color-muted);
-        opacity: 0.5;
-        cursor: default;
-    }
-
-    .tool[aria-pressed='true'] {
-        background: var(--color-brand);
-        color: var(--color-on-brand);
+    .switch > [aria-pressed='true'],
+    .switch > [aria-current='true'] {
+        background: var(--color-raised);
+        color: var(--color-brand);
     }
 
     .card {
-        background: var(--color-page);
+        background: var(--color-surface);
         border: 1px solid var(--color-line);
-        border-radius: 1rem;
+        border-radius: 12px;
         padding: 1.5rem;
+        transition: border-color 200ms;
+    }
+
+    a.card:hover {
+        border-color: var(--color-brand);
+    }
+
+    /* The small line above a section's heading, set like a label in code. */
+    .eyebrow {
+        font-family: var(--font-mono);
+        font-size: 0.8rem;
+        font-weight: 500;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--color-brand);
+    }
+
+    /* A box drawn as an editor's window: three dots and a file name, then the lines. */
+    .code-block {
+        background: var(--color-surface);
+        border: 1px solid var(--color-line);
+        border-radius: 8px;
+        overflow: hidden;
+        text-align: left;
+    }
+
+    .code-header {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.75rem 1rem;
+        background: var(--color-raised);
+        border-bottom: 1px solid var(--color-line);
+    }
+
+    .code-dot {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+    }
+
+    .code-body {
+        padding: 1rem;
+        overflow-x: auto;
+        font-family: var(--font-mono);
+        font-size: 0.9rem;
+        line-height: 1.9;
     }
 }

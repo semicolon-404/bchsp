@@ -1,4 +1,4 @@
 import './bootstrap';
-import { startPrefs } from './prefs';
+import { startTheme } from './theme';
 
-startPrefs();
+startTheme();

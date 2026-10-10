@@ -44,6 +44,10 @@ trait SiteSettingsForm
                             ->label(__('Name'))
                             ->required()
                             ->maxLength(120),
+                        TextInput::make(self::field('site.name_en'))
+                            ->label(__('Name in English (optional)'))
+                            ->maxLength(120)
+                            ->helperText(__('Shown to visitors who switch the website to English. Left blank, they see the name above.')),
                         FileUpload::make(self::field('site.logo'))
                             ->label(__('Logo (optional)'))
                             ->image()
