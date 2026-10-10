@@ -29,12 +29,14 @@ class Theme
     /** The site's own green (resources/css/app.css is written in it). */
     public const GREEN = '#39ff14';
 
-    /** The owner's four, offered first. */
+    /** The hospital's own colours, offered first: the green family, through yellow-green to yellow. */
     public const FAVOURITES = [
-        '#39ff14' => 'Green',
-        '#38bdf8' => 'Blue',
-        '#ff3d71' => 'Pink',
-        '#ff7a1a' => 'Orange',
+        '#39ff14' => 'Bright green',
+        '#a3e635' => 'Yellow-green',
+        '#86efac' => 'Light green',
+        '#22c55e' => 'Green',
+        '#15803d' => 'Dark green',
+        '#facc15' => 'Yellow',
     ];
 
     /** The colours of the days as they are known in Thailand, Sunday first. Each can be changed. */
