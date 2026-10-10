@@ -83,6 +83,26 @@ class Banner extends Model
         return static::current()->where('placement', $placement)->limit(self::SHOWN_AT_ONCE[$placement])->get();
     }
 
+    /**
+     * The slides of the home page: the ones staff put up as slides, then the pictures of announcements that asked
+     * to be among them. An announcement's slide leads to the announcement, and goes when the announcement ends.
+     *
+     * @return Collection<int, Banner>
+     */
+    public static function slides(): Collection
+    {
+        $slides = static::showingAs('banner');
+
+        Announcement::current()->where('in_slider', true)->whereNotNull('image_path')->inListOrder()->limit(self::SHOWN_AT_ONCE['banner'])->get()
+            ->each(fn (Announcement $announcement) => $slides->push(new static([
+                'title' => $announcement->localTitle(),
+                'image_path' => $announcement->image_path,
+                'url' => route('announcements.show', $announcement),
+            ])));
+
+        return $slides->take(self::SHOWN_AT_ONCE['banner'])->values();
+    }
+
     /** The one that opens over the page: the first of those marked for it. One at a time: two windows in a row are a nuisance. */
     public static function popup(): ?Banner
     {

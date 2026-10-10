@@ -82,6 +82,20 @@ class BlogPostResource extends Resource
                             ->fileAttachmentsDisk('public')
                             ->fileAttachmentsDirectory('blog/content')
                             ->fileAttachmentsVisibility('public'),
+                        OptimizedUpload::on(FileUpload::make('gallery'))
+                            ->label(__('Album of photographs (optional)'))
+                            ->image()
+                            ->multiple()
+                            ->maxFiles(BlogPost::MAX_PHOTOS)
+                            // No SVG: it can carry a script.
+                            ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp'])
+                            ->disk('public')
+                            ->directory('blog/albums')
+                            ->visibility('public')
+                            ->maxSize(8192)
+                            ->reorderable()
+                            ->panelLayout('grid')
+                            ->helperText(__('The photographs of an activity, shown as an album under the article. Up to :count, 8 MB each; they are made smaller by themselves. Do not use one in which a patient can be recognised.', ['count' => BlogPost::MAX_PHOTOS])),
                     ]),
 
                 Section::make(__('Publishing'))

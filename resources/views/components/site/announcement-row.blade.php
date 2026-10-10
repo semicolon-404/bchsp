@@ -24,5 +24,9 @@
                 <time datetime="{{ ($announcement->starts_at ?? $announcement->created_at)->toDateString() }}">{{ $announcement->shownOn() }}</time>
             </span>
         </span>
+        {{-- Its "one page" picture, small: a list of announcements with pictures is easier to scan. --}}
+        @if ($image = $announcement->imageUrl())
+            <img src="{{ $image }}" alt="" loading="lazy" class="size-14 shrink-0 rounded-md border border-line object-cover">
+        @endif
     </a>
 </li>

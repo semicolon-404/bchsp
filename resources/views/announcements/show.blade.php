@@ -1,7 +1,7 @@
 {{-- /announcements/{slug}: one announcement, with its files to open or download. --}}
 @php($files = $announcement->files())
 @php($links = $announcement->documentLinks())
-<x-layouts.site :title="$announcement->localTitle()">
+<x-layouts.site :title="$announcement->localTitle()" :image="$announcement->imageUrl()">
     <article class="wrap max-w-3xl py-10 sm:py-14">
         <p class="text-sm"><a href="{{ route('announcements.index') }}" class="font-semibold text-brand underline">&larr; {{ __('All announcements') }}</a></p>
 
@@ -21,6 +21,14 @@
             <time datetime="{{ ($announcement->starts_at ?? $announcement->created_at)->toDateString() }}">{{ $announcement->shownOn() }}</time>
             · <a href="{{ route('announcements.index', array_filter(['type' => $announcement->type?->slug, 'year' => App\Models\Announcement::fiscalYearOf($announcement->starts_at ?? $announcement->created_at)])) }}" class="underline">{{ __('Fiscal year :year', ['year' => App\Models\Announcement::fiscalYearOf($announcement->starts_at ?? $announcement->created_at)]) }}</a>
         </p>
+
+        @if ($image = $announcement->imageUrl())
+            {{-- The announcement as one picture, shown whole whatever its shape; a press opens it at full size. --}}
+            <a href="{{ $image }}" target="_blank" rel="noopener" class="mt-8 block">
+                <img src="{{ $image }}" alt="{{ $announcement->localTitle() }}" class="mx-auto max-h-[85vh] w-auto max-w-full rounded-xl border border-line">
+                <span class="sr-only">{{ __('Open the picture at full size') }}</span>
+            </a>
+        @endif
 
         @if ($announcement->hasBody())
             <div class="rich mt-8">{!! $announcement->renderedBody() !!}</div>

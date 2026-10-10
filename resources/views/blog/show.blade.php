@@ -19,6 +19,22 @@
         @endif
 
         <div class="rich mt-8">{!! $post->renderedBody() !!}</div>
+
+        @if ($photos = $post->photos())
+            {{-- The album: every photograph whole, each opening at full size. --}}
+            <section class="mt-10" aria-label="{{ __('Photographs') }}">
+                <h2 class="eyebrow">{{ trans_choice('{1} :count photograph|[2,*] :count photographs', count($photos), ['count' => count($photos)]) }}</h2>
+                <ul class="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3">
+                    @foreach ($photos as $photo)
+                        <li>
+                            <a href="{{ $photo }}" target="_blank" rel="noopener" class="block overflow-hidden rounded-lg border border-line">
+                                <img src="{{ $photo }}" alt="{{ __('Photograph :number of :count', ['number' => $loop->iteration, 'count' => $loop->count]) }}" loading="lazy" class="aspect-[4/3] w-full object-cover">
+                            </a>
+                        </li>
+                    @endforeach
+                </ul>
+            </section>
+        @endif
     </article>
 
     @if ($more->isNotEmpty())

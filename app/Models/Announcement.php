@@ -33,10 +33,10 @@ class Announcement extends Model
     protected $fillable = [
         'announcement_type_id', 'author_id',
         'title', 'title_en', 'slug', 'body', 'body_en',
-        'attachments', 'attachment_names', 'links', 'is_pinned', 'starts_at', 'ends_at',
+        'image_path', 'in_slider', 'attachments', 'attachment_names', 'links', 'is_pinned', 'starts_at', 'ends_at',
     ];
 
-    protected $attributes = ['is_pinned' => false];
+    protected $attributes = ['is_pinned' => false, 'in_slider' => false];
 
     protected function casts(): array
     {
@@ -45,6 +45,7 @@ class Announcement extends Model
             'attachment_names' => 'array',
             'links' => 'array',
             'is_pinned' => 'boolean',
+            'in_slider' => 'boolean',
             'starts_at' => 'datetime',
             'ends_at' => 'datetime',
         ];
@@ -64,12 +65,17 @@ class Announcement extends Model
 
                 Storage::disk('public')->delete(array_values(array_diff($before, $announcement->attachments ?? [])));
             }
+
+            // So does its picture.
+            if ($announcement->wasChanged('image_path') && $announcement->getOriginal('image_path')) {
+                Storage::disk('public')->delete($announcement->getOriginal('image_path'));
+            }
         });
 
         // Not an arrow function: delete() answers false for a file already gone, and a listener that answers false
         // stops the ones after it (the access log's among them).
         static::deleted(function (Announcement $announcement) {
-            Storage::disk('public')->delete($announcement->attachments ?? []);
+            Storage::disk('public')->delete(array_filter([...($announcement->attachments ?? []), $announcement->image_path]));
         });
     }
 
@@ -183,6 +189,12 @@ class Announcement extends Model
             (bool) $this->ends_at?->isPast() => 'In the archive',
             default => 'Showing',
         };
+    }
+
+    /** The address of its "one page" picture, or null when it has none. */
+    public function imageUrl(): ?string
+    {
+        return $this->image_path ? Storage::disk('public')->url($this->image_path) : null;
     }
 
     public function localTitle(): string

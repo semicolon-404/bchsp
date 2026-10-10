@@ -30,7 +30,7 @@ class BlogPost extends Model
     protected $fillable = [
         'author_id', 'blog_category_id',
         'title', 'title_en', 'slug', 'excerpt', 'excerpt_en', 'body', 'body_en',
-        'cover_path', 'status', 'published_at',
+        'cover_path', 'gallery', 'status', 'published_at',
     ];
 
     protected $attributes = ['status' => self::STATUS_DRAFT];
@@ -39,6 +39,7 @@ class BlogPost extends Model
     {
         return [
             'published_at' => 'datetime',
+            'gallery' => 'array',
         ];
     }
 
@@ -58,12 +59,21 @@ class BlogPost extends Model
             if ($post->wasChanged('cover_path') && $post->getOriginal('cover_path')) {
                 Storage::disk('public')->delete($post->getOriginal('cover_path'));
             }
+
+            // So do the photographs taken out of its album.
+            if ($post->wasChanged('gallery')) {
+                $before = json_decode((string) $post->getRawOriginal('gallery'), true) ?: [];
+
+                Storage::disk('public')->delete(array_values(array_diff($before, $post->gallery ?? [])));
+            }
         });
 
         static::deleted(function (BlogPost $post) {
             if ($post->cover_path) {
                 Storage::disk('public')->delete($post->cover_path);
             }
+
+            Storage::disk('public')->delete($post->gallery ?? []);
         });
     }
 
@@ -117,6 +127,19 @@ class BlogPost extends Model
     public function renderedBody(): string
     {
         return RichContentRenderer::make($this->inLanguage('body'))->fileAttachmentsDisk('public')->toHtml();
+    }
+
+    /** How many photographs an album can hold. */
+    public const MAX_PHOTOS = 40;
+
+    /**
+     * The addresses of the photographs in its album, in the order staff gave them.
+     *
+     * @return list<string>
+     */
+    public function photos(): array
+    {
+        return array_map(fn (string $path) => Storage::disk('public')->url($path), array_values(array_filter($this->gallery ?? [], 'is_string')));
     }
 
     public function coverUrl(): ?string

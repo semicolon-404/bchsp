@@ -7,6 +7,7 @@ use App\Filament\Resources\Announcements\Pages\CreateAnnouncement;
 use App\Filament\Resources\Announcements\Pages\EditAnnouncement;
 use App\Filament\Resources\Announcements\Pages\ListAnnouncements;
 use App\Models\Announcement;
+use App\Support\OptimizedUpload;
 use BackedEnum;
 use Filament\Actions\Action;
 use Filament\Actions\DeleteAction;
@@ -73,6 +74,19 @@ class AnnouncementResource extends Resource
                             ->fileAttachmentsDisk('public')
                             ->fileAttachmentsDirectory('announcements/content')
                             ->fileAttachmentsVisibility('public'),
+                        OptimizedUpload::on(FileUpload::make('image_path'))
+                            ->label(__('Picture of the announcement (optional)'))
+                            ->image()
+                            // No SVG: it can carry a script.
+                            ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp'])
+                            ->disk('public')
+                            ->directory('announcements/pictures')
+                            ->visibility('public')
+                            ->maxSize(8192)
+                            ->helperText(__('For an announcement made as one picture ("one page"), upright or wide: it is shown whole on the announcement\'s page. Up to 8 MB; it is made smaller by itself.')),
+                        Toggle::make('in_slider')
+                            ->label(__('Also show this picture among the slides of the home page'))
+                            ->helperText(__('It leads to this announcement, and leaves the slides when the announcement ends. A wide picture suits the slides best.')),
                         FileUpload::make('attachments')
                             ->label(__('PDF files'))
                             ->multiple()

@@ -18,7 +18,7 @@
 @endphp
 
 @if ($part === 'banners')
-    @php($banners = Banner::showingAs('banner'))
+    @php($banners = Banner::slides())
     @if ($banners->isNotEmpty())
         {{--
             The slides staff change most often, so they are the first thing on the page. Each picture is shown
