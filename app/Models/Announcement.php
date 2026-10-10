@@ -30,7 +30,7 @@ class Announcement extends Model
     protected $fillable = [
         'announcement_type_id', 'author_id',
         'title', 'title_en', 'slug', 'body', 'body_en',
-        'attachments', 'attachment_names', 'is_pinned', 'starts_at', 'ends_at',
+        'attachments', 'attachment_names', 'links', 'is_pinned', 'starts_at', 'ends_at',
     ];
 
     protected $attributes = ['is_pinned' => false];
@@ -40,6 +40,7 @@ class Announcement extends Model
         return [
             'attachments' => 'array',
             'attachment_names' => 'array',
+            'links' => 'array',
             'is_pinned' => 'boolean',
             'starts_at' => 'datetime',
             'ends_at' => 'datetime',
@@ -146,6 +147,35 @@ class Announcement extends Model
         }
 
         return $files;
+    }
+
+    /**
+     * The documents kept elsewhere (Google Drive) and linked from the announcement: only web addresses
+     * over HTTPS, each with something to call it.
+     *
+     * @return list<array{label: string, url: string, host: string}>
+     */
+    public function documentLinks(): array
+    {
+        $links = [];
+
+        foreach ($this->links ?? [] as $row) {
+            $url = is_array($row) ? trim((string) ($row['url'] ?? '')) : '';
+
+            if (preg_match('~^https://[^\s"\'<>]+$~', $url)) {
+                $host = (string) parse_url($url, PHP_URL_HOST);
+
+                $links[] = ['label' => trim((string) ($row['label'] ?? '')) ?: $host, 'url' => $url, 'host' => $host];
+            }
+        }
+
+        return $links;
+    }
+
+    /** Whether there is anything to open: a file kept here, or a link to one kept elsewhere. */
+    public function hasDocuments(): bool
+    {
+        return filled($this->attachments) || $this->documentLinks() !== [];
     }
 
     /** The date as a reader in Thailand writes it: 10 ต.ค. 2569, or 10 Oct 2026 in English. */

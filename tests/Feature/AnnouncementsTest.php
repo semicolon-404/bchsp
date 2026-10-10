@@ -116,6 +116,61 @@ class AnnouncementsTest extends TestCase
         $this->get('/announcements')->assertSee('Has files attached');
     }
 
+    public function test_documents_kept_on_google_drive_are_linked_instead_of_uploaded(): void
+    {
+        $announcement = Announcement::factory()->create([
+            'title' => 'Winning bid for medicines',
+            'links' => [
+                ['label' => 'ประกาศผู้ชนะ เดือนมีนาคม 2569', 'url' => 'https://drive.google.com/file/d/abc/view?usp=sharing'],
+                ['label' => '', 'url' => 'https://drive.google.com/drive/folders/xyz'],
+                ['label' => 'Not secure', 'url' => 'http://example.com/a.pdf'],
+                ['label' => 'Not a link', 'url' => 'javascript:alert(1)'],
+            ],
+        ]);
+
+        $this->assertCount(2, $announcement->documentLinks());
+
+        $this->get(route('announcements.show', $announcement))
+            ->assertOk()
+            ->assertSee('ประกาศผู้ชนะ เดือนมีนาคม 2569')
+            ->assertSee('href="https://drive.google.com/file/d/abc/view?usp=sharing" target="_blank" rel="noopener noreferrer"', false)
+            // The reader is told where a press will take them; a link with no name is called by its site.
+            ->assertSee('drive.google.com')
+            ->assertDontSee('Not secure')
+            ->assertDontSee('javascript:alert', false);
+
+        $this->get('/announcements')->assertSee('Has files attached');
+    }
+
+    public function test_an_author_posts_a_procurement_notice_with_a_drive_link_and_no_file(): void
+    {
+        $this->actingAs(User::factory()->create());
+
+        Livewire::test(CreateAnnouncement::class)
+            ->fillForm([
+                'title' => 'Winning bid for dental supplies',
+                'announcement_type_id' => $this->type('procurement')->id,
+                'links' => [['label' => 'ประกาศผู้ชนะ', 'url' => 'drive.google.com/file/d/abc']],
+            ])
+            ->call('create')
+            ->assertHasFormErrors();
+
+        Livewire::test(CreateAnnouncement::class)
+            ->fillForm([
+                'title' => 'Winning bid for dental supplies',
+                'announcement_type_id' => $this->type('procurement')->id,
+                'links' => [['label' => 'ประกาศผู้ชนะ', 'url' => 'https://drive.google.com/file/d/abc/view']],
+            ])
+            ->call('create')
+            ->assertHasNoFormErrors();
+
+        $announcement = Announcement::firstOrFail();
+
+        $this->assertNull($announcement->attachments ?: null);
+        $this->assertSame('https://drive.google.com/file/d/abc/view', $announcement->documentLinks()[0]['url']);
+        $this->assertTrue($announcement->hasDocuments());
+    }
+
     public function test_a_script_written_into_an_announcement_never_reaches_the_reader(): void
     {
         $announcement = Announcement::factory()->create([

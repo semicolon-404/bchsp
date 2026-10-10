@@ -9,7 +9,7 @@
                 <span class="mr-1 inline-flex items-center gap-1 rounded border border-brand px-1.5 text-xs font-semibold text-brand"><x-heroicon-s-bookmark class="size-3" aria-hidden="true" />{{ __('Pinned') }}</span>
             @endif
             {{ $announcement->localTitle() }}
-            @if ($announcement->attachments)
+            @if ($announcement->hasDocuments())
                 <x-heroicon-m-paper-clip class="ml-1 inline size-4 text-muted" aria-hidden="true" /><span class="sr-only">{{ __('Has files attached') }}</span>
             @endif
         </span>

@@ -13,6 +13,7 @@ use Filament\Actions\DeleteAction;
 use Filament\Actions\EditAction;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
@@ -86,6 +87,27 @@ class AnnouncementResource extends Resource
                             ->reorderable()
                             ->downloadable()
                             ->helperText(__('Up to :count PDF files, 20 MB each. Name each file so that a reader knows what it is before opening it.', ['count' => Announcement::MAX_FILES])),
+                        Repeater::make('links')
+                            ->label(__('Links to documents kept elsewhere'))
+                            ->helperText(__('For large files: put them on Google Drive, share them so that anyone with the link can view, and paste the link here. This keeps the website\'s own disk from filling up.'))
+                            ->schema([
+                                TextInput::make('label')
+                                    ->label(__('What the document is'))
+                                    ->required()
+                                    ->maxLength(200),
+                                TextInput::make('url')
+                                    ->label(__('Link'))
+                                    ->required()
+                                    ->url()
+                                    ->startsWith('https://')
+                                    ->maxLength(1000)
+                                    ->placeholder('https://drive.google.com/file/d/…'),
+                            ])
+                            ->columns(2)
+                            ->defaultItems(0)
+                            ->maxItems(Announcement::MAX_FILES)
+                            ->addActionLabel(__('Add a link'))
+                            ->reorderableWithButtons(),
                     ]),
 
                 Section::make(__('Showing'))
@@ -156,7 +178,7 @@ class AnnouncementResource extends Resource
                     }),
                 TextColumn::make('attachments')
                     ->label(__('Files'))
-                    ->state(fn (Announcement $record) => count($record->attachments ?? []) ?: null)
+                    ->state(fn (Announcement $record) => (count($record->attachments ?? []) + count($record->documentLinks())) ?: null)
                     ->placeholder('—'),
                 TextColumn::make('starts_at')
                     ->label(__('Show from'))
