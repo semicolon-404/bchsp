@@ -18,8 +18,8 @@ class MenusTest extends TestCase
 
     public function test_until_someone_arranges_them_the_menus_are_what_they_always_were(): void
     {
-        $this->assertSame(['home', 'announcements', 'blog', 'departments'], Menus::keys('top'));
-        $this->assertSame(['home', 'announcements', 'blog', 'departments'], Menus::keys('tabs'));
+        $this->assertSame(['home', 'announcements', 'blog', 'departments', 'contact'], Menus::keys('top'));
+        $this->assertSame(['home', 'announcements', 'blog', 'departments', 'contact'], Menus::keys('tabs'));
 
         $this->get('/')
             ->assertOk()
@@ -43,7 +43,7 @@ class MenusTest extends TestCase
 
         Livewire::test(SettingsPage::class)
             // A list in a form is kept under made-up keys; what matters is its rows in order.
-            ->assertFormSet(fn (array $state) => array_values($state['menu_top']) === [['key' => 'home'], ['key' => 'announcements'], ['key' => 'blog'], ['key' => 'departments']])
+            ->assertFormSet(fn (array $state) => array_values($state['menu_top']) === [['key' => 'home'], ['key' => 'announcements'], ['key' => 'blog'], ['key' => 'departments'], ['key' => 'contact']])
             ->fillForm(['menu_top' => [['key' => 'blog'], ['key' => 'home']], 'menu_tabs' => [['key' => 'home']]])
             ->call('save')
             ->assertHasNoFormErrors();
@@ -71,7 +71,7 @@ class MenusTest extends TestCase
     public function test_only_known_places_are_kept_each_once_and_no_more_than_fit(): void
     {
         $this->assertSame(['blog'], Menus::toStore('top', ['blog', 'blog', 'no-such', ['key' => 'blog'], null, 7]));
-        $this->assertNull(Menus::toStore('top', ['home', 'announcements', 'blog', 'departments']));
+        $this->assertNull(Menus::toStore('top', ['home', 'announcements', 'blog', 'departments', 'contact']));
         $this->assertNull(Menus::toStore('tabs', []));
 
         SiteSettings::save(['menu.top' => ['<script>', 'blog']]);

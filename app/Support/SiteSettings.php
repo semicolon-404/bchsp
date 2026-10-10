@@ -42,8 +42,20 @@ class SiteSettings
         // The hospital's name for a reader in English, and its logo: a path on the public disk, or nothing.
         'site.name_en', 'site.logo',
         'contact.address', 'contact.phone', 'contact.emergency_phone', 'contact.email',
+        // For the contact page: when the hospital is open, and the address of an embedded Google map.
+        'contact.hours', 'contact.map',
+        // Forms the hospital runs elsewhere (Google Forms) for complaints, suggestions and its satisfaction survey.
+        'feedback.complaint', 'feedback.suggestion', 'feedback.survey',
         'social.facebook', 'social.line', 'social.youtube',
     ];
+
+    /** The forms linked from the contact page, in order, with the name shown for each. */
+    public const FEEDBACK = [
+        'feedback.complaint' => 'Make a complaint', 'feedback.suggestion' => 'Make a suggestion', 'feedback.survey' => 'Satisfaction survey',
+    ];
+
+    /** Only a map embedded from Google Maps is put on the contact page: nothing else may be framed there. */
+    public const MAP_PATTERN = '~^https://www\.google\.com/maps/embed\?[^\s"\'<>]+$~';
 
     /** The networks linked from the footer, in order, with the name shown for each. */
     public const SOCIAL = [
@@ -109,6 +121,34 @@ class SiteSettings
         $path = self::get('site.logo');
 
         return is_string($path) ? Storage::disk('public')->url($path) : null;
+    }
+
+    /** The address of the map to embed on the contact page, or null when there is none or it is not a Google Maps embed. */
+    public static function mapEmbedUrl(): ?string
+    {
+        $url = self::get('contact.map');
+
+        return is_string($url) && preg_match(self::MAP_PATTERN, $url) ? $url : null;
+    }
+
+    /**
+     * The contact page's forms that have an address: [name => url].
+     *
+     * @return array<string, string>
+     */
+    public static function feedbackLinks(): array
+    {
+        $links = [];
+
+        foreach (self::FEEDBACK as $key => $name) {
+            $url = self::get($key);
+
+            if (is_string($url) && str_starts_with($url, 'https://')) {
+                $links[$name] = $url;
+            }
+        }
+
+        return $links;
     }
 
     /**

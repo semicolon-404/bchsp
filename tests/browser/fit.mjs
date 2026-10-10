@@ -15,7 +15,7 @@ import { existsSync, mkdirSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
-const PAGES = ['/', '/announcements', '/blog', '/departments'];
+const PAGES = ['/', '/announcements', '/blog', '/departments', '/contact'];
 
 const SCREENS = [
     ['phone', 360, 740],

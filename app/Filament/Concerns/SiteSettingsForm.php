@@ -3,6 +3,7 @@
 namespace App\Filament\Concerns;
 
 use App\Support\Menus;
+use App\Support\SiteSettings as Settings;
 use App\Support\Theme;
 use Filament\Forms\Components\ColorPicker;
 use Filament\Forms\Components\FileUpload;
@@ -138,6 +139,28 @@ trait SiteSettingsForm
                             ->label(__('Email'))
                             ->email()
                             ->maxLength(255),
+                        Textarea::make(self::field('contact.hours'))
+                            ->label(__('Opening hours'))
+                            ->rows(3)
+                            ->maxLength(1000)
+                            ->columnSpanFull(),
+                        TextInput::make(self::field('contact.map'))
+                            ->label(__('Map'))
+                            ->maxLength(1000)
+                            ->regex(Settings::MAP_PATTERN)
+                            ->validationMessages(['regex' => __('Paste the address that starts with https://www.google.com/maps/embed')])
+                            ->helperText(__('In Google Maps: Share > Embed a map, then copy only the address inside src="…".'))
+                            ->columnSpanFull(),
+                    ]),
+
+                Section::make(__('Complaints and suggestions'))
+                    ->description(__('Links on the contact page to forms the hospital runs elsewhere, such as Google Forms. Leave one blank to hide it.'))
+                    ->columns(2)
+                    ->collapsed()
+                    ->components([
+                        self::link('feedback.complaint', __('Make a complaint'), 'https://docs.google.com/forms/…')->startsWith('https://'),
+                        self::link('feedback.suggestion', __('Make a suggestion'), 'https://forms.gle/…')->startsWith('https://'),
+                        self::link('feedback.survey', __('Satisfaction survey'), 'https://docs.google.com/forms/…')->startsWith('https://'),
                     ]),
 
                 Section::make(__('Social media'))
