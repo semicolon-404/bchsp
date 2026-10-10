@@ -13,7 +13,7 @@ use Filament\Auth\MultiFactor\App\AppAuthentication;
  * secret, makes the QR code and asks for the code at sign-in.
  *
  * Locked out (lost phone, no recovery codes left)? On the server:
- * php artisan two-step:off someone@example.com
+ * php artisan two-step:off their-username   (or their email)
  */
 class TwoStep
 {

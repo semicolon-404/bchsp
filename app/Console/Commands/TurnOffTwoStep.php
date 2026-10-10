@@ -13,16 +13,17 @@ use Illuminate\Console\Command;
  */
 class TurnOffTwoStep extends Command
 {
-    protected $signature = 'two-step:off {email : The email of the account}';
+    protected $signature = 'two-step:off {account : The username or the email of the account}';
 
     protected $description = 'Turn off two-step sign-in for one account (lost phone, no recovery codes)';
 
     public function handle(): int
     {
-        $user = User::where('email', $this->argument('email'))->first();
+        // An account has a username, an email, or both; either finds it.
+        $user = User::where('username', $this->argument('account'))->orWhere('email', $this->argument('account'))->first();
 
         if (! $user) {
-            $this->error('No account has that email.');
+            $this->error('No account has that username or email.');
 
             return self::FAILURE;
         }
@@ -35,7 +36,7 @@ class TurnOffTwoStep extends Command
 
         TwoStep::turnOffFor($user);
 
-        $this->info("Two-step sign-in is off for {$user->email}. They sign in with the password alone, and can set it up again from the panel.");
+        $this->info("Two-step sign-in is off for {$user->name}. They sign in with the password alone, and can set it up again from the panel.");
 
         return self::SUCCESS;
     }

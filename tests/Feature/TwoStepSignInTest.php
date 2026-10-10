@@ -103,9 +103,14 @@ class TwoStepSignInTest extends TestCase
     {
         $user = $this->withTwoStep(User::factory()->create(['email' => 'nurse@example.com']));
 
-        $this->artisan('two-step:off', ['email' => 'nurse@example.com'])->assertSuccessful();
+        $this->artisan('two-step:off', ['account' => 'nurse@example.com'])->assertSuccessful();
 
         $this->assertFalse(TwoStep::isOnFor($user->fresh()));
-        $this->artisan('two-step:off', ['email' => 'nobody@example.com'])->assertFailed();
+        $this->artisan('two-step:off', ['account' => 'nobody@example.com'])->assertFailed();
+
+        // An account with a username and no email is found by its username.
+        $other = $this->withTwoStep(User::factory()->create(['username' => 'malee', 'email' => null]));
+        $this->artisan('two-step:off', ['account' => 'malee'])->assertSuccessful();
+        $this->assertFalse(TwoStep::isOnFor($other->fresh()));
     }
 }
