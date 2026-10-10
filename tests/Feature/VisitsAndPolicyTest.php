@@ -2,11 +2,15 @@
 
 namespace Tests\Feature;
 
+use App\Models\Announcement;
+use App\Models\AnnouncementType;
+use App\Models\BlogPost;
 use App\Models\SitePage;
 use App\Models\User;
 use App\Support\Visits;
 use Database\Seeders\PolicyPageSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
@@ -20,7 +24,7 @@ class VisitsAndPolicyTest extends TestCase
 
     private function today(): int
     {
-        return (int) DB::table('site_visits')->where('day', now()->toDateString())->value('views');
+        return (int) DB::table('site_visits')->where('day', now()->toDateString())->sum('views');
     }
 
     public function test_each_page_a_person_opens_adds_one_to_todays_count(): void
@@ -30,7 +34,8 @@ class VisitsAndPolicyTest extends TestCase
         $this->get('/announcements', self::BROWSER)->assertOk();
 
         $this->assertSame(3, $this->today());
-        $this->assertSame(1, DB::table('site_visits')->count());
+        // One row for each part of the site that was opened today: home, contact, news.
+        $this->assertSame(3, DB::table('site_visits')->count());
     }
 
     public function test_a_new_day_starts_a_new_count_and_the_totals_add_up(): void
@@ -65,13 +70,69 @@ class VisitsAndPolicyTest extends TestCase
     {
         $this->get('/contact?secret=1', self::BROWSER + ['REMOTE_ADDR' => '203.0.113.9']);
 
-        $this->assertSame(['day', 'views'], Schema::getColumnListing('site_visits'));
+        $this->assertSame(['day', 'section', 'views'], Schema::getColumnListing('site_visits'));
         $this->assertStringNotContainsString('203.0.113.9', json_encode(DB::table('site_visits')->get()));
+    }
+
+    public function test_each_part_of_the_site_is_counted_on_its_own(): void
+    {
+        $notice = Announcement::factory()->create();
+        $bid = Announcement::factory()->for(AnnouncementType::where('slug', 'procurement')->first(), 'type')->create();
+        $post = BlogPost::factory()->create();
+        $page = SitePage::factory()->create();
+
+        foreach (['/', '/', '/announcements', route('announcements.show', $notice), '/announcements?type=procurement', route('announcements.show', $bid),
+            route('blog.show', $post), '/ita', '/schedule', '/departments', route('pages.show', $page), '/about', '/contact', '/downloads', '/search?q=xx', '/menu'] as $address) {
+            $this->get($address, self::BROWSER)->assertOk();
+        }
+
+        $today = now()->startOfDay();
+
+        // Compared whatever their order: parts opened equally often come back in no particular one.
+        $this->assertEquals(
+            ['home' => 2, 'news' => 2, 'procurement' => 2, 'pages' => 2, 'articles' => 1, 'ita' => 1, 'schedule' => 1, 'departments' => 1, 'contact' => 1, 'downloads' => 1, 'search' => 1, 'other' => 1],
+            Visits::bySection($today, $today),
+        );
+        $this->assertSame(16, Visits::between($today, $today));
+        // Every part the site counts has a name for the reports.
+        $this->assertSame([], array_diff(array_keys(Visits::bySection($today, $today)), array_keys(Visits::SECTIONS)));
+    }
+
+    public function test_each_announcement_and_article_counts_how_often_it_was_opened_without_looking_changed(): void
+    {
+        $notice = Announcement::factory()->create();
+        $post = BlogPost::factory()->create();
+        $this->travel(1)->hours();
+
+        $this->get(route('announcements.show', $notice), self::BROWSER);
+        $this->get(route('announcements.show', $notice), self::BROWSER);
+        $this->get(route('blog.show', $post), self::BROWSER);
+        // A search engine, and staff checking their own work, are not readers.
+        $this->get(route('blog.show', $post), ['User-Agent' => 'Googlebot']);
+        $this->actingAs(User::factory()->create())->get(route('blog.show', $post), self::BROWSER);
+
+        $this->assertSame(2, (int) $notice->fresh()->views);
+        $this->assertSame(1, (int) $post->fresh()->views);
+        $this->assertTrue($notice->fresh()->updated_at->equalTo($notice->updated_at));
+    }
+
+    public function test_days_and_months_with_nothing_counted_are_still_listed(): void
+    {
+        $this->travelTo(Carbon::parse('2026-10-10 12:00', 'Asia/Bangkok'));
+        DB::table('site_visits')->insert([
+            ['day' => '2026-10-08', 'section' => 'home', 'views' => 5],
+            ['day' => '2026-10-08', 'section' => 'news', 'views' => 2],
+            ['day' => '2026-10-10', 'section' => 'home', 'views' => 3],
+            ['day' => '2026-08-15', 'section' => 'home', 'views' => 40],
+        ]);
+
+        $this->assertSame(['2026-10-08' => 7, '2026-10-09' => 0, '2026-10-10' => 3], Visits::daily(now()->subDays(2), now()));
+        $this->assertSame(['2026-08' => 40, '2026-09' => 0, '2026-10' => 10], Visits::monthly(Carbon::parse('2026-08-01'), now()));
     }
 
     public function test_the_footer_shows_the_totals(): void
     {
-        DB::table('site_visits')->insert([['day' => now()->toDateString(), 'views' => 1234], ['day' => now()->subMonths(2)->toDateString(), 'views' => 10000]]);
+        DB::table('site_visits')->insert([['day' => now()->toDateString(), 'section' => 'home', 'views' => 1000], ['day' => now()->toDateString(), 'section' => 'news', 'views' => 234], ['day' => now()->subMonths(2)->toDateString(), 'section' => 'home', 'views' => 10000]]);
 
         $this->get('/')->assertSee('Pages opened: today 1,234 · this month 1,234 · in all 11,234');
     }
