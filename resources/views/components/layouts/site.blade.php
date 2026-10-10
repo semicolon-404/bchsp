@@ -19,7 +19,7 @@
     $dial = fn (string $number) => 'tel:'.preg_replace('/[^0-9+]/', '', $number);
 @endphp
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" @class(['is-mourning' => App\Support\Theme::isMourning()])>
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -37,6 +37,10 @@
         })();
     </script>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+    {{-- The colour an administrator gave the site, laid over the stylesheet's own green (App\Support\Theme). --}}
+    @if ($themeCss = App\Support\Theme::css())
+        <style>{!! $themeCss !!}</style>
+    @endif
 </head>
 <body class="flex min-h-screen flex-col font-sans antialiased">
     <a href="#main" class="btn btn-brand sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50">{{ __('Skip to the content') }}</a>

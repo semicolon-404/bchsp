@@ -33,6 +33,8 @@ class SiteSettings
 
     /** Settings with no config value behind them: read with SiteSettings::get(). */
     public const CONTENT = [
+        // The site's colour: one, or one for each day of the week; and the black-and-white mourning look (App\Support\Theme).
+        'theme.mode', 'theme.color', 'theme.days', 'theme.mourning',
         // Closed to visitors while something is being worked on (App\Http\Middleware\MaintenanceMode).
         'maintenance.enabled', 'maintenance.message',
         // The hospital's name for a reader in English, and its logo: a path on the public disk, or nothing.

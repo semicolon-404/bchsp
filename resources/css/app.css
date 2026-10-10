@@ -120,6 +120,11 @@
     }
 }
 
+/* Mourning (Site settings > Colour of the site): the whole site in black and white, pictures too. */
+html.is-mourning {
+    filter: grayscale(1);
+}
+
 @layer components {
     /* The width of a page's content, with room at the sides on a phone. */
     .wrap {

@@ -4,6 +4,7 @@ namespace App\Providers\Filament;
 
 use App\Filament\Auth\Login;
 use App\Http\Middleware\RequireTwoStepOfStaff;
+use App\Support\Theme;
 use App\Support\TwoStep;
 use Filament\Enums\ThemeMode;
 use Filament\Http\Middleware\Authenticate;
@@ -15,12 +16,14 @@ use Filament\Pages\Dashboard;
 use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
+use Filament\View\PanelsRenderHook;
 use Filament\Widgets\AccountWidget;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
+use Illuminate\Support\HtmlString;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 
 class AdminPanelProvider extends PanelProvider
@@ -45,9 +48,10 @@ class AdminPanelProvider extends PanelProvider
             ->navigationGroups(collect(['System'])
                 ->mapWithKeys(fn (string $group) => [$group => NavigationGroup::make(fn () => __($group))])
                 ->all())
-            ->colors([
-                'primary' => Color::Amber,
-            ])
+            // The same colour as the site: its own green, or the one an administrator gave it (App\Support\Theme).
+            ->colors(fn () => ['primary' => Color::hex(Theme::accent())])
+            // In mourning the panel is black and white with the site.
+            ->renderHook(PanelsRenderHook::HEAD_END, fn () => Theme::isMourning() ? new HtmlString('<style>html{filter:grayscale(1)}</style>') : '')
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\Filament\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\Filament\Pages')
             ->pages([

@@ -6,6 +6,7 @@ use App\Filament\Concerns\AdminOnly;
 use App\Filament\Concerns\SiteSettingsForm;
 use App\Filament\Concerns\TranslatesTitle;
 use App\Support\SiteSettings as Settings;
+use App\Support\Theme;
 use BackedEnum;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
@@ -48,6 +49,16 @@ class SiteSettings extends Page
             $values[self::field($key)] = Settings::get($key);
         }
 
+        // The site's colour: what is in force, defaults included; the seven days as seven fields.
+        $values[self::field(Theme::MODE)] = Theme::isDaily() ? 'daily' : 'fixed';
+        $values[self::field(Theme::COLOR)] = Theme::hex(Settings::get(Theme::COLOR)) ?? Theme::GREEN;
+        $values[self::field(Theme::MOURNING)] = Theme::isMourning();
+        unset($values[self::field(Theme::DAYS)]);
+
+        foreach (Theme::days() as $day => $colour) {
+            $values['theme_day_'.$day] = $colour;
+        }
+
         $this->form->fill($values);
     }
 
@@ -58,6 +69,8 @@ class SiteSettings extends Page
         foreach ($this->form->getState() as $field => $value) {
             $values[str_replace('__', '.', $field)] = $value;
         }
+
+        $values[Theme::DAYS] = array_map(fn (int $day) => Theme::hex($values['theme_day_'.$day] ?? null) ?? Theme::days()[$day], array_keys(Theme::DAY_COLOURS));
 
         Settings::save($values);
 

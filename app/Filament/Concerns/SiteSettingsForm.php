@@ -2,11 +2,17 @@
 
 namespace App\Filament\Concerns;
 
+use App\Support\Theme;
+use Filament\Forms\Components\ColorPicker;
 use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\Radio;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Utilities\Get;
+use Filament\Schemas\Components\Utilities\Set;
 use Filament\Schemas\Schema;
 
 /**
@@ -34,6 +40,45 @@ trait SiteSettingsForm
                             ->rows(2)
                             ->maxLength(300)
                             ->placeholder(__('We are working on the website right now. Please come back in a little while.')),
+                    ]),
+
+                Section::make(__('Colour of the site'))
+                    ->description(__('The one colour that buttons, links and highlights wear, on the website and in this panel. Pick one, or let it follow the day of the week. It applies from the next page anyone opens.'))
+                    ->columns(2)
+                    ->components([
+                        Radio::make(self::field(Theme::MODE))
+                            ->label(__('The site wears'))
+                            ->options(['fixed' => __('One colour'), 'daily' => __('The colour of the day')])
+                            ->live()
+                            ->columnSpanFull(),
+                        Select::make('theme_pick')
+                            ->label(__('Ready-made colours'))
+                            ->placeholder(__('Choose one, or set your own beside this'))
+                            ->options([
+                                __('Favourites') => array_map(fn (string $name) => __($name), Theme::FAVOURITES),
+                                __('Colours of the days') => array_combine(Theme::DAY_COLOURS, array_map(fn (string $day) => __($day), Theme::DAY_NAMES)),
+                            ])
+                            ->dehydrated(false)
+                            ->live()
+                            ->afterStateUpdated(fn (?string $state, Set $set) => $state ? $set(self::field(Theme::COLOR), $state) : null)
+                            ->visible(fn (Get $get) => $get(self::field(Theme::MODE)) !== 'daily'),
+                        ColorPicker::make(self::field(Theme::COLOR))
+                            ->label(__('The colour'))
+                            ->regex('/^#[0-9a-fA-F]{6}$/')
+                            ->required(fn (Get $get) => $get(self::field(Theme::MODE)) !== 'daily')
+                            ->helperText(__('A colour too dark or too pale to read is adjusted by itself, and words on it turn black or white to suit.'))
+                            ->visible(fn (Get $get) => $get(self::field(Theme::MODE)) !== 'daily'),
+                        ...array_map(
+                            fn (int $day) => ColorPicker::make('theme_day_'.$day)
+                                ->label(__(Theme::DAY_NAMES[$day]))
+                                ->regex('/^#[0-9a-fA-F]{6}$/')
+                                ->visible(fn (Get $get) => $get(self::field(Theme::MODE)) === 'daily'),
+                            array_keys(Theme::DAY_NAMES),
+                        ),
+                        Toggle::make(self::field(Theme::MOURNING))
+                            ->label(__('Mourning: the whole site in black and white'))
+                            ->helperText(__('Every page and picture turns grey, here in the panel too, until this is switched off again.'))
+                            ->columnSpanFull(),
                     ]),
 
                 Section::make(__('The hospital'))
