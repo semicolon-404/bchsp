@@ -14,6 +14,6 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        $this->call([DepartmentSeeder::class, StaffLinkSeeder::class, ClinicSessionSeeder::class]);
+        $this->call([DepartmentSeeder::class, StaffLinkSeeder::class, ClinicSessionSeeder::class, PolicyPageSeeder::class]);
     }
 }

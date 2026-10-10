@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\CountVisit;
 use App\Http\Middleware\MaintenanceMode;
 use App\Http\Middleware\SecurityHeaders;
 use App\Http\Middleware\SetLocale;
@@ -17,7 +18,7 @@ return Application::configure(basePath: dirname(__DIR__))
         // On every response, the panel's included.
         $middleware->append(SecurityHeaders::class);
         // The visitor's language first, so that the closed page is in it; that one runs after the session, so that it knows an administrator when it sees one.
-        $middleware->web(append: [SetLocale::class, MaintenanceMode::class]);
+        $middleware->web(append: [SetLocale::class, MaintenanceMode::class, CountVisit::class]);
         // The language cookie is read as it is; it only ever holds "th" or "en".
         $middleware->encryptCookies(except: [SetLocale::COOKIE]);
     })

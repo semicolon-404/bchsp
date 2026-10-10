@@ -181,9 +181,12 @@
         </div>
 
         <div class="border-t border-line">
-            <div class="wrap py-4">
+            <div class="wrap flex flex-wrap items-center justify-between gap-x-6 gap-y-1 py-4 font-mono text-sm text-muted">
                 {{-- The Buddhist year for a reader in Thai. --}}
-                <p class="font-mono text-sm text-muted">&copy; {{ app()->getLocale() === 'th' ? now()->year + 543 : now()->year }} {{ $name }}</p>
+                <p>&copy; {{ app()->getLocale() === 'th' ? now()->year + 543 : now()->year }} {{ $name }}</p>
+                {{-- Pages opened, as plain totals: nothing is kept about who opened them (App\Support\Visits). --}}
+                @php($visits = App\Support\Visits::totals())
+                <p>{{ __('Pages opened: today :today · this month :month · in all :all', ['today' => number_format($visits['today']), 'month' => number_format($visits['month']), 'all' => number_format($visits['all'])]) }}</p>
             </div>
         </div>
     </footer>

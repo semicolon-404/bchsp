@@ -256,6 +256,7 @@
     "Pages": "หน้าเนื้อหา",
     "pages": "หน้าเนื้อหา",
     "Pages listed in the menu are in the order below, lowest first.": "หน้าที่อยู่ในเมนูจะเรียงตามลำดับด้านล่าง เลขน้อยแสดงก่อน",
+    "Pages opened: today :today · this month :month · in all :all": "สถิติการเปิดหน้า: วันนี้ :today · เดือนนี้ :month · ทั้งหมด :all",
     "Password": "รหัสผ่าน",
     "Passwords typed here travel unprotected. The live site must be served over HTTPS.": "รหัสผ่านที่พิมพ์จะถูกส่งโดยไม่เข้ารหัส เว็บไซต์จริงต้องใช้ HTTPS",
     "Paste the address that starts with https://www.google.com/maps/embed": "วางที่อยู่ที่ขึ้นต้นด้วย https://www.google.com/maps/embed",
