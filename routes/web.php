@@ -19,6 +19,7 @@ Route::get('/departments', [DepartmentController::class, 'index'])->name('depart
 Route::get('/departments/{department}', [DepartmentController::class, 'show'])->name('departments.show');
 
 Route::view('/contact', 'contact')->name('contact');
+Route::view('/downloads', 'downloads')->name('downloads');
 
 // Pages of text written in the panel (System > Pages).
 Route::get('/p/{page}', [SitePageController::class, 'show'])->name('pages.show');
