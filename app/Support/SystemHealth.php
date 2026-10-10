@@ -51,6 +51,7 @@ class SystemHealth
         $ran = self::schedulerLastRan();
         $backup = Backups::latest();
         $free = @disk_free_space(storage_path());
+        $elsewhere = Backups::latestElsewhere();
         $database = self::quietly(fn () => (bool) DB::select('select 1'), false);
         $weak = self::quietly(fn () => User::all()->filter(fn (User $user) => ! TwoStep::isOnFor($user))->count(), 0);
 
@@ -68,6 +69,16 @@ class SystemHealth
                 default => 'ok',
             }, $backup ? __('Newest copy :when (:size, :count kept)', ['when' => $backup['at']->diffForHumans(), 'size' => Number::fileSize($backup['bytes']), 'count' => $backup['count']]) : __('No copy has been taken yet'),
                 __('A copy is taken every night at 03:10. Run "php artisan backup:database" to see what stops it. The copies are on this server only: send them somewhere else as well.')),
+
+            $check('Backup kept elsewhere', match (true) {
+                Backups::elsewhere() === null => 'warning',
+                $elsewhere === null, $elsewhere->lt(now()->subHours(36)) => 'problem',
+                default => 'ok',
+            }, match (true) {
+                Backups::elsewhere() === null => __('Not set up: the copies are on this disk only'),
+                $elsewhere === null => __('Nothing has reached the second folder yet'),
+                default => __('Newest copy there :when', ['when' => $elsewhere->diffForHumans()]),
+            }, __('A dead disk takes the site and its copies together. Name a folder on another disk, a network share or a synced folder in BACKUP_COPY_TO (see docs/DEPLOY.th.md).')),
 
             $check('Free disk space', match (true) {
                 $free === false => 'warning',
@@ -97,6 +108,12 @@ class SystemHealth
             $check('Maintenance mode', SiteSettings::get('maintenance.enabled') ? 'warning' : 'ok', SiteSettings::get('maintenance.enabled') ? __('The site is closed to visitors') : __('The site is open'),
                 __('Switch it off under Site settings when the work is done.')),
         ];
+    }
+
+    /** How many checks say "problem": the number shown beside "System status" in the panel's menu. */
+    public static function problems(): int
+    {
+        return count(array_filter(self::checks(), fn (array $check) => $check['state'] === 'problem'));
     }
 
     /** Bytes used by uploaded pictures and documents. Walking the folder is slow, so the answer is kept ten minutes. */

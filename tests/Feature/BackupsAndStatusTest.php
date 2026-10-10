@@ -121,6 +121,59 @@ class BackupsAndStatusTest extends TestCase
         }
     }
 
+    public function test_the_copies_are_repeated_in_a_second_folder_off_the_disk(): void
+    {
+        $second = $this->folder.'-elsewhere';
+        config(['bchsp.backup.copy_to' => $second]);
+        $this->onMariaDb();
+
+        try {
+            $this->assertNull(Backups::latestElsewhere());
+
+            $this->artisan('backup:database')->expectsOutputToContain('Second folder')->assertSuccessful();
+
+            $copies = glob($second.DIRECTORY_SEPARATOR.'db-*.sql.gz');
+
+            $this->assertCount(1, $copies);
+            $this->assertSame(filesize(glob($this->folder.DIRECTORY_SEPARATOR.'db-*.sql.gz')[0]), filesize($copies[0]));
+            $this->assertNotNull(Backups::latestElsewhere());
+            // Run again: what is already there is not copied a second time.
+            $this->assertSame(0, Backups::copyElsewhere()['copied']);
+
+            // An old copy there goes after the days kept, like the ones here.
+            touch($copies[0], now()->subDays(15)->getTimestamp());
+            Backups::copyElsewhere();
+            $this->assertFileDoesNotExist($copies[0]);
+        } finally {
+            File::deleteDirectory($second);
+        }
+    }
+
+    public function test_without_a_second_folder_the_backup_says_the_copies_are_in_one_place(): void
+    {
+        $this->onMariaDb();
+
+        $this->assertNull(Backups::copyElsewhere());
+        $this->artisan('backup:database')->expectsOutputToContain('on this disk only')->assertSuccessful();
+        $this->assertSame('warning', collect(SystemHealth::checks())->firstWhere('name', 'Backup kept elsewhere')['state']);
+    }
+
+    public function test_a_red_number_beside_system_status_says_how_many_things_are_wrong(): void
+    {
+        config(['app.debug' => true]);
+
+        // Debug mode, no backup yet, scheduler never ran.
+        $this->assertSame(3, SystemHealth::problems());
+        $this->assertSame('3', SystemStatus::getNavigationBadge());
+
+        config(['app.debug' => false]);
+        SystemHealth::beat();
+        File::ensureDirectoryExists($this->folder);
+        file_put_contents($this->folder.DIRECTORY_SEPARATOR.'db-'.now()->format('Y-m-d-His').'.sql.gz', 'x');
+
+        $this->assertNull(SystemStatus::getNavigationBadge());
+    }
+
     public function test_the_backup_and_the_heartbeat_are_scheduled(): void
     {
         $events = collect(app(Schedule::class)->events());

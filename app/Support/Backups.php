@@ -11,12 +11,14 @@ use RuntimeException;
  * A copy of the database, taken every night (routes/console.php) and kept for
  * two weeks in storage/app/backups, outside anything the web server hands out.
  *
- * What this is NOT:
- *  - It is on the same disk as the site. A dead disk or a stolen server takes
- *    the copies with it. They must also be sent somewhere else; where is the
- *    hospital's choice and is not set up.
- *  - The uploaded pictures and documents are files, not database rows:
- *    mirrorUploads() keeps a second copy of them in the same folder, with the same limit.
+ * The uploaded pictures and documents are files, not database rows:
+ * mirrorUploads() keeps a second copy of them in the same folder, with the same limit.
+ *
+ * That folder is on the same disk as the site: a dead disk or a stolen server
+ * takes the copies with it. So copyElsewhere() repeats both in a second folder,
+ * named in BACKUP_COPY_TO: another disk, a network share, or a folder that a
+ * sync program (Google Drive for desktop, OneDrive) sends off the machine.
+ * Until that is set, the System status page says the copies are in one place only.
  *
  * To bring one back:  gunzip -c db-....sql.gz | mysql -u USER -p DATABASE
  */
@@ -159,6 +161,75 @@ class Backups
         }
 
         return ['copied' => $copied, 'removed' => $removed];
+    }
+
+    /** The second folder the copies are repeated in, or null when none has been named. */
+    public static function elsewhere(): ?string
+    {
+        $folder = config('bchsp.backup.copy_to');
+
+        return filled($folder) ? rtrim((string) $folder, '/\\') : null;
+    }
+
+    /**
+     * Repeat the newest database copy and the mirror of the uploads in the second folder, and
+     * remove database copies there that are older than the days kept.
+     *
+     * @return array{copied: int}|null null when no second folder has been named
+     */
+    public static function copyElsewhere(): ?array
+    {
+        if (! $to = self::elsewhere()) {
+            return null;
+        }
+
+        File::ensureDirectoryExists($to);
+
+        if (! is_writable($to)) {
+            throw new RuntimeException("The second backup folder cannot be written to: $to");
+        }
+
+        $copied = 0;
+
+        foreach (self::files() as $file) {
+            $copy = $to.DIRECTORY_SEPARATOR.basename($file);
+
+            if (! is_file($copy) || filesize($copy) !== filesize($file)) {
+                copy($file, $copy);
+                touch($copy, filemtime($file));
+                $copied++;
+            }
+        }
+
+        $before = now()->subDays(max(1, (int) config('bchsp.backup.keep_days')))->getTimestamp();
+
+        foreach (glob($to.DIRECTORY_SEPARATOR.'db-*.sql.gz') ?: [] as $copy) {
+            if (filemtime($copy) < $before) {
+                unlink($copy);
+            }
+        }
+
+        $uploads = self::folder().DIRECTORY_SEPARATOR.'uploads';
+
+        foreach (is_dir($uploads) ? File::allFiles($uploads) : [] as $file) {
+            $copy = $to.DIRECTORY_SEPARATOR.'uploads'.DIRECTORY_SEPARATOR.$file->getRelativePathname();
+
+            if (! is_file($copy) || filesize($copy) !== $file->getSize()) {
+                File::ensureDirectoryExists(dirname($copy));
+                copy($file->getPathname(), $copy);
+                $copied++;
+            }
+        }
+
+        return ['copied' => $copied];
+    }
+
+    /** When the newest database copy in the second folder was made, or null when there is none. */
+    public static function latestElsewhere(): ?Carbon
+    {
+        $files = self::elsewhere() ? (glob(self::elsewhere().DIRECTORY_SEPARATOR.'db-*.sql.gz') ?: []) : [];
+
+        return $files === [] ? null : Carbon::createFromTimestamp(max(array_map('filemtime', $files)), config('app.timezone'));
     }
 
     public static function folder(): string

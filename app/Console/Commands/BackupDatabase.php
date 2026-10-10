@@ -21,6 +21,7 @@ class BackupDatabase extends Command
         try {
             $file = Backups::run();
             $uploads = Backups::mirrorUploads();
+            $elsewhere = Backups::copyElsewhere();
         } catch (Throwable $e) {
             report($e);
             $this->error($e->getMessage());
@@ -30,6 +31,9 @@ class BackupDatabase extends Command
 
         $this->info('Database copied to '.$file);
         $this->info("Uploaded files: {$uploads['copied']} copied, {$uploads['removed']} old ones removed.");
+        $elsewhere === null
+            ? $this->warn('The copies are on this disk only. Name a second folder in BACKUP_COPY_TO.')
+            : $this->info("Second folder: {$elsewhere['copied']} files copied to ".Backups::elsewhere());
 
         return self::SUCCESS;
     }

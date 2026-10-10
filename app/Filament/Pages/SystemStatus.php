@@ -35,6 +35,19 @@ class SystemStatus extends Page
 
     protected string $view = 'filament.pages.system-status';
 
+    /** A red number in the menu while something is wrong, so an administrator sees it without opening the page. */
+    public static function getNavigationBadge(): ?string
+    {
+        $problems = SystemHealth::problems();
+
+        return $problems > 0 ? (string) $problems : null;
+    }
+
+    public static function getNavigationBadgeColor(): ?string
+    {
+        return 'danger';
+    }
+
     /** @return list<array{name: string, state: string, found: string, advice: ?string}> */
     public function getChecks(): array
     {
