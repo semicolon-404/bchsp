@@ -17,7 +17,8 @@
     // Today's clinics take the place beside the heading; the contact details drawn as code are what shows until a schedule exists.
     $sessions = App\Models\ClinicSession::today();
 
-    $announcements = App\Models\Announcement::current()->with('type')->inListOrder()->limit(6)->get();
+    $announcements = App\Models\Announcement::current()->with('type')->inListOrder()->limit(8)->get();
+    $types = App\Models\AnnouncementType::orderBy('sort_order')->orderBy('name')->get();
     $departments = App\Models\Department::shown()->limit(6)->get();
     $articles = App\Models\BlogPost::published()->with('category')->latest('published_at')->limit(3)->get();
 @endphp
@@ -134,7 +135,16 @@
                     </div>
                     <a href="{{ route('announcements.index') }}" class="btn btn-line">{{ __('All announcements') }} &rarr;</a>
                 </div>
-                <ul class="card mt-8 bg-page p-0">
+                {{-- The kinds of announcement, each with its mark: one press to the list of that kind. --}}
+                @if ($types->isNotEmpty())
+                    <nav class="mt-6 flex flex-wrap gap-2" aria-label="{{ __('Types') }}">
+                        @foreach ($types as $type)
+                            <a href="{{ route('announcements.index', ['type' => $type->slug]) }}" class="chip gap-2"><x-site.type-mark :type="$type" bare />{{ $type->localName() }}</a>
+                        @endforeach
+                    </nav>
+                @endif
+                {{-- Two columns on a wide screen: eight announcements in the height of four. --}}
+                <ul class="card mt-6 grid bg-page p-0 lg:grid-cols-2 lg:[&>li:nth-child(odd)]:border-r lg:[&>li:nth-last-child(2):nth-child(odd)]:border-b-0">
                     @foreach ($announcements as $announcement)
                         <x-site.announcement-row :announcement="$announcement" />
                     @endforeach

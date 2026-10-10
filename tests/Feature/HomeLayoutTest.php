@@ -32,10 +32,11 @@ class HomeLayoutTest extends TestCase
         $this->fillTheHomePage();
 
         // The list of departments is off at first: it is not what the home page is for.
-        $this->assertSame(['slides', 'hero', 'shortcuts', 'announcements', 'posters', 'articles'], HomeLayout::shown());
+        // The name of the hospital first; the pictures come after what people came to read.
+        $this->assertSame(['hero', 'shortcuts', 'announcements', 'slides', 'posters', 'articles'], HomeLayout::shown());
 
         $this->get('/')
-            ->assertSeeInOrder(['alt="A slide"', '<h1', 'aria-label="Shortcuts"', 'A notice', 'alt="A poster"', 'An article'], false)
+            ->assertSeeInOrder(['<h1', 'aria-label="Shortcuts"', 'A notice', 'alt="A slide"', 'alt="A poster"', 'An article'], false)
             ->assertDontSee('A department');
     }
 
@@ -97,7 +98,7 @@ class HomeLayoutTest extends TestCase
         // Saved before "articles" existed, say: it is added at the end, shown.
         SiteSettings::save(['home.layout' => [['key' => 'announcements', 'shown' => true], ['key' => 'hero', 'shown' => true]]]);
 
-        $this->assertSame(['announcements', 'hero', 'slides', 'shortcuts', 'posters', 'articles'], HomeLayout::shown());
+        $this->assertSame(['announcements', 'hero', 'shortcuts', 'slides', 'posters', 'articles'], HomeLayout::shown());
     }
 
     public function test_whatever_is_saved_only_known_sections_are_drawn_each_once(): void

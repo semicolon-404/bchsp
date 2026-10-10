@@ -53,9 +53,10 @@ class PicturesAndAlbumsTest extends TestCase
         $this->assertSame(['A slide of its own', 'Flu vaccine week'], $slides->pluck('title')->all());
         $this->assertSame(route('announcements.show', $in), $slides[1]->url);
 
-        preg_match('/<ul class="slider-track".*?<\/ul>/s', $this->get('/')->getContent(), $track);
+        preg_match('/<ul class="slider-track.*?<\/ul>/s', $this->get('/')->getContent(), $track);
 
-        $this->assertStringContainsString('<a href="'.route('announcements.show', $in).'" class="block"><img src="'.Storage::disk('public')->url('announcements/pictures/flu.webp').'" alt="Flu vaccine week"', $track[0]);
+        $this->assertStringContainsString('<a href="'.route('announcements.show', $in).'" class="relative block', $track[0]);
+        $this->assertStringContainsString('<img src="'.Storage::disk('public')->url('announcements/pictures/flu.webp').'" alt="Flu vaccine week"', $track[0]);
         $this->assertStringNotContainsString('quiet.webp', $track[0]);
 
         // When the announcement ends, its slide goes with it.

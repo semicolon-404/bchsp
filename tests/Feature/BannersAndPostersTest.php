@@ -31,13 +31,14 @@ class BannersAndPostersTest extends TestCase
             ->assertDontSee('<dialog', false);
     }
 
-    public function test_the_slides_come_first_on_the_page_and_have_arrows_and_dots_only_when_there_is_more_than_one(): void
+    public function test_the_slides_are_a_section_of_their_own_with_arrows_and_dots_only_when_there_is_more_than_one(): void
     {
         Banner::factory()->create(['title' => 'Only slide']);
 
         $page = $this->get('/')->getContent();
 
-        $this->assertLessThan(strpos($page, '<h1'), strpos($page, 'data-slider'));
+        // A section of its own, below the hospital's name and the announcements' place.
+        $this->assertGreaterThan(strpos($page, '<h1'), strpos($page, 'data-slider'));
         $this->assertStringNotContainsString('data-slider-next', $page);
 
         Banner::factory()->create(['title' => 'Second slide']);
@@ -46,9 +47,9 @@ class BannersAndPostersTest extends TestCase
 
         $this->assertStringContainsString('aria-label="Next slide"', $page);
         $this->assertSame(2, substr_count($page, 'data-slider-dot'));
-        // Shown whole, whatever its shape: nothing is cropped.
-        $this->assertStringContainsString('object-contain', $page);
-        $this->assertStringNotContainsString('object-cover', $page);
+        // Shown whole in a frame of one shape, whatever its own: nothing is cropped, and the page keeps its height.
+        $this->assertSame(2, substr_count($page, 'aspect-[4/3] sm:aspect-[16/9] lg:aspect-[21/9]'));
+        $this->assertSame(2, substr_count($page, 'class="relative size-full object-contain"'));
     }
 
     public function test_one_shows_only_while_it_is_switched_on_and_inside_its_dates(): void
@@ -71,7 +72,9 @@ class BannersAndPostersTest extends TestCase
 
         $page = $this->get('/')->getContent();
 
-        $this->assertSame(8 + 8, substr_count($page, '<img '));
+        // Each is drawn twice: itself, and out of focus behind itself to fill its frame.
+        $this->assertSame(8 + 8, substr_count($page, 'object-contain'));
+        $this->assertSame(8 + 8, substr_count($page, 'aria-hidden="true" loading="lazy" class="absolute'));
     }
 
     public function test_a_link_to_another_site_opens_in_a_new_tab_and_one_to_this_site_does_not(): void
@@ -82,7 +85,16 @@ class BannersAndPostersTest extends TestCase
 
         $this->get('/')
             ->assertSee('<a href="https://www.moph.go.th/campaign" target="_blank" rel="noopener noreferrer"', false)
-            ->assertSee('<a href="http://localhost/announcements" class="block">', false);
+            ->assertSee('<a href="http://localhost/announcements" class="relative block', false);
+    }
+
+    public function test_a_poster_has_its_name_under_it_and_without_a_link_opens_its_picture(): void
+    {
+        $poster = Banner::factory()->poster()->create(['title' => 'Dengue campaign poster', 'url' => null]);
+
+        $this->get('/')
+            ->assertSee('<a href="'.$poster->imageUrl().'" target="_blank" rel="noopener noreferrer" class="relative block overflow-hidden bg-raised aspect-[3/4]">', false)
+            ->assertSeeInOrder(['alt="Dengue campaign poster"', '<p class="line-clamp-2', 'Dengue campaign poster'], false);
     }
 
     public function test_the_first_poster_marked_for_it_opens_over_the_page(): void

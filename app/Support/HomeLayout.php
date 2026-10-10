@@ -16,10 +16,11 @@ class HomeLayout
 
     /** Section => the name the settings page gives it. In the order the page has until someone arranges it. */
     public const SECTIONS = [
-        'slides' => 'Slides',
         'hero' => 'Name of the hospital and phone buttons',
         'shortcuts' => 'Shortcuts to what visitors come for',
         'announcements' => 'Announcements',
+        // The pictures come after what people came to read, as a section of their own: slides, then the grid of posters.
+        'slides' => 'Slides',
         'posters' => 'Posters',
         'departments' => 'Departments',
         'articles' => 'Articles',
