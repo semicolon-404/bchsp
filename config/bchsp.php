@@ -5,6 +5,17 @@
  */
 return [
 
+    'backup' => [
+        // The mysqldump program. On XAMPP for Windows: C:\\xampp\\mysql\\bin\\mysqldump.exe
+        'mysqldump' => env('BACKUP_MYSQLDUMP', 'mysqldump'),
+        // The database connection to copy. Blank = the one the site uses.
+        'connection' => env('BACKUP_CONNECTION'),
+        // How many days a nightly copy is kept before it is removed.
+        'keep_days' => (int) env('BACKUP_KEEP_DAYS', 14),
+        // Where the copies go. Blank = storage/app/backups, which the web server does not hand out.
+        'folder' => env('BACKUP_FOLDER'),
+    ],
+
     'access_log' => [
         // How long a line of the access log is kept before the nightly clean-up removes it. Never fewer than 90 days:
         // Thai law (the Computer Crime Act) asks for traffic logs to be kept at least that long.
