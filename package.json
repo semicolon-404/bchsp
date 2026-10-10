@@ -3,7 +3,8 @@
     "type": "module",
     "scripts": {
         "build": "vite build",
-        "dev": "vite"
+        "dev": "vite",
+        "check:fit": "node tests/browser/fit.mjs"
     },
     "devDependencies": {
         "@fontsource-variable/jetbrains-mono": "^5.3.0",
