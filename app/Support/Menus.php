@@ -16,9 +16,10 @@ use Illuminate\Support\Facades\Route;
  *
  *   Home · About us · ITA · News · Procurement
  *
- * "About us" opens onto the pages an administrator filed there (System > Pages),
- * the departments and the contact page. "ITA" opens onto its fiscal years and
- * the pages filed there. "News" opens onto the kinds of
+ * "About us" holds the pages an administrator filed there (System > Pages),
+ * the departments and the contact page; "ITA" holds its fiscal years and the
+ * pages filed there. Both are too long to drop from the bar: each leads to a
+ * page of its own (/about, /ita) that lists what it holds. "News" opens onto the kinds of
  * announcement, the articles and the downloads. What staff use (their own
  * services) is not in the public menu at all: it has a page of its own, /staff.
  *
@@ -66,7 +67,7 @@ class Menus
     /**
      * The menu as it should be drawn.
      *
-     * @return list<array{key: string, label: string, short: string, icon: string, url: string, active: bool, children: list<array{label: string, url: string, active: bool}>}>
+     * @return list<array{key: string, label: string, short: string, icon: string, url: string, active: bool, opens: bool, children: list<array{label: string, url: string, active: bool}>}>
      */
     public static function items(string $menu): array
     {
@@ -76,7 +77,8 @@ class Menus
             if ($place = self::place($key)) {
                 [$label, $short, $icon] = self::PLACES[$key];
 
-                $items[] = compact('key', 'label', 'short', 'icon') + $place;
+                // "opens": whether the top bar drops a list from this group. The page that lists everything shows the children either way.
+                $items[] = compact('key', 'label', 'short', 'icon') + $place + ['opens' => $place['children'] !== []];
             }
         }
 
@@ -106,7 +108,8 @@ class Menus
                 $children[] = $link(__('Departments'), route('departments.index'), $request->routeIs('departments.*'));
                 $children[] = $link(__('Contact us'), route('contact'), $request->routeIs('contact'));
 
-                return ['url' => $children[0]['url'], 'active' => in_array(true, array_column($children, 'active'), true), 'children' => $children];
+                // Too many to drop from the bar: the bar's link leads to a page that lists them (/about).
+                return ['url' => route('about'), 'active' => $request->routeIs('about') || in_array(true, array_column($children, 'active'), true), 'children' => $children, 'opens' => false];
 
             case 'ita':
                 $shown = $request->routeIs('ita') ? (int) ($request->route('year') ?? (ItaItem::years()[0] ?? 0)) : null;
@@ -122,8 +125,10 @@ class Menus
                 return [
                     'url' => route('ita'),
                     'active' => $request->routeIs('ita') || in_array(true, array_column($children, 'active'), true),
-                    // One year and nothing else is just the page itself: no list to open.
+                    // One year and nothing else is just the page itself: nothing to list.
                     'children' => count($children) > 1 ? $children : [],
+                    // The ITA page itself offers the years and the pages: the bar's link leads straight to it.
+                    'opens' => false,
                 ];
 
             case 'news':

@@ -117,6 +117,7 @@ class ContactPageTest extends TestCase
             ->assertSee('ติดต่อเรา')
             ->assertSee('แสดงแผนที่')
             ->assertSee('ฉุกเฉิน ตลอด 24 ชั่วโมง')
-            ->assertSee('href="'.route('contact').'" aria-current="page"', false);
+            // It belongs to "About us", which is the group marked in the bar.
+            ->assertSee('href="'.route('about').'" aria-current="page"', false);
     }
 }

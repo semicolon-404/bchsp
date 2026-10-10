@@ -8,7 +8,7 @@
     @foreach (App\Support\Menus::items('top') as $item)
         @php($classes = 'flex h-full items-center gap-1 whitespace-nowrap px-3 text-sm no-underline transition-colors hover:text-ink '.($item['active'] ? 'text-ink shadow-[inset_0_-2px_0_var(--color-brand)]' : 'text-muted'))
 
-        @if ($item['children'])
+        @if ($item['opens'])
             <details class="menu-group relative" data-menu>
                 <summary class="{{ $classes }} cursor-pointer list-none">
                     {{ __($item['label']) }}

@@ -21,6 +21,7 @@ Route::get('/blog/{post}', [BlogController::class, 'show'])->name('blog.show');
 Route::get('/departments', [DepartmentController::class, 'index'])->name('departments.index');
 Route::get('/departments/{department}', [DepartmentController::class, 'show'])->name('departments.show');
 
+Route::view('/about', 'about')->name('about');
 Route::view('/contact', 'contact')->name('contact');
 Route::view('/downloads', 'downloads')->name('downloads');
 Route::get('/ita/{year?}', [ItaController::class, 'show'])->whereNumber('year')->name('ita');

@@ -7,6 +7,7 @@ use App\Filament\Resources\StaffLinks\Pages\ManageStaffLinks;
 use App\Models\Announcement;
 use App\Models\AnnouncementType;
 use App\Models\BlogPost;
+use App\Models\ItaItem;
 use App\Models\SitePage;
 use App\Models\StaffLink;
 use App\Models\User;
@@ -56,23 +57,29 @@ class MenusTest extends TestCase
         SitePage::factory()->create(['title' => 'Filed nowhere', 'show_in_footer' => false]);
         SitePage::factory()->create(['title' => 'Not out yet', 'section' => 'about', 'is_published' => false]);
 
+        // Too many to drop from the bar: "About us" is a plain link to a page that lists them.
         $bar = $this->topBar($this->get('/')->assertOk()->getContent());
 
-        $this->assertMatchesRegularExpression('/About us.*History of the hospital.*Vision and mission.*Departments.*Contact us.*ITA/s', $bar);
-        $this->assertStringNotContainsString('Filed nowhere', $bar);
-        $this->assertStringNotContainsString('Not out yet', $bar);
+        $this->assertStringContainsString('href="'.route('about').'"', $bar);
+        $this->assertStringNotContainsString('History of the hospital', $bar);
+
+        $this->get('/about')
+            ->assertOk()
+            ->assertSeeInOrder(['History of the hospital', 'Vision and mission', 'Departments', 'Contact us'])
+            ->assertDontSee('Filed nowhere')
+            ->assertDontSee('Not out yet');
     }
 
     public function test_the_menu_follows_a_page_being_filed_renamed_or_removed_at_once(): void
     {
-        $page = SitePage::factory()->create(['title' => 'Old name', 'section' => 'about']);
-        $this->assertStringContainsString('Old name', $this->topBar($this->get('/')->getContent()));
+        $page = SitePage::factory()->create(['title' => 'Old name', 'section' => 'about', 'show_in_footer' => false]);
+        $this->get('/about')->assertSee('Old name');
 
         $page->update(['title' => 'New name']);
-        $this->assertStringContainsString('New name', $this->topBar($this->get('/')->getContent()));
+        $this->get('/about')->assertSee('New name')->assertDontSee('Old name');
 
         $page->update(['section' => null]);
-        $this->assertStringNotContainsString('New name', $this->topBar($this->get('/')->getContent()));
+        $this->get('/about')->assertDontSee('New name');
     }
 
     public function test_news_opens_onto_every_kind_of_announcement_but_procurement_then_articles_and_downloads(): void
@@ -88,6 +95,18 @@ class MenusTest extends TestCase
 
         $this->assertSame(route('announcements.index', ['type' => 'procurement']), $procurement['url']);
         $this->assertSame([], $procurement['children']);
+    }
+
+    public function test_only_news_drops_a_list_from_the_bar(): void
+    {
+        SitePage::factory()->create(['section' => 'about']);
+        ItaItem::factory()->create(['year' => 2569]);
+        ItaItem::factory()->create(['year' => 2568]);
+
+        $opens = collect(Menus::items('top'))->pluck('opens', 'key')->all();
+
+        $this->assertSame(['home' => false, 'about' => false, 'ita' => false, 'news' => true, 'procurement' => false], $opens);
+        $this->assertSame(1, substr_count($this->topBar($this->get('/')->getContent()), '<details'));
     }
 
     public function test_procurement_is_left_out_when_that_kind_of_announcement_is_gone(): void
@@ -113,6 +132,7 @@ class MenusTest extends TestCase
         $this->assertSame(['about'], $this->markedOn(route('pages.show', $page)));
         $this->assertSame(['about'], $this->markedOn('/departments'));
         $this->assertSame(['about'], $this->markedOn('/contact'));
+        $this->assertSame(['about'], $this->markedOn('/about'));
         $this->assertSame(['ita'], $this->markedOn('/ita'));
         $this->assertSame([], $this->markedOn('/staff'));
     }
