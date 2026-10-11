@@ -31,28 +31,25 @@ class HomeLayoutTest extends TestCase
     {
         $this->fillTheHomePage();
 
-        // Kept open, as the hospital's first page always was: the welcome, the way to the news, what it says of itself.
+        // The welcome, what is new, a list of the other parts of the site, and what the hospital says of itself.
         // The pictures, the articles and the departments are off at first, and read on their own pages.
-        $this->assertSame(['hero', 'announcements', 'identity'], HomeLayout::shown());
+        $this->assertSame(['hero', 'announcements', 'shortcuts', 'identity'], HomeLayout::shown());
 
         $this->get('/')
-            ->assertSeeInOrder(['<h1', 'alt="A slide"', '<section id="news"'], false)
-            ->assertDontSee('aria-label="Shortcuts"', false)
+            ->assertSeeInOrder(['<h1', '<section id="news"', 'alt="A slide"', 'A notice', 'aria-label="Shortcuts"', 'id="door-0"', 'id="door-5"'], false)
             // Nothing has been written about the hospital yet, so that section takes no room.
             ->assertDontSee('id="identity"', false)
-            ->assertDontSee('A notice')->assertDontSee('alt="A poster"', false)->assertDontSee('An article')->assertDontSee('A department');
+            ->assertDontSee('alt="A poster"', false)->assertDontSee('An article')->assertDontSee('A department');
 
         // Switched on, each takes its usual place: the pictures after what people came to read.
-        $this->showOnHome('shortcuts', 'posters', 'articles');
+        $this->showOnHome('posters', 'articles');
 
-        $this->get('/')
-            ->assertSeeInOrder(['<h1', '<section id="news"', 'aria-label="Shortcuts"', 'id="door-0"', 'id="door-4"', 'alt="A poster"', 'An article'], false)
-            ->assertDontSee('id="door-5"', false);
+        $this->get('/')->assertSeeInOrder(['<h1', '<section id="news"', 'aria-label="Shortcuts"', 'alt="A poster"', 'An article'], false);
     }
 
     public function test_the_welcome_carries_the_motto_and_what_the_hospital_says_of_itself_has_a_tab_each(): void
     {
-        $this->get('/')->assertSee('Welcome to')->assertDontSee('href="#identity"', false);
+        $this->get('/')->assertSee('Welcome to')->assertDontSee('id="identity"', false);
 
         $this->actingAs(User::factory()->admin()->create());
 
@@ -66,7 +63,7 @@ A - Agility"])
 
         auth()->logout();
         $page = $this->get('/')
-            ->assertSeeInOrder(['Welcome to', '<h1', '“Service from the heart”', 'href="#identity"', '<section id="identity"', '“A hospital of quality”', 'Quality: a service that works', 'T - Teamwork', 'A - Agility'], false)
+            ->assertSeeInOrder(['Welcome to', '<h1', '“Service from the heart”', '<section id="identity"', '“A hospital of quality”', 'Quality: a service that works', 'T - Teamwork', 'A - Agility'], false)
             // Nothing was written for the mission: it has no tab.
             ->assertDontSee('for="identity-2"', false)
             ->getContent();
@@ -90,7 +87,6 @@ A - Agility"])
                 ['key' => 'posters', 'shown' => false],
                 ['key' => 'shortcuts', 'shown' => false],
                 ['key' => 'identity', 'shown' => false],
-                ['key' => 'today', 'shown' => false],
             ]])
             ->call('save')
             ->assertHasNoFormErrors();
@@ -135,7 +131,7 @@ A - Agility"])
         // Saved before "identity" existed, say: it is added at the end, shown.
         SiteSettings::save(['home.layout' => [['key' => 'announcements', 'shown' => true], ['key' => 'hero', 'shown' => true]]]);
 
-        $this->assertSame(['announcements', 'hero', 'identity'], HomeLayout::shown());
+        $this->assertSame(['announcements', 'hero', 'shortcuts', 'identity'], HomeLayout::shown());
     }
 
     public function test_whatever_is_saved_only_known_sections_are_drawn_each_once(): void

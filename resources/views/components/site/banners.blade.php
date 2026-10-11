@@ -3,10 +3,10 @@
     the grid of posters, and the one poster that opens over the page.
 
     <x-site.banners part="banners" />   <x-site.banners part="posters" />   <x-site.banners part="popup" />
-    <x-site.banners part="screens" :banners="$slides" />   the slides as window-high screens, after the welcome (home page)
+    <x-site.banners part="stage" :banners="$slides" />     the slider alone, in a frame of the shape given (home page)
     <x-site.banners part="all" />       every slide and poster in one grid, for the page of their own (/posters)
 --}}
-@props(['part', 'banners' => null])
+@props(['part', 'banners' => null, 'frame' => 'aspect-[4/3]'])
 @php
     use App\Models\Banner;
 
@@ -38,28 +38,12 @@
             whole in a frame of one size, whatever its shape, so the page does not jump from slide to slide.
             They can be swiped; resources/js/slider.js adds the arrows, the dots and moving on by itself.
         --}}
-        <section class="border-b border-line bg-surface" aria-label="{{ __('Banners') }}" aria-roledescription="carousel" data-slider>
+        <section class="border-b border-line bg-surface" aria-label="{{ __('Banners') }}">
             <div class="wrap py-12 sm:py-16">
                 <p class="eyebrow">{{ __('Slides') }}</p>
                 <h2 class="mt-2 text-2xl sm:text-3xl">{{ __('Banners') }}</h2>
             {{-- The arrows are placed against this box, so that they sit at the middle of the pictures and not of the heading. --}}
-            <div class="relative mt-8">
-                <ul class="slider-track rounded-xl border border-line" data-slider-track>
-                    @foreach ($banners as $banner)
-                        <li class="w-full shrink-0 snap-center" aria-roledescription="slide" aria-label="{{ $loop->iteration }} / {{ $loop->count }}">{!! $framed($banner, 'aspect-[4/3] sm:aspect-[16/9] lg:aspect-[21/9]') !!}</li>
-                    @endforeach
-                </ul>
-
-                @if ($banners->count() > 1)
-                    <button type="button" class="slider-arrow left-2 sm:left-4" data-slider-prev aria-label="{{ __('Previous slide') }}"><x-heroicon-m-chevron-left class="size-6" aria-hidden="true" /></button>
-                    <button type="button" class="slider-arrow right-2 sm:right-4" data-slider-next aria-label="{{ __('Next slide') }}"><x-heroicon-m-chevron-right class="size-6" aria-hidden="true" /></button>
-                    <div class="absolute inset-x-0 bottom-2 flex justify-center gap-1">
-                        @foreach ($banners as $banner)
-                            <button type="button" class="slider-dot" data-slider-dot aria-current="{{ $loop->first ? 'true' : 'false' }}" aria-label="{{ __('Slide :number', ['number' => $loop->iteration]) }}"></button>
-                        @endforeach
-                    </div>
-                @endif
-            </div>
+            <div class="mt-8"><x-site.banners part="stage" :banners="$banners" frame="aspect-[4/3] sm:aspect-[16/9] lg:aspect-[21/9]" /></div>
             </div>
         </section>
     @endif
@@ -82,12 +66,25 @@
             </div>
         </section>
     @endif
-@elseif ($part === 'screens')
-    @foreach ($banners as $banner)
-        <li class="home-screen w-full shrink-0 snap-center" aria-roledescription="slide" aria-label="{{ $loop->iteration + 1 }} / {{ $loop->count + 1 }}">
-            <div class="wrap flex justify-center py-16">{!! $picture($banner, 'mx-auto max-h-[calc(100svh-12rem)] w-auto max-w-full rounded-xl object-contain') !!}</div>
-        </li>
-    @endforeach
+@elseif ($part === 'stage')
+    {{-- The slider alone: the pictures one at a time in a frame of one shape, with its arrows and dots. --}}
+            <div class="relative" aria-roledescription="carousel" aria-label="{{ __('Banners') }}" data-slider>
+                <ul class="slider-track rounded-xl border border-line" data-slider-track>
+                    @foreach ($banners as $banner)
+                        <li class="w-full shrink-0 snap-center" aria-roledescription="slide" aria-label="{{ $loop->iteration }} / {{ $loop->count }}">{!! $framed($banner, $frame) !!}</li>
+                    @endforeach
+                </ul>
+
+                @if ($banners->count() > 1)
+                    <button type="button" class="slider-arrow left-2 sm:left-4" data-slider-prev aria-label="{{ __('Previous slide') }}"><x-heroicon-m-chevron-left class="size-6" aria-hidden="true" /></button>
+                    <button type="button" class="slider-arrow right-2 sm:right-4" data-slider-next aria-label="{{ __('Next slide') }}"><x-heroicon-m-chevron-right class="size-6" aria-hidden="true" /></button>
+                    <div class="absolute inset-x-0 bottom-2 flex justify-center gap-1">
+                        @foreach ($banners as $banner)
+                            <button type="button" class="slider-dot" data-slider-dot aria-current="{{ $loop->first ? 'true' : 'false' }}" aria-label="{{ __('Slide :number', ['number' => $loop->iteration]) }}"></button>
+                        @endforeach
+                    </div>
+                @endif
+            </div>
 @elseif ($part === 'all')
     @php($pictures = Banner::slides()->concat(Banner::showingAs('poster')))
     @if ($pictures->isNotEmpty())
