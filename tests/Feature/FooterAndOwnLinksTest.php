@@ -147,22 +147,32 @@ class FooterAndOwnLinksTest extends TestCase
         $this->withUnencryptedCookie(SetLocale::COOKIE, 'th')->get('/')->assertSee('จองคิวออนไลน์')->assertDontSee('Book a visit');
     }
 
+    public function test_the_news_menu_leads_to_the_posters_and_their_page_counts_as_news(): void
+    {
+        $news = collect(Menus::items('top'))->firstWhere('key', 'news');
+
+        $this->assertContains(route('posters'), array_column($news['children'], 'url'));
+        $this->get('/posters')->assertOk();
+        $this->assertSame(1, (int) \Illuminate\Support\Facades\DB::table('site_visits')->where('section', 'news')->sum('views'));
+    }
+
     public function test_articles_and_downloads_can_be_left_out_of_the_news_menu(): void
     {
         $this->actingAs(User::factory()->admin()->create());
 
         Livewire::test(SettingsPage::class)
-            ->assertFormSet(['menu_news_shown' => ['articles', 'downloads']])
+            ->assertFormSet(['menu_news_shown' => ['posters', 'articles', 'downloads']])
             ->fillForm(['menu_news_shown' => ['articles']])
             ->call('save')
             ->assertHasNoFormErrors();
 
-        $this->assertSame(['downloads'], Menus::newsHidden());
+        $this->assertSame(['posters', 'downloads'], Menus::newsHidden());
 
         $labels = array_column(collect(Menus::items('top'))->firstWhere('key', 'news')['children'], 'label');
 
         $this->assertContains('Health articles', $labels);
         $this->assertNotContains('Downloads', $labels);
+        $this->assertNotContains('Posters', $labels);
         // The page is still there for anyone with its address.
         $this->get('/downloads')->assertOk();
     }

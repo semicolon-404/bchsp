@@ -88,7 +88,7 @@ class MenusTest extends TestCase
 
         $news = collect(Menus::items('top'))->firstWhere('key', 'news');
 
-        $this->assertSame(['News', 'Job openings', 'Public hearings', 'Health articles', 'Downloads'], array_column($news['children'], 'label'));
+        $this->assertSame(['News', 'Job openings', 'Public hearings', 'Posters', 'Health articles', 'Downloads'], array_column($news['children'], 'label'));
         $this->assertSame(route('announcements.index', ['type' => 'jobs']), $news['children'][1]['url']);
 
         $procurement = collect(Menus::items('top'))->firstWhere('key', 'procurement');

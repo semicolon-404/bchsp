@@ -85,6 +85,7 @@ class Visits
         return match (true) {
             $route === 'home' => 'home',
             $route === 'ita' => 'ita',
+            $route === 'posters' => 'news',
             str_starts_with($route, 'blog.') => 'articles',
             $route === 'schedule' => 'schedule',
             str_starts_with($route, 'departments.') => 'departments',
