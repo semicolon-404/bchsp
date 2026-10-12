@@ -57,6 +57,26 @@ class SystemStatus extends Page
     protected function getHeaderActions(): array
     {
         return [
+            // After new files have been put on a server with no terminal: what "php artisan migrate" does elsewhere.
+            Action::make('updateDatabase')
+                ->label(__('Update after new files'))
+                ->icon(Heroicon::OutlinedArrowPath)
+                ->color('gray')
+                ->requiresConfirmation()
+                ->modalDescription(__('Use this after putting a new version of the website\'s files on the server: it makes the changes to the database that the new version needs, and clears what was kept from the old one. Nothing is deleted. Take a backup first.'))
+                ->action(function () {
+                    try {
+                        $failed = Artisan::call('migrate', ['--force' => true]) !== 0;
+                        $said = trim(Artisan::output());
+                        Artisan::call('optimize:clear');
+                    } catch (\Throwable $e) {
+                        [$failed, $said] = [true, $e->getMessage()];
+                    }
+
+                    $failed
+                        ? Notification::make()->danger()->title(__('The update failed'))->body($said)->persistent()->send()
+                        : Notification::make()->success()->title(__('The website is up to date'))->body(str($said)->limit(400))->send();
+                }),
             Action::make('backupNow')
                 ->label(__('Take a backup now'))
                 ->icon(Heroicon::OutlinedArrowDownTray)

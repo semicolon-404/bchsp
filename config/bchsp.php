@@ -20,6 +20,14 @@ return [
         'folder' => env('BACKUP_FOLDER'),
     ],
 
+    // For a server where no command can be typed (shared hosting). See docs/DEPLOY.th.md, "โฮสติ้งแบบแชร์".
+    // The key that opens /install?key=... once, to set the site up from a browser. At least 16 characters;
+    // blank = there is no such page. Remove it from .env when the site is set up.
+    'install_key' => env('INSTALL_KEY'),
+    // true = the site's daily work (backup, clean-up, the morning email) is done after a visitor's page has
+    // been sent, because the server has no scheduler to do it (App\Support\WebCron).
+    'schedule_on_visits' => (bool) env('SCHEDULE_ON_VISITS', false),
+
     'access_log' => [
         // How long a line of the access log is kept before the nightly clean-up removes it. Never fewer than 90 days:
         // Thai law (the Computer Crime Act) asks for traffic logs to be kept at least that long.
