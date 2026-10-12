@@ -399,6 +399,40 @@ html.is-mourning {
         border-color: var(--color-brand);
     }
 
+    /*
+     * A soft light in the colour of the site under the pointer, on every card and editor window (the place is
+     * set by resources/js/spot.js). Under a finger there is no pointer to follow: there it comes up for a
+     * moment where the touch landed. It only tints: nothing moves, and it never takes a press.
+     */
+    .card,
+    .code-block {
+        position: relative;
+    }
+
+    .card::after,
+    .code-block::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        border-radius: inherit;
+        pointer-events: none;
+        opacity: 0;
+        transition: opacity 300ms ease;
+        background: radial-gradient(420px circle at var(--mx, 50%) var(--my, 50%), color-mix(in srgb, var(--color-brand) 12%, transparent), transparent 62%);
+    }
+
+    .card.is-touched::after,
+    .code-block.is-touched::after {
+        opacity: 1;
+    }
+
+    @media (hover: hover) {
+        .card:hover::after,
+        .code-block:hover::after {
+            opacity: 1;
+        }
+    }
+
     /* A choice in a row of filters (the blog's categories); the one in force is lit. */
     .chip {
         display: inline-flex;
