@@ -101,7 +101,7 @@
                 so the bar holds only the menu and the emergency number. Closed by resources/js/menu.js like
                 the groups of the menu.
             --}}
-            <a href="{{ route('search') }}" class="ml-auto flex size-10 shrink-0 items-center justify-center rounded-md text-muted hover:bg-raised hover:text-ink" aria-label="{{ __('Search') }}" title="{{ __('Search') }}">
+            <a href="{{ route('search') }}" class="ml-auto flex size-10 shrink-0 items-center justify-center rounded-md text-muted hover:bg-raised hover:text-ink lg:ml-0" aria-label="{{ __('Search') }}" title="{{ __('Search') }}">
                 <x-heroicon-o-magnifying-glass class="size-5" aria-hidden="true" />
             </a>
 

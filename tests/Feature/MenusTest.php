@@ -25,7 +25,7 @@ class MenusTest extends TestCase
     /** The top bar as it is in a page: from its opening tag to its closing one. */
     private function topBar(string $page): string
     {
-        preg_match('/<nav class="hidden items-stretch.*?<\/nav>/s', $page, $found);
+        preg_match('/<nav class="[^"]*hidden items-stretch.*?<\/nav>/s', $page, $found);
 
         return $found[0] ?? '';
     }
