@@ -28,7 +28,7 @@ class BlogPost extends Model
     public const STATUS_PUBLISHED = 'published';
 
     protected $fillable = [
-        'author_id', 'blog_category_id',
+        'author_id', 'blog_category_id', 'department_id',
         'title', 'title_en', 'slug', 'excerpt', 'excerpt_en', 'body', 'body_en',
         'cover_path', 'gallery', 'status', 'published_at',
     ];
@@ -85,6 +85,12 @@ class BlogPost extends Model
     public function author(): BelongsTo
     {
         return $this->belongsTo(User::class, 'author_id');
+    }
+
+    /** The unit of the hospital that wrote it, when one did: it is then on that unit's board. */
+    public function department(): BelongsTo
+    {
+        return $this->belongsTo(Department::class);
     }
 
     public function category(): BelongsTo

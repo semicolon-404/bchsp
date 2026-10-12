@@ -31,7 +31,7 @@ class Announcement extends Model
     public const MAX_FILES = 10;
 
     protected $fillable = [
-        'announcement_type_id', 'author_id',
+        'announcement_type_id', 'author_id', 'department_id',
         'title', 'title_en', 'slug', 'body', 'body_en',
         'image_path', 'in_slider', 'attachments', 'attachment_names', 'links', 'is_pinned', 'starts_at', 'ends_at',
     ];
@@ -87,6 +87,12 @@ class Announcement extends Model
     public function type(): BelongsTo
     {
         return $this->belongsTo(AnnouncementType::class, 'announcement_type_id');
+    }
+
+    /** The unit of the hospital that put it out, when one did: it is then on that unit's board. */
+    public function department(): BelongsTo
+    {
+        return $this->belongsTo(Department::class);
     }
 
     public function author(): BelongsTo

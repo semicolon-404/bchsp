@@ -2,8 +2,12 @@
 
 namespace Tests\Feature;
 
+use App\Filament\Resources\Announcements\Pages\EditAnnouncement;
 use App\Filament\Resources\Departments\Pages\ManageDepartments;
 use App\Http\Middleware\SetLocale;
+use App\Models\Announcement;
+use App\Models\AnnouncementType;
+use App\Models\BlogPost;
 use App\Models\Department;
 use App\Models\User;
 use App\Support\SiteSettings;
@@ -64,6 +68,78 @@ class DepartmentsTest extends TestCase
         $this->get(route('departments.show', $department))->assertNotFound();
         $this->actingAs(User::factory()->create())->get(route('departments.show', $department))->assertNotFound();
         $this->actingAs(User::factory()->admin()->create())->get(route('departments.show', $department))->assertOk();
+    }
+
+    public function test_a_department_has_a_board_of_what_it_put_out_itself(): void
+    {
+        $dental = Department::factory()->create(['name' => 'Dental']);
+        $pharmacy = Department::factory()->create(['name' => 'Pharmacy']);
+
+        Announcement::factory()->create(['title' => 'Brush twice a day', 'department_id' => $dental->id, 'image_path' => 'announcements/brush.webp']);
+        Announcement::factory()->create(['title' => 'Dental clinic closed on Friday', 'department_id' => $dental->id]);
+        Announcement::factory()->create(['title' => 'Old dental notice', 'department_id' => $dental->id, 'ends_at' => now()->subHour()]);
+        Announcement::factory()->scheduled()->create(['title' => 'Dental notice for next week', 'department_id' => $dental->id]);
+        Announcement::factory()->create(['title' => 'Medicine by post', 'department_id' => $pharmacy->id]);
+        Announcement::factory()->create(['title' => 'Notice of the whole hospital']);
+        BlogPost::factory()->create(['title' => 'Caring for milk teeth', 'department_id' => $dental->id]);
+        BlogPost::factory()->draft()->create(['title' => 'Unfinished dental article', 'department_id' => $dental->id]);
+        BlogPost::factory()->create(['title' => 'Storing medicine at home', 'department_id' => $pharmacy->id]);
+
+        $this->get(route('departments.show', $dental))
+            ->assertOk()
+            ->assertSeeInOrder(['Posters and announcements', 'Brush twice a day', 'Dental clinic closed on Friday', 'Knowledge and articles', 'Caring for milk teeth'])
+            ->assertSee('announcements/brush.webp')
+            ->assertDontSee('Old dental notice')
+            ->assertDontSee('Dental notice for next week')
+            ->assertDontSee('Medicine by post')
+            ->assertDontSee('Notice of the whole hospital')
+            ->assertDontSee('Unfinished dental article')
+            ->assertDontSee('Storing medicine at home');
+    }
+
+    public function test_a_department_that_put_out_nothing_has_no_board(): void
+    {
+        $this->get(route('departments.show', Department::factory()->create()))
+            ->assertOk()
+            ->assertDontSee('Posters and announcements')
+            ->assertDontSee('Knowledge and articles');
+    }
+
+    public function test_an_announcement_and_an_article_lead_back_to_their_department(): void
+    {
+        $dental = Department::factory()->create(['name' => 'Dental']);
+        $hidden = Department::factory()->create(['name' => 'Hidden unit', 'is_active' => false]);
+
+        $this->get(route('announcements.show', Announcement::factory()->create(['department_id' => $dental->id])))
+            ->assertOk()->assertSee(route('departments.show', $dental));
+        $this->get(route('blog.show', BlogPost::factory()->create(['department_id' => $dental->id])))
+            ->assertOk()->assertSee(route('departments.show', $dental));
+        $this->get(route('announcements.show', Announcement::factory()->create(['department_id' => $hidden->id])))
+            ->assertOk()->assertDontSee('Hidden unit');
+    }
+
+    public function test_what_a_deleted_department_put_out_is_kept(): void
+    {
+        $department = Department::factory()->create();
+        $announcement = Announcement::factory()->create(['department_id' => $department->id]);
+
+        $department->delete();
+
+        $this->assertNull($announcement->fresh()->department_id);
+    }
+
+    public function test_staff_choose_the_department_of_an_announcement_in_the_panel(): void
+    {
+        $this->actingAs(User::factory()->admin()->create());
+        $dental = Department::factory()->create(['name' => 'Dental']);
+        $announcement = Announcement::factory()->create(['announcement_type_id' => AnnouncementType::factory()->create()->id]);
+
+        Livewire::test(EditAnnouncement::class, ['record' => $announcement->getRouteKey()])
+            ->fillForm(['department_id' => $dental->id])
+            ->call('save')
+            ->assertHasNoFormErrors();
+
+        $this->assertTrue($announcement->fresh()->department->is($dental));
     }
 
     public function test_nothing_typed_into_a_department_is_run_by_the_readers_browser(): void

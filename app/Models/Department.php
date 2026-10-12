@@ -8,11 +8,13 @@ use Database\Factories\DepartmentFactory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\Storage;
 
 /**
  * A unit of the hospital, at /departments/{slug}: what it does, where it is,
- * its phone number and its hours. One that is switched off is kept in the
+ * its phone number and its hours, and under them its board: the posters,
+ * announcements and articles it has put out. One that is switched off is kept in the
  * panel and hidden from the site.
  */
 class Department extends Model
@@ -57,6 +59,17 @@ class Department extends Model
     public function getRouteKeyName(): string
     {
         return 'slug';
+    }
+
+    /** What the unit has put out: with its articles, the unit's board on its page. */
+    public function announcements(): HasMany
+    {
+        return $this->hasMany(Announcement::class);
+    }
+
+    public function posts(): HasMany
+    {
+        return $this->hasMany(BlogPost::class);
     }
 
     /** Shown on the site, in the administrator's order. */

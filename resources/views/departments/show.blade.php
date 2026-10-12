@@ -1,4 +1,4 @@
-{{-- /departments/{slug}: one unit of the hospital. --}}
+{{-- /departments/{slug}: one unit of the hospital, and its board (DepartmentController::show). --}}
 @php($facts = array_filter(['Location' => $department->location, 'Phone' => $department->phone, 'Opening hours' => $department->hours]))
 <x-layouts.site :title="$department->localName()" :description="Str::limit($department->localDescription(), 160)">
     <article class="wrap max-w-3xl py-10 sm:py-14">
@@ -35,4 +35,44 @@
             <p class="mt-8 whitespace-pre-line">{{ $department->localDescription() }}</p>
         @endif
     </article>
+
+    {{-- The unit's board: what it has put out itself. Left out whole while it has put out nothing. --}}
+    @if ($posters->isNotEmpty() || $notices->isNotEmpty() || $posts->isNotEmpty())
+        <div class="wrap pb-10 sm:pb-14">
+            @if ($posters->isNotEmpty() || $notices->isNotEmpty())
+                <section aria-labelledby="board-heading">
+                    <p class="eyebrow">{{ __('Board') }}</p>
+                    <h2 id="board-heading" class="mt-2 text-2xl">{{ __('Posters and announcements') }}</h2>
+
+                    @if ($posters->isNotEmpty())
+                        <div class="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                            @foreach ($posters as $announcement)
+                                <x-site.announcement-card :announcement="$announcement" />
+                            @endforeach
+                        </div>
+                    @endif
+
+                    @if ($notices->isNotEmpty())
+                        <ul class="card mt-6 p-0">
+                            @foreach ($notices as $announcement)
+                                <x-site.announcement-row :announcement="$announcement" />
+                            @endforeach
+                        </ul>
+                    @endif
+                </section>
+            @endif
+
+            @if ($posts->isNotEmpty())
+                <section @class(['mt-12' => $posters->isNotEmpty() || $notices->isNotEmpty()]) aria-labelledby="knowledge-heading">
+                    <p class="eyebrow">{{ __('Articles') }}</p>
+                    <h2 id="knowledge-heading" class="mt-2 text-2xl">{{ __('Knowledge and articles') }}</h2>
+                    <div class="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                        @foreach ($posts as $post)
+                            <x-site.article-card :post="$post" />
+                        @endforeach
+                    </div>
+                </section>
+            @endif
+        </div>
+    @endif
 </x-layouts.site>

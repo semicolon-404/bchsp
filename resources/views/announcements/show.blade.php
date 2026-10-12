@@ -22,6 +22,10 @@
             · <a href="{{ route('announcements.index', array_filter(['type' => $announcement->type?->slug, 'year' => App\Models\Announcement::fiscalYearOf($announcement->starts_at ?? $announcement->created_at)])) }}" class="underline">{{ __('Fiscal year :year', ['year' => App\Models\Announcement::fiscalYearOf($announcement->starts_at ?? $announcement->created_at)]) }}</a>
         </p>
 
+        @if ($announcement->department?->is_active)
+            <p class="mt-2 text-sm text-muted">{{ __('Put out by') }} <a href="{{ route('departments.show', $announcement->department) }}" class="font-semibold text-brand underline">{{ $announcement->department->localName() }}</a></p>
+        @endif
+
         @if ($image = $announcement->imageUrl())
             {{-- The announcement as one picture, shown whole whatever its shape; a press opens it at full size. --}}
             <a href="{{ $image }}" target="_blank" rel="noopener" class="mt-8 block">

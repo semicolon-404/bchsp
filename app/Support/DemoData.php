@@ -8,6 +8,7 @@ use App\Models\AnnouncementType;
 use App\Models\Banner;
 use App\Models\BlogCategory;
 use App\Models\BlogPost;
+use App\Models\Department;
 use App\Models\Document;
 use App\Models\ItaItem;
 use App\Models\User;
@@ -138,6 +139,7 @@ class DemoData
     private function announcements(): void
     {
         $types = AnnouncementType::pluck('id', 'slug');
+        $boards = $this->boards();
         $months = ['', 'มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม', 'มิถุนายน', 'กรกฎาคม', 'สิงหาคม', 'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม'];
         $make = function (array $attributes) {
             $record = new Announcement($attributes + ['author_id' => User::value('id')]);
@@ -184,6 +186,7 @@ class DemoData
                     'image_path' => $picture ? $this->picture('announcements/pictures', $topic, $upright ? 1240 : 1754, $upright ? 1754 : 1240, [[21, 128, 61], [29, 78, 216], [180, 83, 9]][$back % 3]) : null,
                     // The two newest pictures are also among the slides of the home page.
                     'in_slider' => $picture && $back <= 3,
+                    'department_id' => $boards ? $boards[$back % count($boards)] : null,
                 ]);
             }
 
@@ -208,10 +211,21 @@ class DemoData
         $make(['announcement_type_id' => $types['procurement'] ?? null, 'title' => 'ประกาศชื่อยาวมากเพื่อทดสอบการตัดบรรทัด: ประกาศผลผู้ชนะการจัดซื้อยาและวัสดุเภสัชกรรม เวชภัณฑ์มิใช่ยา วัสดุวิทยาศาสตร์การแพทย์ และวัสดุทันตกรรม ประจำไตรมาสที่ 1 ปีงบประมาณ 2570 ของโรงพยาบาลบัวเชด อำเภอบัวเชด จังหวัดสุรินทร์', 'starts_at' => now()->subDays(4)]);
     }
 
+    /**
+     * The units whose boards get sample news and articles: the first few, so that each board has enough to look at.
+     *
+     * @return list<int>
+     */
+    private function boards(): array
+    {
+        return Department::shown()->limit(3)->pluck('id')->all();
+    }
+
     private function articles(): void
     {
         $knowledge = BlogCategory::firstOrCreate(['name' => 'ความรู้สุขภาพ'], ['name_en' => 'Health knowledge', 'sort_order' => 1]);
         $activity = BlogCategory::firstOrCreate(['name' => 'ข่าวกิจกรรม'], ['name_en' => 'Activities', 'sort_order' => 2]);
+        $boards = $this->boards();
 
         foreach ([
             ['กิจกรรมรับบริจาคโลหิตประจำไตรมาส', $activity, 6, 3, false],
@@ -226,6 +240,7 @@ class DemoData
             $post = new BlogPost([
                 'author_id' => User::value('id'),
                 'blog_category_id' => $category->id,
+                'department_id' => $boards ? $boards[$index % count($boards)] : null,
                 'title' => self::MARK.' '.$title,
                 'excerpt' => 'ข้อความสรุปตัวอย่างหนึ่งถึงสองประโยค ใช้สำหรับดูการจัดวางการ์ดบทความ',
                 'body' => '<h2>หัวข้อย่อยตัวอย่าง</h2><p>เนื้อหาตัวอย่างของบทความ ใช้สำหรับดูการจัดวางตัวอักษร ระยะบรรทัด และรูปภาพในหน้าอ่านบทความ เนื้อหาจริงจะเขียนโดยเจ้าหน้าที่ของโรงพยาบาล</p><ul><li>ประเด็นที่หนึ่ง</li><li>ประเด็นที่สอง</li><li>ประเด็นที่สาม</li></ul><blockquote>ข้อความเน้นตัวอย่าง</blockquote><p>ย่อหน้าปิดท้ายตัวอย่าง</p>',

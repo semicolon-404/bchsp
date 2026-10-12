@@ -132,6 +132,12 @@ class AnnouncementResource extends Resource
                             ->relationship('type', 'name', fn ($query) => $query->orderBy('sort_order'))
                             ->preload()
                             ->required(),
+                        Select::make('department_id')
+                            ->label(__('Department (optional)'))
+                            ->relationship('department', 'name', fn ($query) => $query->orderBy('sort_order')->orderBy('name'))
+                            ->preload()
+                            ->searchable()
+                            ->helperText(__('Also shown on the board of this department, on its own page.')),
                         Toggle::make('is_pinned')
                             ->label(__('Pin to the top of the list'))
                             ->helperText(__('Stays above newer announcements until unpinned or ended.')),
@@ -180,6 +186,10 @@ class AnnouncementResource extends Resource
                     ->label(__('Type'))
                     ->badge()
                     ->placeholder('—'),
+                TextColumn::make('department.name')
+                    ->label(__('Department'))
+                    ->placeholder('—')
+                    ->toggleable(),
                 TextColumn::make('state')
                     ->label(__('Status'))
                     ->state(fn (Announcement $record) => $record->state())
@@ -210,6 +220,9 @@ class AnnouncementResource extends Resource
                 SelectFilter::make('announcement_type_id')
                     ->label(__('Type'))
                     ->relationship('type', 'name'),
+                SelectFilter::make('department_id')
+                    ->label(__('Department'))
+                    ->relationship('department', 'name'),
                 SelectFilter::make('fiscal_year')
                     ->label(__('Fiscal year'))
                     ->options(fn () => collect(Announcement::query()->pluck('starts_at')->map(fn ($date) => Announcement::fiscalYearOf($date))->unique()->sortDesc()->values())->mapWithKeys(fn ($year) => [$year => $year])->all())

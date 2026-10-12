@@ -14,6 +14,10 @@
         <h1 class="mt-2 text-3xl sm:text-4xl">{{ $post->localTitle() }}</h1>
         <p class="mt-3 font-mono text-sm text-muted"><time datetime="{{ ($post->published_at ?? $post->created_at)->toDateString() }}">{{ $post->publishedOn() }}</time></p>
 
+        @if ($post->department?->is_active)
+            <p class="mt-2 text-sm text-muted">{{ __('Put out by') }} <a href="{{ route('departments.show', $post->department) }}" class="font-semibold text-brand underline">{{ $post->department->localName() }}</a></p>
+        @endif
+
         @if ($cover = $post->coverUrl())
             <img src="{{ $cover }}" alt="" class="mt-8 w-full rounded-xl border border-line">
         @endif

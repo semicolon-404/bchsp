@@ -116,6 +116,12 @@ class BlogPostResource extends Resource
                             ->relationship('category', 'name')
                             ->preload()
                             ->searchable(),
+                        Select::make('department_id')
+                            ->label(__('Department (optional)'))
+                            ->relationship('department', 'name', fn ($query) => $query->orderBy('sort_order')->orderBy('name'))
+                            ->preload()
+                            ->searchable()
+                            ->helperText(__('Also shown on the board of this department, on its own page.')),
                         OptimizedUpload::on(FileUpload::make('cover_path'))
                             ->label(__('Cover image'))
                             ->image()
@@ -173,6 +179,10 @@ class BlogPostResource extends Resource
                     ->label(__('Category'))
                     ->badge()
                     ->placeholder('—'),
+                TextColumn::make('department.name')
+                    ->label(__('Department'))
+                    ->placeholder('—')
+                    ->toggleable(),
                 TextColumn::make('status')
                     ->label(__('Status'))
                     ->badge()
@@ -198,6 +208,9 @@ class BlogPostResource extends Resource
                 SelectFilter::make('blog_category_id')
                     ->label(__('Category'))
                     ->relationship('category', 'name'),
+                SelectFilter::make('department_id')
+                    ->label(__('Department'))
+                    ->relationship('department', 'name'),
             ])
             ->recordActions([
                 Action::make('view')
