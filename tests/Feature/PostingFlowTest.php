@@ -137,6 +137,66 @@ class PostingFlowTest extends TestCase
         $this->assertSame(Announcement::STATUS_DRAFT, $post->fresh()->status);
     }
 
+    public function test_a_post_is_sent_back_with_a_note_and_the_department_sends_it_again(): void
+    {
+        $post = Announcement::factory()->create(['title' => 'Dental health day', 'department_id' => $this->dental->id, 'announcement_type_id' => $this->news, 'status' => Announcement::STATUS_PENDING]);
+
+        $this->actingAs(User::factory()->create());
+
+        // A reason is asked for: a post sent back in silence helps nobody.
+        Livewire::test(ListAnnouncements::class)->callAction(TestAction::make('sendBack')->table($post), ['review_note' => ''])->assertHasFormErrors(['review_note']);
+
+        Livewire::test(ListAnnouncements::class)
+            ->callAction(TestAction::make('sendBack')->table($post), ['review_note' => 'A patient can be recognised in the second photograph.'])
+            ->assertHasNoFormErrors();
+
+        $this->assertSame(Announcement::STATUS_RETURNED, $post->fresh()->status);
+        $this->assertSame('Sent back', $post->fresh()->state());
+        $this->assertFalse($post->fresh()->isPublished());
+
+        // The department is told on its first page, reads the note on the post, changes it and sends it again.
+        $this->actingAs($this->desk);
+
+        Livewire::test(NeedsAttention::class)->assertSee('1 post was sent back for changes')->assertDontSee('ITA');
+        Livewire::test(DepartmentStats::class)->assertSee('Sent back: 1');
+        Livewire::test(ListAnnouncements::class)->assertActionHidden(TestAction::make('sendBack')->table($post));
+
+        Livewire::test(EditAnnouncement::class, ['record' => $post->getRouteKey()])
+            ->assertFormSet(['review_note' => 'A patient can be recognised in the second photograph.', 'status' => Announcement::STATUS_PENDING])
+            ->assertFormFieldDisabled('review_note')
+            ->fillForm(['title' => 'Dental health day, with other photographs'])
+            ->call('save')
+            ->assertHasNoFormErrors();
+
+        $this->assertSame(Announcement::STATUS_PENDING, $post->fresh()->status);
+        // The note stays until it is approved, so the reviewer sees what was asked.
+        $this->assertNotNull($post->fresh()->review_note);
+
+        $this->actingAs(User::factory()->create());
+        Livewire::test(ListAnnouncements::class)->callAction(TestAction::make('approve')->table($post));
+
+        $this->assertTrue($post->fresh()->isPublished());
+        $this->assertNull($post->fresh()->review_note);
+    }
+
+    public function test_the_guide_tells_each_reader_what_is_theirs_to_do(): void
+    {
+        $this->actingAs($this->desk)->get('/admin/guide')
+            ->assertOk()
+            ->assertSee('บัญชีของหน่วยงาน Dental')
+            ->assertSee('หน้าโปรไฟล์ของหน่วยงาน')
+            ->assertSee('ส่งให้ตรวจ')
+            ->assertDontSee('ตรวจเรื่องจากหน่วยงาน');
+
+        $this->actingAs(User::factory()->create())->get('/admin/guide')
+            ->assertOk()
+            ->assertSee('ตรวจเรื่องจากหน่วยงาน')
+            ->assertSee('ส่งกลับแก้ไข')
+            ->assertDontSee('หน้าโปรไฟล์ของหน่วยงาน');
+
+        $this->actingAs(User::factory()->admin()->create())->get('/admin/guide')->assertOk()->assertSee('ผู้ดูแลระบบ');
+    }
+
     public function test_the_hospital_can_let_departments_post_without_approval(): void
     {
         $this->actingAs(User::factory()->admin()->create());

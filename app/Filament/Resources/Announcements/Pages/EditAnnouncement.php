@@ -11,11 +11,19 @@ class EditAnnouncement extends EditRecord
 {
     protected static string $resource = AnnouncementResource::class;
 
-    /** One that is out is offered to the account of a department as "Send for approval": that is what saving it will do. */
+    /**
+     * One that is out, or was sent back, is offered to the account of a department as "Send for approval":
+     * that is what saving it will do.
+     */
     protected function mutateFormDataBeforeFill(array $data): array
     {
-        if (Announcement::waitsForApproval(auth()->user()) && ($data['status'] ?? null) === Announcement::STATUS_PUBLISHED) {
+        if (Announcement::waitsForApproval(auth()->user()) && in_array($data['status'] ?? null, [Announcement::STATUS_PUBLISHED, Announcement::STATUS_RETURNED], true)) {
             $data['status'] = Announcement::STATUS_PENDING;
+        }
+
+        // Whoever posts for the whole hospital and opens one that was sent back sees it as a draft: theirs to publish or keep.
+        if (! Announcement::waitsForApproval(auth()->user()) && in_array($data['status'] ?? null, [Announcement::STATUS_PENDING, Announcement::STATUS_RETURNED], true)) {
+            $data['status'] = Announcement::STATUS_DRAFT;
         }
 
         return $data;

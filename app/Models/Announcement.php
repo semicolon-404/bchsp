@@ -39,6 +39,9 @@ class Announcement extends Model
     /** Written by the account of a department, and waiting for someone who posts for the whole hospital to approve it. */
     public const STATUS_PENDING = 'pending';
 
+    /** Looked at and sent back to the department for changes, with a note saying what (review_note). */
+    public const STATUS_RETURNED = 'returned';
+
     /** How many files one announcement can carry. */
     public const MAX_FILES = 10;
 
@@ -49,7 +52,7 @@ class Announcement extends Model
     public const SLIDES = 8;
 
     protected $fillable = [
-        'announcement_type_id', 'author_id', 'department_id', 'status', 'pinned_in_department',
+        'announcement_type_id', 'author_id', 'department_id', 'status', 'review_note', 'pinned_in_department',
         'title', 'title_en', 'slug', 'body', 'body_en',
         'image_path', 'in_slider', 'is_popup', 'gallery', 'attachments', 'attachment_names', 'links', 'is_pinned', 'starts_at', 'ends_at',
     ];
@@ -262,6 +265,7 @@ class Announcement extends Model
         return match (true) {
             $this->status === self::STATUS_DRAFT => 'Draft',
             $this->status === self::STATUS_PENDING => 'Waiting for approval',
+            $this->status === self::STATUS_RETURNED => 'Sent back',
             (bool) $this->starts_at?->isFuture() => 'Scheduled',
             (bool) $this->ends_at?->isPast() => 'In the archive',
             default => 'Showing',

@@ -35,6 +35,13 @@ class NeedsAttention extends Widget
             }
         };
 
+        // The account of a department is told what came back to it, and nothing of the rest of the hospital's.
+        if (auth()->user()?->postsForOneDepartment()) {
+            $add(Announcement::where('department_id', auth()->user()->department_id)->where('status', Announcement::STATUS_RETURNED)->count(), '{1} :count post was sent back for changes|[2,*] :count posts were sent back for changes', AnnouncementResource::getUrl('index'), 'danger');
+
+            return $items;
+        }
+
         if (AnnouncementResource::forTheWholeHospital()) {
             $add(Announcement::where('status', Announcement::STATUS_PENDING)->count(), '{1} :count post from a department is waiting for approval|[2,*] :count posts from departments are waiting for approval', AnnouncementResource::getUrl('index'), 'danger');
         }

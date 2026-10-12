@@ -17,6 +17,7 @@ use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Resources\Resource;
@@ -166,6 +167,12 @@ class AnnouncementResource extends Resource
                             ->relationship('type', 'name', fn ($query) => $query->orderBy('sort_order'))
                             ->preload()
                             ->required(),
+                        // What the reviewer wrote when sending it back: read by the department, changed by nobody here.
+                        Textarea::make('review_note')
+                            ->label(__('The reviewer\'s note'))
+                            ->rows(3)
+                            ->disabled()
+                            ->visible(fn (?Announcement $record) => filled($record?->review_note)),
                         Select::make('status')
                             ->label(__('Status'))
                             // The account of a department cannot put its own writing out while the hospital asks to see it first.
@@ -254,7 +261,7 @@ class AnnouncementResource extends Resource
                     ->color(fn (string $state) => match ($state) {
                         'Showing' => 'success',
                         'Scheduled' => 'warning',
-                        'Waiting for approval' => 'danger',
+                        'Waiting for approval', 'Sent back' => 'danger',
                         default => 'gray',
                     }),
                 TextColumn::make('views')
@@ -288,7 +295,7 @@ class AnnouncementResource extends Resource
                     ->relationship('department', 'name'),
                 SelectFilter::make('status')
                     ->label(__('Status'))
-                    ->options([Announcement::STATUS_PUBLISHED => __('Published'), Announcement::STATUS_PENDING => __('Waiting for approval'), Announcement::STATUS_DRAFT => __('Draft')]),
+                    ->options([Announcement::STATUS_PUBLISHED => __('Published'), Announcement::STATUS_PENDING => __('Waiting for approval'), Announcement::STATUS_RETURNED => __('Sent back'), Announcement::STATUS_DRAFT => __('Draft')]),
                 SelectFilter::make('fiscal_year')
                     ->label(__('Fiscal year'))
                     ->options(fn () => collect(Announcement::query()->pluck('starts_at')->map(fn ($date) => Announcement::fiscalYearOf($date))->unique()->sortDesc()->values())->mapWithKeys(fn ($year) => [$year => $year])->all())
@@ -305,7 +312,22 @@ class AnnouncementResource extends Resource
                     ->visible(fn (Announcement $record) => $record->status === Announcement::STATUS_PENDING && self::forTheWholeHospital())
                     ->requiresConfirmation()
                     ->modalDescription(__('It will be shown to the public from its "Show from" date.'))
-                    ->action(fn (Announcement $record) => $record->update(['status' => Announcement::STATUS_PUBLISHED])),
+                    ->action(fn (Announcement $record) => $record->update(['status' => Announcement::STATUS_PUBLISHED, 'review_note' => null])),
+                // Or send it back, saying what should change: the department reads the note on the post itself.
+                Action::make('sendBack')
+                    ->label(__('Send back'))
+                    ->icon(Heroicon::OutlinedArrowUturnLeft)
+                    ->color('warning')
+                    ->visible(fn (Announcement $record) => $record->status === Announcement::STATUS_PENDING && self::forTheWholeHospital())
+                    ->schema([
+                        Textarea::make('review_note')
+                            ->label(__('What should be changed'))
+                            ->helperText(__('The department reads this on the post. Say what to change, plainly.'))
+                            ->rows(4)
+                            ->required()
+                            ->maxLength(1000),
+                    ])
+                    ->action(fn (Announcement $record, array $data) => $record->update(['status' => Announcement::STATUS_RETURNED, 'review_note' => $data['review_note']])),
                 Action::make('view')
                     ->label(__('View on the site'))
                     ->icon(Heroicon::OutlinedArrowTopRightOnSquare)
