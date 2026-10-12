@@ -177,7 +177,7 @@
             Vision, mission and core values, one at a time. The tabs are radio buttons and the stylesheet shows the
             panel of the one that is ticked (.tabs in app.css): no script, and the arrow keys move between them.
         --}}
-        <section id="identity" class="scroll-mt-16">
+        <section id="identity" class="scroll-mt-16 bg-surface">
             <div class="wrap py-16 sm:py-24">
                 <h2 class="text-center text-3xl sm:text-4xl">{{ __('Identity of the organisation') }}</h2>
                 <span class="mx-auto mt-4 block h-1 w-16 rounded-full bg-brand" aria-hidden="true"></span>
