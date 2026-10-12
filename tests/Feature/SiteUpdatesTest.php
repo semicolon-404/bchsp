@@ -16,11 +16,11 @@ class SiteUpdatesTest extends TestCase
 
     public function test_a_new_site_starts_with_the_releases_made_so_far(): void
     {
-        $this->assertSame(['0.4', '0.3', '0.2', '0.1'], SiteUpdate::released()->pluck('version')->all());
+        $this->assertSame(['0.5', '0.4', '0.3', '0.2', '0.1'], SiteUpdate::released()->pluck('version')->all());
 
         $this->get('/updates')
             ->assertOk()
-            ->assertSeeInOrder(['What is new on this website', 'Newest release', '0.4', 'Releases so far', 'v0.4', 'v0.3', 'v0.2', 'v0.1'])
+            ->assertSeeInOrder(['What is new on this website', 'Newest release', '0.5', 'Releases so far', 'v0.5', 'v0.4', 'v0.3', 'v0.2', 'v0.1'])
             ->assertDontSee('Being worked on');
     }
 
@@ -53,7 +53,7 @@ class SiteUpdatesTest extends TestCase
         SiteUpdate::factory()->create(['title' => 'Comes out next week', 'released_on' => now()->addWeek()->toDateString()]);
 
         $this->get('/updates')
-            ->assertSeeInOrder(['Being worked on', 'Booking a visit online', 'Releases', 'v0.4'])
+            ->assertSeeInOrder(['Being worked on', 'Booking a visit online', 'Releases', 'v0.5'])
             ->assertDontSee('Comes out next week');
 
         $this->travel(8)->days();
@@ -62,7 +62,7 @@ class SiteUpdatesTest extends TestCase
 
     public function test_every_page_names_the_newest_release_and_follows_a_new_one_at_once(): void
     {
-        $this->get('/')->assertSee('href="'.route('updates').'"', false)->assertSee('v0.4 · updated 12 Oct 2026');
+        $this->get('/')->assertSee('href="'.route('updates').'"', false)->assertSee('v0.5 · updated 12 Oct 2026');
 
         SiteUpdate::factory()->create(['version' => '1.0', 'released_on' => now()->toDateString()]);
 
