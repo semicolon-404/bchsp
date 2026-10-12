@@ -18,3 +18,11 @@ startSpot();
 startShare();
 startMotion();
 startFilter();
+
+// The small program that answers with the phone numbers when there is no connection (SeoController::worker).
+// Where a browser has none of that, or the page is not served securely, the site is simply as it was.
+const worker = document.body.dataset.worker;
+
+if (worker && 'serviceWorker' in navigator && window.isSecureContext) {
+    window.addEventListener('load', () => navigator.serviceWorker.register(worker).catch(() => {}));
+}

@@ -33,6 +33,10 @@
     @else
         {{-- One address for a page, whatever was added to it; and how a link to it looks when shared. --}}
         <link rel="canonical" href="{{ url()->current() }}">
+        {{-- For a phone that keeps the site on its home screen (SeoController::manifest). --}}
+        <link rel="manifest" href="{{ route('manifest') }}">
+        <link rel="apple-touch-icon" href="{{ route('icon', ['size' => 180]) }}">
+        <meta name="theme-color" content="{{ App\Support\Theme::accent() }}">
         {{-- For a reader's news program: the newest announcements as a feed. --}}
         <link rel="alternate" type="application/rss+xml" title="{{ $name }}" href="{{ route('feed') }}">
         <meta property="og:type" content="website">
@@ -75,7 +79,7 @@
         <style>{!! $themeCss !!}</style>
     @endif
 </head>
-<body class="has-dock flex min-h-screen flex-col font-sans antialiased">
+<body data-worker="{{ route('worker') }}" class="has-dock flex min-h-screen flex-col font-sans antialiased">
     <a href="#main" class="btn btn-brand sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50">{{ __('Skip to the content') }}</a>
 
     <x-site.alert />

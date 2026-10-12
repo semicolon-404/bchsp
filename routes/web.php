@@ -52,6 +52,13 @@ Route::get('/robots.txt', [SeoController::class, 'robots'])->name('robots');
 Route::get('/sitemap.xml', [SeoController::class, 'sitemap'])->name('sitemap');
 Route::get('/feed', [SeoController::class, 'feed'])->name('feed');
 
+// For a phone that keeps the site on its home screen: what it is called and looks like, its picture,
+// the small program that answers when there is no connection, and the page it answers with.
+Route::get('/manifest.webmanifest', [SeoController::class, 'manifest'])->name('manifest');
+Route::get('/icon-{size}.png', [SeoController::class, 'icon'])->whereNumber('size')->name('icon');
+Route::get('/sw.js', [SeoController::class, 'worker'])->name('worker');
+Route::view('/offline', 'offline')->name('offline');
+
 // The language switch (components/site/language-switch). Remembered for a year; read by the SetLocale middleware.
 Route::get('/language/{locale}', function (string $locale) {
     abort_unless(isset(SetLocale::LANGUAGES[$locale]), 404);
