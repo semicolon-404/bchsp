@@ -47,12 +47,31 @@ class AnnouncementController extends Controller
         $departments = Department::shown()->whereHas('announcements', fn ($query) => $query->published())->get();
         $department = is_string($request->query('department')) ? $departments->firstWhere('slug', $request->query('department')) : null;
 
+        $opening = ! $type && ! $department && ! $year && ! $period && $term === '' && (int) $request->query('page', 1) <= 1;
+        // The figures in the band at the top: how much there is, and how much of it is new.
+        $stats = [
+            'all' => Announcement::published()->count(),
+            'week' => Announcement::published()->where('starts_at', '>=', now()->startOfWeek())->count(),
+            'month' => Announcement::published()->where('starts_at', '>=', now()->startOfMonth())->count(),
+        ];
+
         return view('announcements.index', [
             'type' => $type,
             'department' => $department,
             'departments' => $departments,
-            // Only on the whole list as it opens: narrowed, or further on, the reader is after something already.
-            'mostRead' => $type || $department || $year || $period || $term !== '' || (int) $request->query('page', 1) > 1 ? collect() : Announcement::mostRead(),
+            // What is shown only on the whole list as it opens: narrowed, or further on, the reader is after something already.
+            'mostRead' => $opening ? Announcement::mostRead() : collect(),
+            // The three newest, set large; not while there are so few that the list below would only say them again.
+            'featured' => $opening && $stats['all'] >= 4 ? Announcement::current()->with('type', 'department')->inListOrder()->limit(3)->get() : collect(),
+            // What has been given a day that is still to come (the calendar has the rest).
+            'coming' => $opening ? Announcement::published()->whereDate('event_on', '>=', now()->toDateString())->orderBy('event_on')->orderBy('id')->limit(4)->get() : collect(),
+            // The departments that posted most lately, newest first.
+            'posting' => $opening
+                ? Department::shown()->whereKey($lately = Announcement::current()->whereNotNull('department_id')->latest('starts_at')->limit(60)->pluck('department_id')->unique()->take(6)->values())->get()->sortBy(fn (Department $one) => $lately->search($one->id))->values()
+                : collect(),
+            'stats' => $stats,
+            // How many each kind holds, for its tile.
+            'counts' => Announcement::published()->selectRaw('announcement_type_id, count(*) as held')->groupBy('announcement_type_id')->pluck('held', 'announcement_type_id'),
             'types' => AnnouncementType::orderBy('sort_order')->orderBy('name')->get(),
             'year' => $year,
             'years' => $years,
@@ -62,7 +81,7 @@ class AnnouncementController extends Controller
             'term' => $term,
             'look' => in_array($request->query('view'), self::VIEWS, true) ? $request->query('view') : self::VIEWS[0],
             'announcements' => Announcement::published()
-                ->with('type')
+                ->with('type', 'department')
                 ->when($type, fn ($query) => $query->where('announcement_type_id', $type->id))
                 ->when($department, fn ($query) => $query->where('department_id', $department->id))
                 ->when($year, fn ($query) => $query->ofFiscalYear($year))
