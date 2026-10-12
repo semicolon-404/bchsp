@@ -30,9 +30,9 @@ class OptimizedUploadTest extends TestCase
         Storage::fake('public');
         $photo = $this->photo('ward.jpg', 4000, 3000);
 
-        $path = OptimizedUpload::store($photo, 'public', 'blog/covers');
+        $path = OptimizedUpload::store($photo, 'public', 'announcements/pictures');
 
-        $this->assertStringStartsWith('blog/covers/', $path);
+        $this->assertStringStartsWith('announcements/pictures/', $path);
         $this->assertStringEndsWith('.webp', $path);
         Storage::disk('public')->assertExists($path);
 
@@ -46,7 +46,7 @@ class OptimizedUploadTest extends TestCase
     {
         Storage::fake('public');
 
-        $path = OptimizedUpload::store($this->photo('patient-somchai.jpg', 2400, 1600), 'public', 'blog/covers');
+        $path = OptimizedUpload::store($this->photo('patient-somchai.jpg', 2400, 1600), 'public', 'announcements/pictures');
 
         $this->assertStringNotContainsString('somchai', $path);
     }

@@ -3,11 +3,8 @@
 namespace Tests\Feature;
 
 use App\Filament\Resources\Announcements\Pages\CreateAnnouncement;
-use App\Filament\Resources\BlogPosts\Pages\CreateBlogPost;
 use App\Models\Announcement;
 use App\Models\AnnouncementType;
-use App\Models\Banner;
-use App\Models\BlogPost;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
@@ -43,15 +40,11 @@ class PicturesAndAlbumsTest extends TestCase
     public function test_an_announcements_picture_can_be_among_the_slides_and_leads_to_the_announcement(): void
     {
         $this->showOnHome('slides');
-        Banner::factory()->create(['title' => 'A slide of its own', 'image_path' => 'banners/own.webp']);
         $in = Announcement::factory()->create(['title' => 'Flu vaccine week', 'image_path' => 'announcements/pictures/flu.webp', 'in_slider' => true, 'ends_at' => now()->addDays(3)]);
         Announcement::factory()->create(['title' => 'Not asked for', 'image_path' => 'announcements/pictures/quiet.webp']);
         Announcement::factory()->create(['title' => 'Asked, but has no picture', 'in_slider' => true]);
 
-        $slides = Banner::slides();
-
-        $this->assertSame(['A slide of its own', 'Flu vaccine week'], $slides->pluck('title')->all());
-        $this->assertSame(route('announcements.show', $in), $slides[1]->url);
+        $this->assertSame(['Flu vaccine week'], Announcement::slides()->pluck('title')->all());
 
         preg_match('/aria-label="Banners".*?<ul class="slider-track.*?<\/ul>/s', $this->get('/')->getContent(), $track);
 
@@ -61,7 +54,7 @@ class PicturesAndAlbumsTest extends TestCase
 
         // When the announcement ends, its slide goes with it.
         $this->travel(4)->days();
-        $this->assertSame(['A slide of its own'], Banner::slides()->pluck('title')->all());
+        $this->assertSame([], Announcement::slides()->pluck('title')->all());
     }
 
     public function test_an_author_posts_a_one_page_announcement_and_puts_it_in_the_slides(): void
@@ -83,7 +76,7 @@ class PicturesAndAlbumsTest extends TestCase
 
         $this->assertStringEndsWith('.webp', $announcement->image_path);
         Storage::disk('public')->assertExists($announcement->image_path);
-        $this->assertTrue(Banner::slides()->contains('title', 'Dengue warning'));
+        $this->assertTrue(Announcement::slides()->contains('title', 'Dengue warning'));
 
         // The picture goes when it is replaced, and when the announcement does.
         $old = $announcement->image_path;
@@ -95,18 +88,41 @@ class PicturesAndAlbumsTest extends TestCase
         Storage::disk('public')->assertMissing('announcements/pictures/new.webp');
     }
 
-    public function test_an_article_about_an_activity_shows_its_album(): void
+    public function test_an_announcement_about_an_activity_shows_its_album(): void
     {
-        $post = BlogPost::factory()->create(['title' => 'Blood donation day', 'gallery' => ['blog/albums/a.webp', 'blog/albums/b.webp', 'blog/albums/c.webp']]);
-        $plain = BlogPost::factory()->create();
+        $post = Announcement::factory()->create(['title' => 'Blood donation day', 'gallery' => ['announcements/albums/a.webp', 'announcements/albums/b.webp', 'announcements/albums/c.webp']]);
+        $plain = Announcement::factory()->create();
 
-        $this->get(route('blog.show', $post))
+        $this->get(route('announcements.show', $post))
             ->assertOk()
             ->assertSee('3 photographs')
-            ->assertSeeInOrder(['blog/albums/a.webp', 'blog/albums/b.webp', 'blog/albums/c.webp'], false)
+            ->assertSeeInOrder(['announcements/albums/a.webp', 'announcements/albums/b.webp', 'announcements/albums/c.webp'], false)
             ->assertSee('alt="Photograph 2 of 3"', false);
 
-        $this->get(route('blog.show', $plain))->assertOk()->assertDontSee('photograph');
+        $this->get(route('announcements.show', $plain))->assertOk()->assertDontSee('photograph');
+    }
+
+    public function test_every_picture_showing_now_is_on_the_page_of_posters(): void
+    {
+        $poster = Announcement::factory()->create(['title' => 'Ten tips to stop smoking', 'image_path' => 'announcements/pictures/tips.webp']);
+        Announcement::factory()->create(['title' => 'Words only']);
+        Announcement::factory()->ended()->create(['title' => 'Last year', 'image_path' => 'announcements/pictures/old.webp']);
+
+        $this->get('/posters')
+            ->assertOk()
+            ->assertSee('<a href="'.route('announcements.show', $poster).'" class="relative block', false)
+            ->assertSee('tips.webp', false)
+            ->assertDontSee('Words only')
+            ->assertDontSee('old.webp', false);
+    }
+
+    public function test_an_address_of_an_article_shared_before_still_leads_somewhere(): void
+    {
+        $moved = Announcement::factory()->create(['title' => 'Washing hands']);
+
+        $this->get('/blog')->assertRedirect(route('announcements.index'));
+        $this->get('/blog/'.$moved->slug)->assertRedirect(route('announcements.show', $moved));
+        $this->get('/blog/no-such-article')->assertRedirect(route('announcements.index'));
     }
 
     public function test_an_author_writes_up_an_activity_with_its_photographs(): void
@@ -114,17 +130,17 @@ class PicturesAndAlbumsTest extends TestCase
         Storage::fake('public');
         $this->actingAs(User::factory()->create());
 
-        Livewire::test(CreateBlogPost::class)
+        Livewire::test(CreateAnnouncement::class)
             ->fillForm([
                 'title' => 'Blood donation day',
                 'body' => '<p>Sixty donors came.</p>',
-                'status' => BlogPost::STATUS_PUBLISHED,
+                'announcement_type_id' => AnnouncementType::where('slug', 'activities')->value('id'),
                 'gallery' => [UploadedFile::fake()->image('one.jpg', 2400, 1600), UploadedFile::fake()->image('two.jpg', 1600, 2400)],
             ])
             ->call('create')
             ->assertHasNoFormErrors();
 
-        $post = BlogPost::firstOrFail();
+        $post = Announcement::firstOrFail();
 
         $this->assertCount(2, $post->gallery);
         foreach ($post->gallery as $path) {
@@ -132,7 +148,7 @@ class PicturesAndAlbumsTest extends TestCase
             Storage::disk('public')->assertExists($path);
         }
 
-        // A photograph taken out of the album is removed; deleting the article removes the rest.
+        // A photograph taken out of the album is removed; deleting the announcement removes the rest.
         [$kept, $dropped] = $post->gallery;
         $post->update(['gallery' => [$kept]]);
         Storage::disk('public')->assertMissing($dropped);
@@ -147,8 +163,8 @@ class PicturesAndAlbumsTest extends TestCase
         $this->actingAs(User::factory()->create());
         $svg = UploadedFile::fake()->createWithContent('x.svg', '<svg xmlns="http://www.w3.org/2000/svg"><script>alert(1)</script></svg>');
 
-        Livewire::test(CreateBlogPost::class)
-            ->fillForm(['title' => 'A', 'body' => '<p>x</p>', 'gallery' => [$svg]])
+        Livewire::test(CreateAnnouncement::class)
+            ->fillForm(['title' => 'A', 'announcement_type_id' => AnnouncementType::where('slug', 'news')->value('id'), 'gallery' => [$svg]])
             ->call('create')
             ->assertHasFormErrors(['gallery']);
 
@@ -163,7 +179,6 @@ class PicturesAndAlbumsTest extends TestCase
         app()->setLocale('th');
         $this->actingAs(User::factory()->create());
 
-        $this->get('/admin/announcements/create')->assertSee('ภาพหน้าปก / ภาพประกาศ')->assertSee('แสดงภาพนี้ในสไลด์หน้าแรกด้วย');
-        $this->get('/admin/blog-posts/create')->assertSee('อัลบั้มภาพ');
+        $this->get('/admin/announcements/create')->assertSee('ภาพหน้าปก / ภาพประกาศ')->assertSee('แสดงภาพนี้ในสไลด์หน้าแรกด้วย')->assertSee('อัลบั้มภาพ')->assertSee('ป๊อปอัป');
     }
 }

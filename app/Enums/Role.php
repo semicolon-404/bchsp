@@ -7,7 +7,7 @@ enum Role: string
 {
     // Runs the site: settings, menus, people, and everything an author can do.
     case Admin = 'admin';
-    // Writes and publishes content: announcements, articles, posters, documents.
+    // Writes and publishes content: announcements (posters and articles among them), documents.
     case Author = 'author';
 
     public function label(): string

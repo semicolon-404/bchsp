@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Announcement;
 use App\Models\AnnouncementType;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
@@ -55,5 +56,13 @@ class AnnouncementController extends Controller
         abort_unless($announcement->isPublished() || auth()->check(), 404);
 
         return view('announcements.show', ['announcement' => $announcement->load('type')]);
+    }
+
+    /** /blog and /blog/{slug}: where articles were, before they became announcements. To the same one when it is there, or to the list. */
+    public function fromBlog(?string $slug = null): RedirectResponse
+    {
+        $announcement = $slug === null ? null : Announcement::published()->where('slug', $slug)->first();
+
+        return redirect($announcement ? route('announcements.show', $announcement) : route('announcements.index'), 301);
     }
 }

@@ -26,11 +26,11 @@ class AnnouncementsTest extends TestCase
         return AnnouncementType::where('slug', $slug)->firstOrFail();
     }
 
-    public function test_a_new_site_starts_with_the_three_usual_types(): void
+    public function test_a_new_site_starts_with_the_usual_types(): void
     {
-        $this->assertSame(['news', 'procurement', 'jobs'], AnnouncementType::orderBy('sort_order')->pluck('slug')->all());
+        $this->assertSame(['news', 'procurement', 'jobs', 'knowledge', 'activities'], AnnouncementType::orderBy('sort_order')->pluck('slug')->all());
 
-        $this->get('/announcements')->assertOk()->assertSeeInOrder(['News', 'Procurement', 'Job openings']);
+        $this->get('/announcements')->assertOk()->assertSeeInOrder(['News', 'Procurement', 'Job openings', 'Health knowledge', 'Activities']);
     }
 
     public function test_the_list_shows_what_is_out_pinned_first_then_newest_with_the_ended_ones_kept(): void
@@ -154,7 +154,7 @@ class AnnouncementsTest extends TestCase
 
     public function test_each_type_wears_a_mark_of_its_own_in_the_list_the_chips_and_the_page(): void
     {
-        $this->assertSame(['megaphone', 'clipboard-document-list', 'briefcase'], AnnouncementType::orderBy('sort_order')->get()->map->icon()->all());
+        $this->assertSame(['megaphone', 'clipboard-document-list', 'briefcase', 'heart', 'calendar-days'], AnnouncementType::orderBy('sort_order')->get()->map->icon()->all());
         $this->assertSame('var(--color-syn-string)', $this->type('procurement')->colour());
 
         $bid = Announcement::factory()->for($this->type('procurement'), 'type')->create(['title' => 'Winning bid']);

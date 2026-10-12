@@ -37,9 +37,8 @@
     </article>
 
     {{-- The unit's board: what it has put out itself. Left out whole while it has put out nothing. --}}
-    @if ($posters->isNotEmpty() || $notices->isNotEmpty() || $posts->isNotEmpty())
+    @if ($posters->isNotEmpty() || $notices->isNotEmpty())
         <div class="wrap pb-10 sm:pb-14">
-            @if ($posters->isNotEmpty() || $notices->isNotEmpty())
                 <section aria-labelledby="board-heading">
                     <p class="eyebrow">{{ __('Board') }}</p>
                     <h2 id="board-heading" class="mt-2 text-2xl">{{ __('Posters and announcements') }}</h2>
@@ -60,19 +59,6 @@
                         </ul>
                     @endif
                 </section>
-            @endif
-
-            @if ($posts->isNotEmpty())
-                <section @class(['mt-12' => $posters->isNotEmpty() || $notices->isNotEmpty()]) aria-labelledby="knowledge-heading">
-                    <p class="eyebrow">{{ __('Articles') }}</p>
-                    <h2 id="knowledge-heading" class="mt-2 text-2xl">{{ __('Knowledge and articles') }}</h2>
-                    <div class="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                        @foreach ($posts as $post)
-                            <x-site.article-card :post="$post" />
-                        @endforeach
-                    </div>
-                </section>
-            @endif
         </div>
     @endif
 </x-layouts.site>

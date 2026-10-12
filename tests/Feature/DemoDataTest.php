@@ -4,8 +4,6 @@ namespace Tests\Feature;
 
 use App\Models\AccessLog;
 use App\Models\Announcement;
-use App\Models\Banner;
-use App\Models\BlogPost;
 use App\Models\Document;
 use App\Models\ItaItem;
 use App\Models\User;
@@ -45,10 +43,9 @@ class DemoDataTest extends TestCase
 
         $this->artisan('demo:fill')->assertSuccessful();
 
-        // Slides and posters, upright and wide, one of them opening over the page.
-        $this->assertSame(3, Banner::where('placement', 'banner')->count());
-        $this->assertSame(4, Banner::where('placement', 'poster')->count());
-        $this->assertNotNull(Banner::popup());
+        // Posters upright and wide, some among the slides, one of them opening over the page.
+        $this->assertNotNull(Announcement::popup());
+        $this->assertGreaterThan(10, Announcement::posters()->count());
 
         // Announcements of every type over more than two fiscal years, in every state the list has to show.
         $this->assertGreaterThan(60, Announcement::count());
@@ -59,11 +56,12 @@ class DemoDataTest extends TestCase
         $this->assertTrue(Announcement::whereNotNull('image_path')->exists());
         $this->assertTrue(Announcement::whereNotNull('attachments')->exists());
         $this->assertTrue(Announcement::whereNotNull('links')->exists());
-        $this->assertGreaterThan(3, Banner::slides()->count());
+        $this->assertGreaterThan(3, Announcement::slides()->count());
 
-        $this->assertSame(7, BlogPost::published()->count());
-        $this->assertSame(1, BlogPost::where('status', BlogPost::STATUS_DRAFT)->count());
-        $this->assertTrue(BlogPost::whereNotNull('gallery')->exists());
+        // What articles were: health knowledge, and activities with their albums.
+        $this->assertSame(4, Announcement::whereRelation('type', 'slug', 'activities')->count());
+        $this->assertTrue(Announcement::whereRelation('type', 'slug', 'knowledge')->exists());
+        $this->assertSame(3, Announcement::whereNotNull('gallery')->count());
         $this->assertSame(46, ItaItem::count());
         $this->assertSame(6, Document::count());
         $this->assertGreaterThan(1000, DB::table('site_visits')->sum('views'));
@@ -85,17 +83,17 @@ class DemoDataTest extends TestCase
         (new DemoData)->fill();
 
         $notice = Announcement::whereNotNull('image_path')->first();
-        $post = BlogPost::whereNotNull('gallery')->first();
+        $post = Announcement::whereNotNull('gallery')->first();
         $year = array_key_first(Announcement::fiscalYears());
 
         foreach (['/', '/announcements', '/announcements?type=procurement&year='.$year, '/announcements?page=3', route('announcements.show', $notice),
-            '/blog', route('blog.show', $post), '/ita', '/ita/'.ItaItem::min('year'), '/downloads', '/menu', '/search?q='.urlencode('ตัวอย่าง'), '/sitemap.xml'] as $address) {
+            '/posters', '/announcements?type=knowledge&view=cards', route('announcements.show', $post), '/ita', '/ita/'.ItaItem::min('year'), '/downloads', '/menu', '/search?q='.urlencode('ตัวอย่าง'), '/sitemap.xml'] as $address) {
             $this->get($address)->assertOk();
         }
 
         $this->actingAs(User::first());
 
-        foreach (['/admin', '/admin/reports', '/admin/announcements', '/admin/banners', '/admin/blog-posts', '/admin/ita-items', '/admin/documents', '/admin/access-logs'] as $address) {
+        foreach (['/admin', '/admin/reports', '/admin/announcements', '/admin/announcement-types', '/admin/ita-items', '/admin/documents', '/admin/access-logs'] as $address) {
             $this->get($address)->assertOk();
         }
 
@@ -119,14 +117,13 @@ class DemoDataTest extends TestCase
 
         $this->artisan('demo:fill')->assertSuccessful();
         // Real content entered while the samples are in is not theirs either.
-        $later = BlogPost::factory()->create(['title' => 'A real article written later']);
+        $later = Announcement::factory()->create(['title' => 'A real article written later']);
 
         $this->artisan('demo:clear')->assertSuccessful();
 
-        $this->assertSame(['A real announcement'], Announcement::pluck('title')->all());
-        $this->assertSame(['A real article written later'], BlogPost::pluck('title')->all());
+        $this->assertSame(['A real announcement', 'A real article written later'], Announcement::orderBy('id')->pluck('title')->all());
         $this->assertSame(['The real administrator'], User::pluck('name')->all());
-        $this->assertSame(0, Banner::count() + ItaItem::count() + Document::count());
+        $this->assertSame(0, ItaItem::count() + Document::count());
         $this->assertSame(1, AccessLog::count());
         $this->assertSame(7, (int) DB::table('site_visits')->sum('views'));
         $this->assertSame(['announcements/files/real.pdf'], Storage::disk('public')->allFiles());

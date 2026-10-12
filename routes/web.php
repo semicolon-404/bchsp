@@ -1,7 +1,6 @@
 <?php
 
 use App\Http\Controllers\AnnouncementController;
-use App\Http\Controllers\BlogController;
 use App\Http\Controllers\DepartmentController;
 use App\Http\Controllers\ItaController;
 use App\Http\Controllers\ReportController;
@@ -16,8 +15,8 @@ Route::view('/', 'home')->name('home');
 Route::get('/announcements', [AnnouncementController::class, 'index'])->name('announcements.index');
 Route::get('/announcements/{announcement}', [AnnouncementController::class, 'show'])->name('announcements.show');
 
-Route::get('/blog', [BlogController::class, 'index'])->name('blog.index');
-Route::get('/blog/{post}', [BlogController::class, 'show'])->name('blog.show');
+// Articles are announcements now: an address shared before still leads somewhere.
+Route::get('/blog/{slug?}', [AnnouncementController::class, 'fromBlog']);
 
 Route::get('/departments', [DepartmentController::class, 'index'])->name('departments.index');
 Route::get('/departments/{department}', [DepartmentController::class, 'show'])->name('departments.show');

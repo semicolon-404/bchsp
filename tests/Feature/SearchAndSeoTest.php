@@ -3,7 +3,6 @@
 namespace Tests\Feature;
 
 use App\Models\Announcement;
-use App\Models\BlogPost;
 use App\Models\Department;
 use App\Models\ItaItem;
 use App\Models\SitePage;
@@ -16,10 +15,10 @@ class SearchAndSeoTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_search_finds_a_thai_word_in_announcements_articles_pages_and_departments(): void
+    public function test_search_finds_a_thai_word_in_announcements_pages_and_departments(): void
     {
         Announcement::factory()->create(['title' => 'ประกาศฉีดวัคซีนไข้หวัดใหญ่ฟรี']);
-        BlogPost::factory()->create(['title' => 'ทำไมต้องฉีดวัคซีน', 'body' => '<p>เนื้อหา</p>']);
+        Announcement::factory()->create(['title' => 'ความรู้เรื่องภูมิคุ้มกัน', 'body' => '<p>ทำไมต้องฉีดวัคซีน</p>', 'starts_at' => now()->subDays(3)]);
         SitePage::factory()->create(['title' => 'บริการ', 'body' => '<p>คลินิกวัคซีนเปิดทุกวันพุธ</p>']);
         Department::factory()->create(['name' => 'งานสร้างเสริมภูมิคุ้มกัน', 'description' => 'ให้บริการวัคซีนเด็ก']);
         Announcement::factory()->create(['title' => 'ประกาศจัดซื้อยา']);
@@ -27,18 +26,17 @@ class SearchAndSeoTest extends TestCase
         $this->get('/search?q='.urlencode('วัคซีน'))
             ->assertOk()
             ->assertSee('4 results for')
-            ->assertSeeInOrder(['Announcements', 'ประกาศฉีดวัคซีนไข้หวัดใหญ่ฟรี', 'Articles', 'ทำไมต้องฉีดวัคซีน', 'Pages', 'บริการ', 'Departments', 'งานสร้างเสริมภูมิคุ้มกัน'])
+            ->assertSeeInOrder(['Announcements', 'ประกาศฉีดวัคซีนไข้หวัดใหญ่ฟรี', 'ความรู้เรื่องภูมิคุ้มกัน', 'Pages', 'บริการ', 'Departments', 'งานสร้างเสริมภูมิคุ้มกัน'])
             ->assertDontSee('ประกาศจัดซื้อยา');
     }
 
     public function test_what_is_not_out_is_not_found(): void
     {
         Announcement::factory()->scheduled()->create(['title' => 'Secret upcoming notice']);
-        BlogPost::factory()->draft()->create(['title' => 'Secret draft']);
         SitePage::factory()->create(['title' => 'Secret page', 'is_published' => false]);
         Department::factory()->create(['name' => 'Secret unit', 'is_active' => false]);
 
-        $this->get('/search?q=secret')->assertOk()->assertSee('Nothing was found for')->assertDontSee('Secret upcoming')->assertDontSee('Secret draft');
+        $this->get('/search?q=secret')->assertOk()->assertSee('Nothing was found for')->assertDontSee('Secret upcoming');
 
         // One that has ended is in the archive, and found.
         Announcement::factory()->ended()->create(['title' => 'Secret ended notice']);
@@ -83,8 +81,6 @@ class SearchAndSeoTest extends TestCase
     {
         $notice = Announcement::factory()->create();
         $hidden = Announcement::factory()->scheduled()->create();
-        $post = BlogPost::factory()->create();
-        $draft = BlogPost::factory()->draft()->create();
         $page = SitePage::factory()->create();
         $department = Department::factory()->create();
         ItaItem::factory()->create(['year' => 2569]);
@@ -94,12 +90,12 @@ class SearchAndSeoTest extends TestCase
 
         $this->assertNotFalse(simplexml_load_string($xml));
 
-        foreach ([route('home'), route('contact'), route('announcements.show', $notice), route('blog.show', $post), route('pages.show', $page), route('departments.show', $department), route('ita'), route('ita', ['year' => 2568])] as $url) {
+        foreach ([route('home'), route('contact'), route('announcements.show', $notice), route('posters'), route('pages.show', $page), route('departments.show', $department), route('ita'), route('ita', ['year' => 2568])] as $url) {
             $this->assertStringContainsString('<loc>'.e($url).'</loc>', $xml);
         }
 
         $this->assertStringNotContainsString(route('announcements.show', $hidden), $xml);
-        $this->assertStringNotContainsString(route('blog.show', $draft), $xml);
+        $this->assertStringNotContainsString('/blog', $xml);
         $this->assertStringNotContainsString('/staff', $xml);
         $this->assertStringNotContainsString('/admin', $xml);
     }
@@ -107,14 +103,13 @@ class SearchAndSeoTest extends TestCase
     public function test_every_page_says_how_it_looks_when_shared_and_what_its_one_address_is(): void
     {
         SiteSettings::save(['app.name' => 'Buachet Hospital']);
-        $post = BlogPost::factory()->create(['title' => 'Washing hands', 'excerpt' => 'Seven steps.', 'cover_path' => 'blog/covers/a.webp']);
+        $post = Announcement::factory()->create(['title' => 'Washing hands', 'image_path' => 'announcements/pictures/a.webp']);
 
-        $this->get(route('blog.show', $post).'?utm_source=x')
-            ->assertSee('<link rel="canonical" href="'.route('blog.show', $post).'">', false)
+        $this->get(route('announcements.show', $post).'?utm_source=x')
+            ->assertSee('<link rel="canonical" href="'.route('announcements.show', $post).'">', false)
             ->assertSee('<meta property="og:title" content="Washing hands">', false)
-            ->assertSee('<meta property="og:description" content="Seven steps.">', false)
             ->assertSee('<meta property="og:site_name" content="Buachet Hospital">', false)
-            ->assertSee('blog/covers/a.webp', false)
+            ->assertSee('announcements/pictures/a.webp', false)
             ->assertDontSee('application/ld+json', false);
     }
 

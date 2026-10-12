@@ -7,6 +7,7 @@ use App\Support\Slug;
 use Database\Factories\AnnouncementFactory;
 use Filament\Forms\Components\RichEditor\RichContentRenderer;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -16,8 +17,10 @@ use Illuminate\Support\Number;
 
 /**
  * Something the hospital has to tell the public, at /announcements/{slug}:
- * a notice, a procurement result, a job opening. It may carry PDF files and be
- * pinned to the top of the list. It has two dates: one prepared ahead comes out
+ * a notice, a procurement result, a job opening, a poster, a piece of health
+ * knowledge, the photographs of an activity. It is the one thing staff post:
+ * a title, and whichever of a picture, a text, PDF files and an album it needs.
+ * It can be pinned to the top of the list. It has two dates: one prepared ahead comes out
  * by itself on the first; after the second it leaves the home page and the top
  * of the list, but stays in the archive, where it is found by its fiscal year.
  * (A procurement notice has to stay readable long after it stopped being news.)
@@ -30,13 +33,19 @@ class Announcement extends Model
     /** How many files one announcement can carry. */
     public const MAX_FILES = 10;
 
+    /** How many photographs an album can hold. */
+    public const MAX_PHOTOS = 40;
+
+    /** How many slides the home page turns through: more than this and nobody reaches the last one. */
+    public const SLIDES = 8;
+
     protected $fillable = [
         'announcement_type_id', 'author_id', 'department_id',
         'title', 'title_en', 'slug', 'body', 'body_en',
-        'image_path', 'in_slider', 'attachments', 'attachment_names', 'links', 'is_pinned', 'starts_at', 'ends_at',
+        'image_path', 'in_slider', 'is_popup', 'gallery', 'attachments', 'attachment_names', 'links', 'is_pinned', 'starts_at', 'ends_at',
     ];
 
-    protected $attributes = ['is_pinned' => false, 'in_slider' => false];
+    protected $attributes = ['is_pinned' => false, 'in_slider' => false, 'is_popup' => false];
 
     protected function casts(): array
     {
@@ -46,6 +55,8 @@ class Announcement extends Model
             'links' => 'array',
             'is_pinned' => 'boolean',
             'in_slider' => 'boolean',
+            'is_popup' => 'boolean',
+            'gallery' => 'array',
             'starts_at' => 'datetime',
             'ends_at' => 'datetime',
         ];
@@ -66,6 +77,13 @@ class Announcement extends Model
                 Storage::disk('public')->delete(array_values(array_diff($before, $announcement->attachments ?? [])));
             }
 
+            // So do the photographs taken out of its album.
+            if ($announcement->wasChanged('gallery')) {
+                $before = json_decode((string) $announcement->getRawOriginal('gallery'), true) ?: [];
+
+                Storage::disk('public')->delete(array_values(array_diff($before, $announcement->gallery ?? [])));
+            }
+
             // So does its picture.
             if ($announcement->wasChanged('image_path') && $announcement->getOriginal('image_path')) {
                 Storage::disk('public')->delete($announcement->getOriginal('image_path'));
@@ -75,7 +93,7 @@ class Announcement extends Model
         // Not an arrow function: delete() answers false for a file already gone, and a listener that answers false
         // stops the ones after it (the access log's among them).
         static::deleted(function (Announcement $announcement) {
-            Storage::disk('public')->delete(array_filter([...($announcement->attachments ?? []), $announcement->image_path]));
+            Storage::disk('public')->delete(array_filter([...($announcement->attachments ?? []), ...($announcement->gallery ?? []), $announcement->image_path]));
         });
     }
 
@@ -195,6 +213,43 @@ class Announcement extends Model
             (bool) $this->ends_at?->isPast() => 'In the archive',
             default => 'Showing',
         };
+    }
+
+    /**
+     * The slides of the home page: the pictures of the announcements that asked to be among them. Each leads to
+     * its announcement, and goes when the announcement ends.
+     *
+     * @return Collection<int, Announcement>
+     */
+    public static function slides(): Collection
+    {
+        return static::current()->where('in_slider', true)->whereNotNull('image_path')->inListOrder()->limit(self::SLIDES)->get();
+    }
+
+    /**
+     * Every picture that is showing now, for the page of posters (/posters).
+     *
+     * @return Collection<int, Announcement>
+     */
+    public static function posters(int $limit = 48): Collection
+    {
+        return static::current()->whereNotNull('image_path')->inListOrder()->limit($limit)->get();
+    }
+
+    /** The one whose picture opens over the page: the first of those marked for it. One at a time: two windows in a row are a nuisance. */
+    public static function popup(): ?Announcement
+    {
+        return static::current()->where('is_popup', true)->whereNotNull('image_path')->inListOrder()->first();
+    }
+
+    /**
+     * The addresses of the photographs in its album, in the order staff gave them.
+     *
+     * @return list<string>
+     */
+    public function photos(): array
+    {
+        return array_map(fn (string $path) => Storage::disk('public')->url($path), array_values(array_filter($this->gallery ?? [], 'is_string')));
     }
 
     /** The address of its "one page" picture, or null when it has none. */

@@ -4,7 +4,6 @@ namespace Tests\Feature;
 
 use App\Models\Announcement;
 use App\Models\AnnouncementType;
-use App\Models\BlogPost;
 use App\Models\SitePage;
 use App\Models\User;
 use App\Support\Visits;
@@ -78,11 +77,10 @@ class VisitsAndPolicyTest extends TestCase
     {
         $notice = Announcement::factory()->create();
         $bid = Announcement::factory()->for(AnnouncementType::where('slug', 'procurement')->first(), 'type')->create();
-        $post = BlogPost::factory()->create();
         $page = SitePage::factory()->create();
 
         foreach (['/', '/', '/announcements', route('announcements.show', $notice), '/announcements?type=procurement', route('announcements.show', $bid),
-            route('blog.show', $post), '/ita', '/schedule', '/departments', route('pages.show', $page), '/about', '/contact', '/downloads', '/search?q=xx', '/menu'] as $address) {
+            '/posters', '/ita', '/schedule', '/departments', route('pages.show', $page), '/about', '/contact', '/downloads', '/search?q=xx', '/menu'] as $address) {
             $this->get($address, self::BROWSER)->assertOk();
         }
 
@@ -90,7 +88,7 @@ class VisitsAndPolicyTest extends TestCase
 
         // Compared whatever their order: parts opened equally often come back in no particular one.
         $this->assertEquals(
-            ['home' => 2, 'news' => 2, 'procurement' => 2, 'pages' => 2, 'articles' => 1, 'ita' => 1, 'schedule' => 1, 'departments' => 1, 'contact' => 1, 'downloads' => 1, 'search' => 1, 'other' => 1],
+            ['home' => 2, 'news' => 3, 'procurement' => 2, 'pages' => 2, 'ita' => 1, 'schedule' => 1, 'departments' => 1, 'contact' => 1, 'downloads' => 1, 'search' => 1, 'other' => 1],
             Visits::bySection($today, $today),
         );
         $this->assertSame(16, Visits::between($today, $today));
@@ -98,21 +96,18 @@ class VisitsAndPolicyTest extends TestCase
         $this->assertSame([], array_diff(array_keys(Visits::bySection($today, $today)), array_keys(Visits::SECTIONS)));
     }
 
-    public function test_each_announcement_and_article_counts_how_often_it_was_opened_without_looking_changed(): void
+    public function test_each_announcement_counts_how_often_it_was_opened_without_looking_changed(): void
     {
         $notice = Announcement::factory()->create();
-        $post = BlogPost::factory()->create();
         $this->travel(1)->hours();
 
         $this->get(route('announcements.show', $notice), self::BROWSER);
         $this->get(route('announcements.show', $notice), self::BROWSER);
-        $this->get(route('blog.show', $post), self::BROWSER);
         // A search engine, and staff checking their own work, are not readers.
-        $this->get(route('blog.show', $post), ['User-Agent' => 'Googlebot']);
-        $this->actingAs(User::factory()->create())->get(route('blog.show', $post), self::BROWSER);
+        $this->get(route('announcements.show', $notice), ['User-Agent' => 'Googlebot']);
+        $this->actingAs(User::factory()->create())->get(route('announcements.show', $notice), self::BROWSER);
 
         $this->assertSame(2, (int) $notice->fresh()->views);
-        $this->assertSame(1, (int) $post->fresh()->views);
         $this->assertTrue($notice->fresh()->updated_at->equalTo($notice->updated_at));
     }
 

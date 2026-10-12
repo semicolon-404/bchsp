@@ -1,68 +1,40 @@
 {{--
-    What staff put on the home page for a while (App\Models\Banner): the wide banners across the top,
-    the grid of posters, and the one poster that opens over the page.
+    The pictures of announcements, where the site shows them for their own sake (App\Models\Announcement):
+    the slides, the grid of posters, and the one that opens over the page. Each leads to its announcement.
 
-    <x-site.banners part="banners" />   <x-site.banners part="posters" />   <x-site.banners part="popup" />
+    <x-site.banners part="banners" />                      the slides as a section of the home page
     <x-site.banners part="stage" :banners="$slides" />     the slider alone, in a frame of the shape given (home page)
-    <x-site.banners part="all" />       every slide and poster in one grid, for the page of their own (/posters)
+    <x-site.banners part="all" />                          every picture showing now in one grid, for the page of their own (/posters)
+    <x-site.banners part="popup" />
 --}}
 @props(['part', 'banners' => null, 'frame' => 'aspect-[4/3]'])
 @php
-    use App\Models\Banner;
-
-    $picture = function (Banner $banner, string $class) {
-        $image = '<img src="'.e($banner->imageUrl()).'" alt="'.e($banner->title).'" loading="lazy" class="'.$class.'">';
-
-        return $banner->url
-            ? '<a href="'.e($banner->url).'"'.($banner->leavesTheSite() ? ' target="_blank" rel="noopener noreferrer"' : '').' class="block">'.$image.'</a>'
-            : $image;
-    };
+    use App\Models\Announcement;
 
     // A picture of any shape, whole, in a frame of one shape: what the picture leaves empty is filled with the
     // same picture out of focus, so upright and wide ones sit side by side without gaps or cropping.
-    $framed = function (Banner $banner, string $frame) {
-        $inside = '<img src="'.e($banner->imageUrl()).'" alt="" aria-hidden="true" loading="lazy" class="absolute inset-0 size-full scale-110 object-cover opacity-40 blur-2xl">'
-            .'<img src="'.e($banner->imageUrl()).'" alt="'.e($banner->title).'" loading="lazy" class="relative size-full object-contain">';
-        // Without a link of its own it opens the picture itself, to be read at full size.
-        $outside = $banner->url ? $banner->leavesTheSite() : true;
+    $framed = function (Announcement $one, string $frame) {
+        $inside = '<img src="'.e($one->imageUrl()).'" alt="" aria-hidden="true" loading="lazy" class="absolute inset-0 size-full scale-110 object-cover opacity-40 blur-2xl">'
+            .'<img src="'.e($one->imageUrl()).'" alt="'.e($one->localTitle()).'" loading="lazy" class="relative size-full object-contain">';
 
-        return '<a href="'.e($banner->url ?: $banner->imageUrl()).'"'.($outside ? ' target="_blank" rel="noopener noreferrer"' : '').' class="relative block overflow-hidden bg-raised '.$frame.'">'.$inside.'</a>';
+        return '<a href="'.e(route('announcements.show', $one)).'" class="relative block overflow-hidden bg-raised '.$frame.'">'.$inside.'</a>';
     };
 @endphp
 
 @if ($part === 'banners')
-    @php($banners = Banner::slides())
+    @php($banners = Announcement::slides())
     @if ($banners->isNotEmpty())
         {{--
             The slides staff change most often, as a section of the home page. Each picture is shown
             whole in a frame of one size, whatever its shape, so the page does not jump from slide to slide.
             They can be swiped; resources/js/slider.js adds the arrows, the dots and moving on by itself.
         --}}
-        <section class="border-b border-line bg-surface" aria-label="{{ __('Banners') }}">
+        <section class="bg-surface" aria-label="{{ __('Banners') }}">
             <div class="wrap py-12 sm:py-16">
                 <p class="eyebrow">{{ __('Slides') }}</p>
                 <h2 class="mt-2 text-2xl sm:text-3xl">{{ __('Banners') }}</h2>
             {{-- The arrows are placed against this box, so that they sit at the middle of the pictures and not of the heading. --}}
             <div class="mt-8"><x-site.banners part="stage" :banners="$banners" frame="aspect-[4/3] sm:aspect-[16/9] lg:aspect-[21/9]" /></div>
-            </div>
-        </section>
-    @endif
-@elseif ($part === 'posters')
-    @php($posters = Banner::showingAs('poster'))
-    @if ($posters->isNotEmpty())
-        <section class="border-b border-line">
-            <div class="wrap py-12 sm:py-16">
-                <p class="eyebrow">{{ __('Posters') }}</p>
-                <h2 class="mt-2 text-2xl sm:text-3xl">{{ __('Campaigns and notices') }}</h2>
-                {{-- Every poster in a frame of the same upright shape, with its name under it: a tidy row whatever was uploaded. --}}
-                <ul class="mt-8 grid grid-cols-2 gap-4 lg:grid-cols-4">
-                    @foreach ($posters as $poster)
-                        <li class="card overflow-hidden p-0">
-                            {!! $framed($poster, 'aspect-[3/4]') !!}
-                            <p class="line-clamp-2 border-t border-line px-3 py-2 text-sm">{{ $poster->title }}</p>
-                        </li>
-                    @endforeach
-                </ul>
             </div>
         </section>
     @endif
@@ -86,13 +58,14 @@
                 @endif
             </div>
 @elseif ($part === 'all')
-    @php($pictures = Banner::slides()->concat(Banner::showingAs('poster')))
+    @php($pictures = Announcement::posters())
     @if ($pictures->isNotEmpty())
+        {{-- Every poster in a frame of the same upright shape, with its name under it: a tidy row whatever was uploaded. --}}
         <ul class="mt-8 grid grid-cols-2 gap-4 lg:grid-cols-4">
             @foreach ($pictures as $poster)
                 <li class="card overflow-hidden p-0">
                     {!! $framed($poster, 'aspect-[3/4]') !!}
-                    <p class="line-clamp-2 border-t border-line px-3 py-2 text-sm">{{ $poster->title }}</p>
+                    <p class="line-clamp-2 border-t border-line px-3 py-2 text-sm">{{ $poster->localTitle() }}</p>
                 </li>
             @endforeach
         </ul>
@@ -100,17 +73,17 @@
         <p class="card mt-8 text-muted">{{ __('Nothing has been added here yet.') }}</p>
     @endif
 @elseif ($part === 'popup')
-    @php($popup = Banner::popup())
+    @php($popup = Announcement::popup())
     @if ($popup)
         {{--
             Opened by resources/js/popup.js once the page has loaded, unless this visitor has closed this very
             poster before (remembered in their browser). A <dialog>: Escape closes it and the page behind is inert.
         --}}
-        <dialog data-popup="{{ $popup->id }}" aria-label="{{ $popup->title }}" class="popup">
+        <dialog data-popup="{{ $popup->id }}" aria-label="{{ $popup->localTitle() }}" class="popup">
             <form method="dialog" class="flex justify-end p-2">
                 <button class="btn btn-line min-h-10 px-3 py-1 text-sm" autofocus><x-heroicon-m-x-mark class="size-5" aria-hidden="true" />{{ __('Close') }}</button>
             </form>
-            {!! $picture($popup, 'mx-auto max-h-[calc(100vh-7rem)] w-auto max-w-full object-contain') !!}
+            <a href="{{ route('announcements.show', $popup) }}" class="block"><img src="{{ $popup->imageUrl() }}" alt="{{ $popup->localTitle() }}" loading="lazy" class="mx-auto max-h-[calc(100vh-7rem)] w-auto max-w-full object-contain"></a>
         </dialog>
     @endif
 @endif

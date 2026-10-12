@@ -14,7 +14,7 @@ class FillDemo extends Command
 {
     protected $signature = 'demo:fill {--force : Go ahead even on a live site}';
 
-    protected $description = 'Put sample content into the site (announcements, slides, articles, ITA, visits); "demo:clear" takes it out again';
+    protected $description = 'Put sample content into the site (announcements with their posters and albums, ITA, visits); "demo:clear" takes it out again';
 
     public function handle(): int
     {

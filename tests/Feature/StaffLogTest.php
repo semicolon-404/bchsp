@@ -5,11 +5,11 @@ namespace Tests\Feature;
 use App\Filament\Auth\Login;
 use App\Filament\Pages\SiteSettings as SettingsPage;
 use App\Filament\Resources\AccessLogs\Pages\ManageAccessLogs;
-use App\Filament\Resources\BlogCategories\Pages\ManageBlogCategories;
+use App\Filament\Resources\Departments\Pages\ManageDepartments;
 use App\Filament\Resources\Users\Pages\ManageUsers;
 use App\Models\AccessLog;
-use App\Models\BlogCategory;
-use App\Models\BlogPost;
+use App\Models\Announcement;
+use App\Models\Department;
 use App\Models\User;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\EditAction;
@@ -39,23 +39,23 @@ class StaffLogTest extends TestCase
 
     public function test_what_staff_create_change_and_delete_in_the_panel_is_written_down(): void
     {
-        $this->actingAs($author = User::factory()->create());
+        $this->actingAs($author = User::factory()->admin()->create());
 
-        Livewire::test(ManageBlogCategories::class)->callAction('create', ['name' => 'Health', 'sort_order' => 0]);
-        $category = BlogCategory::firstOrFail();
+        Livewire::test(ManageDepartments::class)->callAction('create', ['name' => 'Hearings', 'sort_order' => 0]);
+        $type = Department::where('name', 'Hearings')->firstOrFail();
 
-        Livewire::test(ManageBlogCategories::class)
-            ->callAction(TestAction::make(EditAction::class)->table($category), ['name' => 'Health knowledge'])
-            ->callAction(TestAction::make(DeleteAction::class)->table($category));
+        Livewire::test(ManageDepartments::class)
+            ->callAction(TestAction::make(EditAction::class)->table($type), ['name' => 'Public hearings'])
+            ->callAction(TestAction::make(DeleteAction::class)->table($type));
 
         $lines = AccessLog::where('event', 'like', 'admin.%')->orderBy('id')->get();
 
         $this->assertSame(['admin.created', 'admin.updated', 'admin.deleted'], $lines->pluck('event')->all());
-        $this->assertSame(['blog_category'], $lines->pluck('subject_type')->unique()->values()->all());
+        $this->assertSame(['department'], $lines->pluck('subject_type')->unique()->values()->all());
         $this->assertSame([$author->id], $lines->pluck('user_id')->unique()->values()->all());
         // Which fields, not what they hold.
         $this->assertStringContainsString('name', $lines[1]->identifier);
-        $this->assertStringNotContainsString('Health knowledge', $lines->toJson());
+        $this->assertStringNotContainsString('Public hearings', $lines->toJson());
     }
 
     public function test_a_changed_password_is_noted_by_name_only(): void
@@ -87,11 +87,11 @@ class StaffLogTest extends TestCase
     public function test_a_change_made_outside_the_panel_and_a_visit_to_the_site_leave_no_line(): void
     {
         $this->get('/')->assertOk();
-        $this->get('/blog')->assertOk();
+        $this->get('/announcements')->assertOk();
 
         // Signed in, but not from a screen of the panel: a script, a command.
         $this->actingAs(User::factory()->create());
-        BlogPost::factory()->create()->update(['title' => 'Changed by a script']);
+        Announcement::factory()->create()->update(['title' => 'Changed by a script']);
 
         $this->assertSame(0, AccessLog::count());
     }

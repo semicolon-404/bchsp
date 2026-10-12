@@ -7,7 +7,6 @@ use App\Filament\Resources\Departments\Pages\ManageDepartments;
 use App\Http\Middleware\SetLocale;
 use App\Models\Announcement;
 use App\Models\AnnouncementType;
-use App\Models\BlogPost;
 use App\Models\Department;
 use App\Models\User;
 use App\Support\SiteSettings;
@@ -81,38 +80,30 @@ class DepartmentsTest extends TestCase
         Announcement::factory()->scheduled()->create(['title' => 'Dental notice for next week', 'department_id' => $dental->id]);
         Announcement::factory()->create(['title' => 'Medicine by post', 'department_id' => $pharmacy->id]);
         Announcement::factory()->create(['title' => 'Notice of the whole hospital']);
-        BlogPost::factory()->create(['title' => 'Caring for milk teeth', 'department_id' => $dental->id]);
-        BlogPost::factory()->draft()->create(['title' => 'Unfinished dental article', 'department_id' => $dental->id]);
-        BlogPost::factory()->create(['title' => 'Storing medicine at home', 'department_id' => $pharmacy->id]);
 
         $this->get(route('departments.show', $dental))
             ->assertOk()
-            ->assertSeeInOrder(['Posters and announcements', 'Brush twice a day', 'Dental clinic closed on Friday', 'Knowledge and articles', 'Caring for milk teeth'])
+            ->assertSeeInOrder(['Posters and announcements', 'Brush twice a day', 'Dental clinic closed on Friday'])
             ->assertSee('announcements/brush.webp')
             ->assertDontSee('Old dental notice')
             ->assertDontSee('Dental notice for next week')
             ->assertDontSee('Medicine by post')
-            ->assertDontSee('Notice of the whole hospital')
-            ->assertDontSee('Unfinished dental article')
-            ->assertDontSee('Storing medicine at home');
+            ->assertDontSee('Notice of the whole hospital');
     }
 
     public function test_a_department_that_put_out_nothing_has_no_board(): void
     {
         $this->get(route('departments.show', Department::factory()->create()))
             ->assertOk()
-            ->assertDontSee('Posters and announcements')
-            ->assertDontSee('Knowledge and articles');
+            ->assertDontSee('Posters and announcements');
     }
 
-    public function test_an_announcement_and_an_article_lead_back_to_their_department(): void
+    public function test_an_announcement_leads_back_to_its_department(): void
     {
         $dental = Department::factory()->create(['name' => 'Dental']);
         $hidden = Department::factory()->create(['name' => 'Hidden unit', 'is_active' => false]);
 
         $this->get(route('announcements.show', Announcement::factory()->create(['department_id' => $dental->id])))
-            ->assertOk()->assertSee(route('departments.show', $dental));
-        $this->get(route('blog.show', BlogPost::factory()->create(['department_id' => $dental->id])))
             ->assertOk()->assertSee(route('departments.show', $dental));
         $this->get(route('announcements.show', Announcement::factory()->create(['department_id' => $hidden->id])))
             ->assertOk()->assertDontSee('Hidden unit');

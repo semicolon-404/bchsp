@@ -6,7 +6,6 @@ use App\Filament\Pages\SiteSettings as SettingsPage;
 use App\Filament\Resources\StaffLinks\Pages\ManageStaffLinks;
 use App\Models\Announcement;
 use App\Models\AnnouncementType;
-use App\Models\BlogPost;
 use App\Models\ItaItem;
 use App\Models\SitePage;
 use App\Models\StaffLink;
@@ -82,13 +81,13 @@ class MenusTest extends TestCase
         $this->get('/about')->assertDontSee('New name');
     }
 
-    public function test_news_opens_onto_every_kind_of_announcement_but_procurement_then_articles_and_downloads(): void
+    public function test_news_opens_onto_every_kind_of_announcement_but_procurement_then_posters_and_downloads(): void
     {
         AnnouncementType::factory()->create(['name' => 'Public hearings', 'sort_order' => 9]);
 
         $news = collect(Menus::items('top'))->firstWhere('key', 'news');
 
-        $this->assertSame(['News', 'Job openings', 'Public hearings', 'Posters', 'Health articles', 'Downloads'], array_column($news['children'], 'label'));
+        $this->assertSame(['News', 'Job openings', 'Health knowledge', 'Activities', 'Public hearings', 'Posters', 'Downloads'], array_column($news['children'], 'label'));
         $this->assertSame(route('announcements.index', ['type' => 'jobs']), $news['children'][1]['url']);
 
         $procurement = collect(Menus::items('top'))->firstWhere('key', 'procurement');
@@ -119,12 +118,11 @@ class MenusTest extends TestCase
 
     public function test_the_group_someone_is_in_is_marked(): void
     {
-        $post = BlogPost::factory()->create();
         $notice = Announcement::factory()->create();
         $page = SitePage::factory()->create(['section' => 'about']);
 
         $this->assertSame(['home'], $this->markedOn('/'));
-        $this->assertSame(['news'], $this->markedOn(route('blog.show', $post)));
+        $this->assertSame(['news'], $this->markedOn('/posters'));
         $this->assertSame(['news'], $this->markedOn(route('announcements.show', $notice)));
         $this->assertSame(['news'], $this->markedOn('/announcements?type=jobs'));
         $this->assertSame(['procurement'], $this->markedOn('/announcements?type=procurement'));
@@ -154,7 +152,7 @@ class MenusTest extends TestCase
 
         $this->get('/menu')
             ->assertOk()
-            ->assertSeeInOrder(['Everything on this website', 'About us', 'History of the hospital', 'Departments', 'Contact us', 'ITA', 'News', 'Job openings', 'Health articles', 'Downloads', 'Procurement', 'For staff']);
+            ->assertSeeInOrder(['Everything on this website', 'About us', 'History of the hospital', 'Departments', 'Contact us', 'ITA', 'News', 'Job openings', 'Health knowledge', 'Posters', 'Downloads', 'Procurement', 'For staff']);
     }
 
     public function test_what_staff_use_has_a_page_of_its_own_out_of_the_public_menu_and_of_search_engines(): void
@@ -240,12 +238,12 @@ class MenusTest extends TestCase
 
     public function test_only_known_places_are_kept_each_once_and_no_more_than_fit(): void
     {
-        $this->assertSame(['blog'], Menus::toStore('top', ['blog', 'blog', 'no-such', ['key' => 'blog'], null, 7]));
+        $this->assertSame(['schedule'], Menus::toStore('top', ['schedule', 'schedule', 'no-such', 'blog', ['key' => 'schedule'], null, 7]));
         $this->assertNull(Menus::toStore('top', ['home', 'about', 'ita', 'news', 'procurement']));
         $this->assertNull(Menus::toStore('tabs', []));
 
-        SiteSettings::save(['menu.top' => ['<script>', 'blog']]);
-        $this->assertSame(['blog'], Menus::keys('top'));
+        SiteSettings::save(['menu.top' => ['<script>', 'schedule']]);
+        $this->assertSame(['schedule'], Menus::keys('top'));
         $this->get('/')->assertOk();
     }
 
@@ -254,7 +252,7 @@ class MenusTest extends TestCase
         $this->actingAs(User::factory()->admin()->create());
 
         Livewire::test(SettingsPage::class)
-            ->fillForm(['menu_top' => [['key' => 'blog'], ['key' => 'blog']]])
+            ->fillForm(['menu_top' => [['key' => 'schedule'], ['key' => 'schedule']]])
             ->call('save')
             ->assertHasFormErrors();
     }
@@ -265,7 +263,7 @@ class MenusTest extends TestCase
 
         $bar = $this->topBar($this->get('/')->assertSee('aria-label="เมนูหลัก"', false)->getContent());
 
-        foreach (['หน้าแรก', 'เกี่ยวกับเรา', 'ITA', 'ข่าวประชาสัมพันธ์', 'รับสมัครงาน', 'บทความความรู้สุขภาพ', 'จัดซื้อจัดจ้าง'] as $label) {
+        foreach (['หน้าแรก', 'เกี่ยวกับเรา', 'ITA', 'ข่าวประชาสัมพันธ์', 'รับสมัครงาน', 'ความรู้สุขภาพ', 'จัดซื้อจัดจ้าง'] as $label) {
             $this->assertStringContainsString($label, $bar);
         }
 

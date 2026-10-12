@@ -41,7 +41,6 @@ class Menus
         'ita' => ['ITA', 'ITA', 'shield-check'],
         'news' => ['News', 'News', 'megaphone'],
         'procurement' => ['Procurement', 'Procurement', 'clipboard-document-list'],
-        'blog' => ['Articles', 'Articles', 'newspaper'],
         'schedule' => ['Clinic schedule', 'Schedule', 'calendar-days'],
         'departments' => ['Departments', 'Departments', 'building-office-2'],
         'downloads' => ['Downloads', 'Downloads', 'arrow-down-tray'],
@@ -153,10 +152,6 @@ class Menus
                     $children[] = $link(__('Posters'), route('posters'), $request->routeIs('posters'));
                 }
 
-                if (! in_array('articles', self::newsHidden(), true)) {
-                    $children[] = $link(__('Health articles'), route('blog.index'), $request->routeIs('blog.*'));
-                }
-
                 if (! in_array('downloads', self::newsHidden(), true)) {
                     $children[] = $link(__('Downloads'), route('downloads'), $request->routeIs('downloads'));
                 }
@@ -168,7 +163,7 @@ class Menus
                 return [
                     'url' => route('announcements.index'),
                     // Any announcement is news, except the list of procurement notices, which has its own place.
-                    'active' => ($request->routeIs('announcements.*') && $type !== self::PROCUREMENT) || $request->routeIs('blog.*', 'downloads', 'posters'),
+                    'active' => ($request->routeIs('announcements.*') && $type !== self::PROCUREMENT) || $request->routeIs('downloads', 'posters'),
                     'children' => $children,
                 ];
 
@@ -178,7 +173,6 @@ class Menus
                     : null;
 
             case 'home': return $simple('home', 'home');
-            case 'blog': return $simple('blog.index', 'blog.*');
             case 'schedule': return $simple('schedule', 'schedule');
             case 'departments': return $simple('departments.index', 'departments.*');
             case 'downloads': return $simple('downloads', 'downloads');
@@ -193,7 +187,7 @@ class Menus
     public const OWN_PLACES = ['top' => 'In the top bar', 'about' => 'Under About us', 'news' => 'Under News'];
 
     /** What News lists that can be left out => what the settings page calls it. */
-    public const NEWS_OPTIONAL = ['posters' => 'Posters', 'articles' => 'Health articles', 'downloads' => 'Downloads'];
+    public const NEWS_OPTIONAL = ['posters' => 'Posters', 'downloads' => 'Downloads'];
 
     /** How many links of their own an administrator can add. */
     public const MAX_OWN = 12;

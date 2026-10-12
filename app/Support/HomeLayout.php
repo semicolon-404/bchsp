@@ -20,19 +20,17 @@ class HomeLayout
         'announcements' => 'News: the slides beside the newest announcements',
         'shortcuts' => 'List of the other parts of the site',
         'identity' => 'Vision, mission and core values',
-        // The pictures come after what people came to read, as a section of their own: slides, then the grid of posters.
+        // The pictures come after what people came to read, as a section of their own.
         'slides' => 'Slides',
-        'posters' => 'Posters',
         'departments' => 'Departments',
-        'articles' => 'Articles',
     ];
 
     /**
      * Off until an administrator switches them on. The home page is kept open and short: the hospital's name,
-     * what is new, a list of the other parts of the site, and what the hospital says of itself. The pictures, the articles and the
+     * what is new, a list of the other parts of the site, and what the hospital says of itself. The pictures and the
      * departments are read on their own pages, which the doors lead to.
      */
-    public const OFF_AT_FIRST = ['slides', 'posters', 'departments', 'articles'];
+    public const OFF_AT_FIRST = ['slides', 'departments'];
 
     /** Cannot be hidden: it holds the page's heading and the buttons to call the hospital. The slides staff put up follow it there. */
     public const LOCKED = ['hero'];

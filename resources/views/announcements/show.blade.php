@@ -1,4 +1,4 @@
-{{-- /announcements/{slug}: one announcement, with its files to open or download. --}}
+{{-- /announcements/{slug}: one announcement: its picture, its text, its album, and its files to open or download. --}}
 @php($files = $announcement->files())
 @php($links = $announcement->documentLinks())
 <x-layouts.site :title="$announcement->localTitle()" :image="$announcement->imageUrl()">
@@ -36,6 +36,22 @@
 
         @if ($announcement->hasBody())
             <div class="rich mt-8">{!! $announcement->renderedBody() !!}</div>
+        @endif
+
+        @if ($photos = $announcement->photos())
+            {{-- The album: every photograph whole, each opening at full size. --}}
+            <section class="mt-10" aria-label="{{ __('Photographs') }}">
+                <h2 class="eyebrow">{{ trans_choice('{1} :count photograph|[2,*] :count photographs', count($photos), ['count' => count($photos)]) }}</h2>
+                <ul class="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3">
+                    @foreach ($photos as $photo)
+                        <li>
+                            <a href="{{ $photo }}" target="_blank" rel="noopener" class="block overflow-hidden rounded-lg border border-line">
+                                <img src="{{ $photo }}" alt="{{ __('Photograph :number of :count', ['number' => $loop->iteration, 'count' => $loop->count]) }}" loading="lazy" class="aspect-[4/3] w-full object-cover">
+                            </a>
+                        </li>
+                    @endforeach
+                </ul>
+            </section>
         @endif
 
         @if ($files || $links)

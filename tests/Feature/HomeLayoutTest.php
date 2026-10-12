@@ -4,8 +4,6 @@ namespace Tests\Feature;
 
 use App\Filament\Pages\SiteSettings as SettingsPage;
 use App\Models\Announcement;
-use App\Models\Banner;
-use App\Models\BlogPost;
 use App\Models\Department;
 use App\Models\User;
 use App\Support\HomeLayout;
@@ -20,11 +18,9 @@ class HomeLayoutTest extends TestCase
 
     private function fillTheHomePage(): void
     {
-        Banner::factory()->create(['title' => 'A slide']);
-        Banner::factory()->poster()->create(['title' => 'A poster']);
+        Announcement::factory()->create(['title' => 'A slide', 'image_path' => 'announcements/pictures/slide.webp', 'in_slider' => true]);
         Announcement::factory()->create(['title' => 'A notice']);
         Department::factory()->create(['name' => 'A department']);
-        BlogPost::factory()->create(['title' => 'An article']);
     }
 
     public function test_until_someone_arranges_it_the_page_is_in_its_own_order(): void
@@ -32,19 +28,19 @@ class HomeLayoutTest extends TestCase
         $this->fillTheHomePage();
 
         // The welcome, what is new, a list of the other parts of the site, and what the hospital says of itself.
-        // The pictures, the articles and the departments are off at first, and read on their own pages.
+        // A section for the slides alone and the departments are off at first.
         $this->assertSame(['hero', 'announcements', 'shortcuts', 'identity'], HomeLayout::shown());
 
         $this->get('/')
             ->assertSeeInOrder(['<h1', '<section id="news"', 'alt="A slide"', 'A notice', 'aria-label="Shortcuts"', 'id="door-0"', 'id="door-5"'], false)
             // Nothing has been written about the hospital yet, so that section takes no room.
             ->assertDontSee('id="identity"', false)
-            ->assertDontSee('alt="A poster"', false)->assertDontSee('An article')->assertDontSee('A department');
+            ->assertDontSee('A department');
 
-        // Switched on, each takes its usual place: the pictures after what people came to read.
-        $this->showOnHome('posters', 'articles');
+        // Switched on, each takes its usual place: after what people came to read.
+        $this->showOnHome('departments');
 
-        $this->get('/')->assertSeeInOrder(['<h1', '<section id="news"', 'aria-label="Shortcuts"', 'alt="A poster"', 'An article'], false);
+        $this->get('/')->assertSeeInOrder(['<h1', '<section id="news"', 'aria-label="Shortcuts"', 'A department'], false);
     }
 
     public function test_the_welcome_carries_the_motto_and_what_the_hospital_says_of_itself_has_a_tab_each(): void
@@ -54,10 +50,10 @@ class HomeLayoutTest extends TestCase
         $this->actingAs(User::factory()->admin()->create());
 
         Livewire::test(SettingsPage::class)
-            ->fillForm(['site__motto' => 'Service from the heart', 'identity__vision' => "A hospital of quality
-Quality: a service that works", 'identity__values' => "T - Teamwork
+            ->fillForm(['site__motto' => 'Service from the heart', 'identity__vision' => 'A hospital of quality
+Quality: a service that works', 'identity__values' => 'T - Teamwork
 
-A - Agility"])
+A - Agility'])
             ->call('save')
             ->assertHasNoFormErrors();
 
@@ -80,24 +76,21 @@ A - Agility"])
             ->assertFormSet(fn (array $state) => array_column(array_values($state['home_layout']), 'key') === array_keys(HomeLayout::SECTIONS))
             ->fillForm(['home_layout' => [
                 ['key' => 'hero', 'shown' => true],
-                ['key' => 'articles', 'shown' => true],
+                ['key' => 'departments', 'shown' => true],
                 ['key' => 'announcements', 'shown' => true],
                 ['key' => 'slides', 'shown' => true],
-                ['key' => 'departments', 'shown' => false],
-                ['key' => 'posters', 'shown' => false],
                 ['key' => 'shortcuts', 'shown' => false],
                 ['key' => 'identity', 'shown' => false],
             ]])
             ->call('save')
             ->assertHasNoFormErrors();
 
-        $this->assertSame(['hero', 'articles', 'announcements', 'slides'], HomeLayout::shown());
+        $this->assertSame(['hero', 'departments', 'announcements', 'slides'], HomeLayout::shown());
 
         auth()->logout();
         $this->get('/')
-            ->assertSeeInOrder(['<h1', 'An article', '<section id="news"', 'aria-label="Banners"'], false)
-            ->assertDontSee('A department')
-            ->assertDontSee('alt="A poster"', false);
+            ->assertSeeInOrder(['<h1', 'A department', '<section id="news"', 'aria-label="Banners"'], false)
+            ->assertDontSee('aria-label="Shortcuts"', false);
     }
 
     public function test_the_shortcuts_lead_to_what_visitors_come_for_and_departments_can_be_switched_on(): void
@@ -145,10 +138,16 @@ A - Agility"])
 
     public function test_the_poster_that_opens_over_the_page_does_not_depend_on_the_layout(): void
     {
-        Banner::factory()->poster()->popup()->create(['title' => 'Clinic closed on Friday']);
-        SiteSettings::save(['home.layout' => [['key' => 'posters', 'shown' => false]]]);
+        $poster = Announcement::factory()->create(['title' => 'Clinic closed on Friday', 'image_path' => 'announcements/pictures/closed.webp', 'is_popup' => true]);
+        // Marked for it, but with no picture to open: never that one.
+        Announcement::factory()->create(['title' => 'Words only', 'is_popup' => true, 'is_pinned' => true]);
+        SiteSettings::save(['home.layout' => [['key' => 'announcements', 'shown' => false], ['key' => 'slides', 'shown' => false]]]);
 
-        $this->get('/')->assertSee('<dialog', false);
+        $this->get('/')->assertSee('<dialog data-popup="'.$poster->id.'"', false)->assertSee('closed.webp', false);
+
+        // It closes with the announcement.
+        $poster->update(['ends_at' => now()->subMinute()]);
+        $this->get('/')->assertDontSee('<dialog', false);
     }
 
     public function test_the_section_reads_in_thai(): void

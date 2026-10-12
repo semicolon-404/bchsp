@@ -3,7 +3,6 @@
 namespace App\Support;
 
 use App\Models\Announcement;
-use App\Models\BlogPost;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
@@ -29,7 +28,6 @@ class Visits
         'news' => 'News and announcements',
         'procurement' => 'Procurement',
         'ita' => 'ITA',
-        'articles' => 'Articles',
         'schedule' => 'Clinic schedule',
         'departments' => 'Departments',
         'pages' => 'About us and other pages',
@@ -59,10 +57,10 @@ class Visits
                 DB::table('site_visits')->insertOrIgnore($key + ['views' => 1]);
             }
 
-            // The announcement or article itself, so that the most read can be named. Without its "last changed" moving.
-            $item = $request->route('announcement') ?? $request->route('post');
+            // The announcement itself, so that the most read can be named. Without its "last changed" moving.
+            $item = $request->route('announcement');
 
-            if ($item instanceof Announcement || $item instanceof BlogPost) {
+            if ($item instanceof Announcement) {
                 DB::table($item->getTable())->where('id', $item->getKey())->increment('views');
             }
         } catch (Throwable $e) {
@@ -86,7 +84,6 @@ class Visits
             $route === 'home' => 'home',
             $route === 'ita' => 'ita',
             $route === 'posters' => 'news',
-            str_starts_with($route, 'blog.') => 'articles',
             $route === 'schedule' => 'schedule',
             str_starts_with($route, 'departments.') => 'departments',
             in_array($route, ['pages.show', 'about'], true) => 'pages',

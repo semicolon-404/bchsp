@@ -17,7 +17,6 @@
     @foreach ([
         ['Pages opened', number_format($summary['visits']['total'])],
         ['Announcements published', number_format($summary['announcements']['total'])],
-        ['Articles published', number_format($summary['articles']['total'])],
         ['ITA '.$summary['ita']['year'], $summary['ita']['items'] ? $summary['ita']['percent'].'%' : '–'],
     ] as [$label, $figure])
         <div style="padding: 14px; border: 1px solid rgba(128,128,128,.35); border-radius: 10px;">
@@ -65,10 +64,10 @@
 <h3 style="{{ $heading }}">{{ __('Most read') }}</h3>
 <table style="{{ $table }}">
     <tr><th style="{{ $cell }}">{{ __('Title') }}</th><th style="{{ $cell }}">{{ __('Type') }}</th><th style="{{ $number }}">{{ __('Times opened') }}</th></tr>
-    @forelse ($summary['announcements']['top']->concat($summary['articles']['top'])->sortByDesc('views')->take(10) as $one)
+    @forelse ($summary['announcements']['top'] as $one)
         <tr>
             <td style="{{ $cell }}">{{ $one->title }}</td>
-            <td style="{{ $cell }} white-space: nowrap;">{{ $one instanceof App\Models\BlogPost ? __('Article') : ($one->type?->name ?? '–') }}</td>
+            <td style="{{ $cell }} white-space: nowrap;">{{ $one->type?->name ?? '–' }}</td>
             <td style="{{ $number }}">{{ number_format($one->views) }}</td>
         </tr>
     @empty

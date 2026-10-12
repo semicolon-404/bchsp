@@ -23,9 +23,8 @@
     $openNow = $sessions->filter->isOpenNow()->count();
     $announcements = $shows('announcements') ? App\Models\Announcement::current()->with('type')->inListOrder()->limit(5)->get() : collect();
     // The slides sit beside the announcements, unless an administrator gave them a section of their own.
-    $slides = $shows('announcements') && ! $shows('slides') ? App\Models\Banner::slides() : collect();
+    $slides = $shows('announcements') && ! $shows('slides') ? App\Models\Announcement::slides() : collect();
     $departments = $shows('departments') ? App\Models\Department::shown()->limit(6)->get() : collect();
-    $articles = $shows('articles') ? App\Models\BlogPost::published()->with('category')->latest('published_at')->limit(3)->get() : collect();
 @endphp
 <x-layouts.site :description="__('News, announcements and services of :name.', ['name' => $name])">
     @foreach ($sections as $section)
@@ -150,7 +149,7 @@
                     @foreach ([
                         [route('announcements.index', ['type' => 'procurement']), 'Procurement', 'Procurement plans, invitations to bid and results, by fiscal year.'],
                         [route('posters'), 'Campaigns and notices', 'Campaign posters and one-page notices from the hospital.'],
-                        [route('blog.index'), 'Health knowledge and news', 'Health knowledge, and photographs of what the hospital has been doing.'],
+                        [route('announcements.index', ['type' => 'knowledge']), 'Health knowledge', 'Health knowledge written by the hospital\'s own staff.'],
                         [route('schedule'), 'Clinic schedule', 'Which clinic is open on which day, and at what time.'],
                         [route('about'), 'About us', 'History, vision, structure and the people who run the hospital.'],
                         [route('contact'), 'Contact and map', 'Address, phone numbers, opening hours and a map.'],
@@ -223,10 +222,6 @@
     @endif
     @break
 
-    @case('posters')
-    <x-site.banners part="posters" />
-    @break
-
     @case('departments')
     @if ($departments->isNotEmpty())
         <section>
@@ -248,26 +243,6 @@
     @endif
     @break
 
-    @case('articles')
-    @if ($articles->isNotEmpty())
-        <section>
-            <div class="wrap py-12 sm:py-16">
-                <div class="flex flex-wrap items-end justify-between gap-3">
-                    <div>
-                        <p class="eyebrow">{{ __('Blog') }}</p>
-                        <h2 class="mt-2 text-2xl sm:text-3xl">{{ __('Health knowledge and news') }}</h2>
-                    </div>
-                    <a href="{{ route('blog.index') }}" class="btn btn-line">{{ __('All articles') }} &rarr;</a>
-                </div>
-                <div class="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                    @foreach ($articles as $post)
-                        <x-site.article-card :post="$post" />
-                    @endforeach
-                </div>
-            </div>
-        </section>
-    @endif
-    @break
     @endswitch
     @endforeach
 

@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Models\Announcement;
-use App\Models\BlogPost;
 use App\Models\Department;
 use App\Models\ItaItem;
 use App\Models\SitePage;
@@ -34,7 +33,6 @@ class SeoController extends Controller
         $urls = collect([
             ['loc' => route('home'), 'priority' => '1.0'],
             ['loc' => route('announcements.index'), 'priority' => '0.9'],
-            ['loc' => route('blog.index'), 'priority' => '0.8'],
             ['loc' => route('departments.index'), 'priority' => '0.7'],
             ['loc' => route('contact'), 'priority' => '0.7'],
             ['loc' => route('downloads'), 'priority' => '0.5'],
@@ -53,9 +51,6 @@ class SeoController extends Controller
 
         Announcement::published()->inListOrder()->limit(5000)->get(['slug', 'updated_at'])
             ->each(fn (Announcement $announcement) => $urls->push(['loc' => route('announcements.show', $announcement), 'lastmod' => $announcement->updated_at?->toAtomString(), 'priority' => '0.6']));
-
-        BlogPost::published()->latest('published_at')->limit(5000)->get(['slug', 'updated_at'])
-            ->each(fn (BlogPost $post) => $urls->push(['loc' => route('blog.show', $post), 'lastmod' => $post->updated_at?->toAtomString(), 'priority' => '0.6']));
 
         return response()
             ->view('seo.sitemap', ['urls' => $urls])

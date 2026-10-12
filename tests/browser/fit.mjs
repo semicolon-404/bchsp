@@ -15,7 +15,7 @@ import { existsSync, mkdirSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
-const PAGES = (process.env.FIT_PAGES ?? '/,/announcements,/blog,/departments,/contact,/about,/schedule,/downloads,/ita,/menu,/staff,/search?q=test').split(',');
+const PAGES = (process.env.FIT_PAGES ?? '/,/announcements,/posters,/departments,/contact,/about,/schedule,/downloads,/ita,/menu,/staff,/search?q=test').split(',');
 
 const SCREENS = [
     ['phone', 360, 740],

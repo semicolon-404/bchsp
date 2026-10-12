@@ -9,6 +9,7 @@ use App\Support\Footer;
 use App\Support\Menus;
 use App\Support\SiteSettings;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
 use Livewire\Livewire;
 use Tests\TestCase;
 
@@ -153,26 +154,25 @@ class FooterAndOwnLinksTest extends TestCase
 
         $this->assertContains(route('posters'), array_column($news['children'], 'url'));
         $this->get('/posters')->assertOk();
-        $this->assertSame(1, (int) \Illuminate\Support\Facades\DB::table('site_visits')->where('section', 'news')->sum('views'));
+        $this->assertSame(1, (int) DB::table('site_visits')->where('section', 'news')->sum('views'));
     }
 
-    public function test_articles_and_downloads_can_be_left_out_of_the_news_menu(): void
+    public function test_posters_and_downloads_can_be_left_out_of_the_news_menu(): void
     {
         $this->actingAs(User::factory()->admin()->create());
 
         Livewire::test(SettingsPage::class)
-            ->assertFormSet(['menu_news_shown' => ['posters', 'articles', 'downloads']])
-            ->fillForm(['menu_news_shown' => ['articles']])
+            ->assertFormSet(['menu_news_shown' => ['posters', 'downloads']])
+            ->fillForm(['menu_news_shown' => ['posters']])
             ->call('save')
             ->assertHasNoFormErrors();
 
-        $this->assertSame(['posters', 'downloads'], Menus::newsHidden());
+        $this->assertSame(['downloads'], Menus::newsHidden());
 
         $labels = array_column(collect(Menus::items('top'))->firstWhere('key', 'news')['children'], 'label');
 
-        $this->assertContains('Health articles', $labels);
+        $this->assertContains('Posters', $labels);
         $this->assertNotContains('Downloads', $labels);
-        $this->assertNotContains('Posters', $labels);
         // The page is still there for anyone with its address.
         $this->get('/downloads')->assertOk();
     }
@@ -183,10 +183,10 @@ class FooterAndOwnLinksTest extends TestCase
             ['label' => 'Bad place', 'url' => 'https://example.com', 'place' => 'admin'],
             ['label' => 'Bad address', 'url' => 'javascript:alert(1)', 'place' => 'top'],
             ['label' => 'Fine', 'url' => 'https://example.com/fine', 'place' => 'top'],
-        ], 'menu.news_hidden' => ['articles', 'no-such']]);
+        ], 'menu.news_hidden' => ['downloads', 'no-such']]);
 
         $this->assertSame(['Fine'], array_column(Menus::ownLinks('top'), 'label'));
-        $this->assertSame(['articles'], Menus::newsHidden());
+        $this->assertSame(['downloads'], Menus::newsHidden());
         $this->get('/')->assertOk()->assertDontSee('javascript:alert', false);
     }
 

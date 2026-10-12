@@ -9,7 +9,6 @@ use App\Filament\Widgets\VisitsChart;
 use App\Models\AccessLog;
 use App\Models\Announcement;
 use App\Models\AnnouncementType;
-use App\Models\BlogPost;
 use App\Models\ItaItem;
 use App\Models\User;
 use App\Support\Reports;
@@ -37,7 +36,7 @@ class ReportsAndDashboardTest extends TestCase
         return AnnouncementType::where('slug', $slug)->firstOrFail();
     }
 
-    /** A year of the site: announcements, articles, pages opened, ITA and what staff did. */
+    /** A year of the site: announcements, pages opened, ITA and what staff did. */
     private function aYearOfTheSite(): User
     {
         $malee = User::factory()->create(['name' => 'Malee']);
@@ -47,8 +46,6 @@ class ReportsAndDashboardTest extends TestCase
         Announcement::factory()->for($this->type('news'), 'type')->create(['title' => 'Flu vaccine week', 'starts_at' => '2026-02-15 09:00', 'views' => 120]);
         Announcement::factory()->for($this->type('news'), 'type')->create(['title' => 'From the year before', 'starts_at' => '2025-08-01 09:00', 'views' => 999]);
         Announcement::factory()->for($this->type('news'), 'type')->create(['title' => 'Not out yet', 'starts_at' => '2026-05-01 09:00']);
-        BlogPost::factory()->create(['title' => 'Washing hands', 'published_at' => '2026-01-05 09:00', 'views' => 60]);
-        BlogPost::factory()->draft()->create(['title' => 'A draft']);
 
         DB::table('site_visits')->insert([
             ['day' => '2025-11-03', 'section' => 'home', 'views' => 100],
@@ -105,10 +102,9 @@ class ReportsAndDashboardTest extends TestCase
         $this->assertArrayNotHasKey('2026-04', $summary['visits']['monthly']);
 
         $this->assertSame(3, $summary['announcements']['total']);
-        $this->assertSame(['ข่าวประชาสัมพันธ์' => 1, 'จัดซื้อจัดจ้าง/ประกวดราคา' => 2, 'รับสมัครงาน' => 0], $summary['announcements']['types']);
+        $this->assertSame(['ข่าวประชาสัมพันธ์' => 1, 'จัดซื้อจัดจ้าง/ประกวดราคา' => 2, 'รับสมัครงาน' => 0, 'ความรู้สุขภาพ' => 0, 'ข่าวกิจกรรม' => 0], $summary['announcements']['types']);
         $this->assertSame(['Flu vaccine week', 'Winning bid, November', 'Winning bid, February'], $summary['announcements']['top']->pluck('title')->all());
 
-        $this->assertSame(1, $summary['articles']['total']);
         $this->assertSame(['year' => 2569, 'items' => 3, 'with_evidence' => 1, 'percent' => 33, 'missing' => ['MOIT 2', 'MOIT 3']], $summary['ita']);
     }
 
@@ -219,7 +215,6 @@ class ReportsAndDashboardTest extends TestCase
         SiteSettings::save(['alert.enabled' => true, 'alert.text' => 'Dental clinic closed today']);
 
         Livewire::test(NeedsAttention::class)
-            ->assertSee('1 article is still a draft')
             ->assertSee('1 announcement ends within a week')
             ->assertSee('1 announcement is waiting for its date')
             ->assertSee('2 ITA items of this year have no documents yet')

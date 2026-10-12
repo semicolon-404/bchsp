@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Models\Announcement;
-use App\Models\BlogPost;
 use App\Models\Department;
 use App\Models\SitePage;
 use Illuminate\Http\Request;
@@ -11,7 +10,7 @@ use Illuminate\View\View;
 
 /**
  * /search: looks for the words a visitor typed in the announcements, the
- * articles, the pages and the departments that are out.
+ * the pages and the departments that are out.
  *
  * A plain "contains" match. Thai is written without spaces, which the
  * database's full-text index cannot split into words; "contains" finds a Thai
@@ -40,8 +39,6 @@ class SearchController extends Controller
             $results = array_filter([
                 'Announcements' => $in(Announcement::published(), ['title', 'title_en', 'body'])->inListOrder()->limit(self::PER_KIND)->get()
                     ->map(fn (Announcement $one) => ['title' => $one->localTitle(), 'url' => route('announcements.show', $one), 'note' => $one->shownOn()])->all(),
-                'Articles' => $in(BlogPost::published(), ['title', 'title_en', 'excerpt', 'body'])->latest('published_at')->limit(self::PER_KIND)->get()
-                    ->map(fn (BlogPost $one) => ['title' => $one->localTitle(), 'url' => route('blog.show', $one), 'note' => $one->publishedOn()])->all(),
                 'Pages' => $in(SitePage::published(), ['title', 'title_en', 'body'])->orderBy('position')->limit(self::PER_KIND)->get()
                     ->map(fn (SitePage $one) => ['title' => $one->localTitle(), 'url' => route('pages.show', $one), 'note' => null])->all(),
                 'Departments' => $in(Department::query()->where('is_active', true), ['name', 'name_en', 'description'])->orderBy('sort_order')->limit(self::PER_KIND)->get()

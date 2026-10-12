@@ -5,9 +5,6 @@ namespace App\Support;
 use App\Models\AccessLog;
 use App\Models\Announcement;
 use App\Models\AnnouncementType;
-use App\Models\Banner;
-use App\Models\BlogCategory;
-use App\Models\BlogPost;
 use App\Models\Department;
 use App\Models\Document;
 use App\Models\ItaItem;
@@ -69,9 +66,8 @@ class DemoData
         mt_srand(2569);
 
         try {
-            $this->slidesAndPosters();
             $this->announcements();
-            $this->articles();
+            $this->postersAndArticles();
             $this->ita();
             $this->documents();
             $this->visits();
@@ -96,6 +92,11 @@ class DemoData
         $removed = 0;
 
         foreach ($made['models'] as $class => $ids) {
+            // Made by an older version, of a kind the site no longer has: nothing of it is left to take out.
+            if (! class_exists($class)) {
+                continue;
+            }
+
             // One at a time, through the model: that is what removes its pictures and files with it.
             foreach ($class::whereIn('id', $ids)->get() as $record) {
                 $record->delete();
@@ -113,27 +114,6 @@ class DemoData
         File::delete(self::manifest());
 
         return $removed;
-    }
-
-    private function slidesAndPosters(): void
-    {
-        foreach ([
-            ['สไลด์แนวนอน: รณรงค์ฉีดวัคซีนไข้หวัดใหญ่', 1600, 600, 'banner', [21, 128, 61], false],
-            ['สไลด์แนวนอน: ตารางคลินิกพิเศษประจำเดือน', 1600, 600, 'banner', [29, 78, 216], false],
-            ['สไลด์แนวตั้ง: ประกาศ one page งดบริการทันตกรรม', 1240, 1754, 'banner', [180, 83, 9], false],
-            ['โปสเตอร์แนวตั้ง: 10 เคล็ดลับเลิกบุหรี่', 1240, 1754, 'poster', [109, 40, 217], true],
-            ['โปสเตอร์แนวนอน: ป้องกันโรคพิษสุนัขบ้า', 1754, 1240, 'poster', [190, 24, 93], false],
-            ['โปสเตอร์แนวตั้ง: ล้างมือ 7 ขั้นตอน', 1240, 1754, 'poster', [13, 148, 136], false],
-            ['โปสเตอร์จัตุรัส: บริจาคโลหิต', 1400, 1400, 'poster', [185, 28, 28], false],
-        ] as $order => [$title, $width, $height, $placement, $colour, $popup]) {
-            $this->keep(Banner::create([
-                'title' => self::MARK.' '.$title,
-                'image_path' => $this->picture('banners', $title, $width, $height, $colour),
-                'placement' => $placement,
-                'is_popup' => $popup,
-                'position' => 900 + $order,
-            ]));
-        }
     }
 
     private function announcements(): void
@@ -212,7 +192,7 @@ class DemoData
     }
 
     /**
-     * The units whose boards get sample news and articles: the first few, so that each board has enough to look at.
+     * The units whose boards get sample news: the first few, so that each board has enough to look at.
      *
      * @return list<int>
      */
@@ -221,37 +201,56 @@ class DemoData
         return Department::shown()->limit(3)->pluck('id')->all();
     }
 
-    private function articles(): void
+    /** Posters with nothing but a picture, upright, wide and square; and what articles were: knowledge, and activities with albums. */
+    private function postersAndArticles(): void
     {
-        $knowledge = BlogCategory::firstOrCreate(['name' => 'ความรู้สุขภาพ'], ['name_en' => 'Health knowledge', 'sort_order' => 1]);
-        $activity = BlogCategory::firstOrCreate(['name' => 'ข่าวกิจกรรม'], ['name_en' => 'Activities', 'sort_order' => 2]);
+        $types = AnnouncementType::pluck('id', 'slug');
         $boards = $this->boards();
+        $make = function (array $attributes) {
+            $record = new Announcement($attributes + ['author_id' => User::value('id')]);
+            $record->views = mt_rand(10, 600);
+            $record->title = self::MARK.' '.$record->title;
+            $record->save();
+            $this->keep($record);
+        };
 
         foreach ([
-            ['กิจกรรมรับบริจาคโลหิตประจำไตรมาส', $activity, 6, 3, false],
-            ['อบรมฟื้นฟูการช่วยชีวิตขั้นพื้นฐานสำหรับบุคลากร', $activity, 9, 12, false],
-            ['ออกหน่วยแพทย์เคลื่อนที่ ตำบลบัวเชด', $activity, 4, 25, false],
-            ['กิจกรรมวันพยาบาลแห่งชาติ', $activity, 0, 40, false],
-            ['ล้างมือ 7 ขั้นตอน ป้องกันโรคติดต่อ', $knowledge, 0, 8, false],
-            ['ไข้เลือดออก: อาการที่ต้องรีบมาโรงพยาบาล', $knowledge, 0, 20, false],
-            ['การดูแลเท้าสำหรับผู้ป่วยเบาหวาน', $knowledge, 0, 55, false],
-            ['บทความที่ยังเป็นฉบับร่าง', $knowledge, 0, 0, true],
-        ] as $index => [$title, $category, $photos, $daysAgo, $draft]) {
-            $post = new BlogPost([
-                'author_id' => User::value('id'),
-                'blog_category_id' => $category->id,
-                'department_id' => $boards ? $boards[$index % count($boards)] : null,
-                'title' => self::MARK.' '.$title,
-                'excerpt' => 'ข้อความสรุปตัวอย่างหนึ่งถึงสองประโยค ใช้สำหรับดูการจัดวางการ์ดบทความ',
-                'body' => '<h2>หัวข้อย่อยตัวอย่าง</h2><p>เนื้อหาตัวอย่างของบทความ ใช้สำหรับดูการจัดวางตัวอักษร ระยะบรรทัด และรูปภาพในหน้าอ่านบทความ เนื้อหาจริงจะเขียนโดยเจ้าหน้าที่ของโรงพยาบาล</p><ul><li>ประเด็นที่หนึ่ง</li><li>ประเด็นที่สอง</li><li>ประเด็นที่สาม</li></ul><blockquote>ข้อความเน้นตัวอย่าง</blockquote><p>ย่อหน้าปิดท้ายตัวอย่าง</p>',
-                'cover_path' => $this->picture('blog/covers', $title, 1600, 900, [[21, 128, 61], [29, 78, 216], [109, 40, 217], [180, 83, 9]][$index % 4]),
-                'gallery' => $photos ? array_map(fn (int $n) => $this->picture('blog/albums', "ภาพกิจกรรม $n", $n % 3 ? 1600 : 1200, $n % 3 ? 1200 : 1600, [mt_rand(20, 160), mt_rand(60, 160), mt_rand(60, 200)]), range(1, $photos)) : null,
-                'status' => $draft ? BlogPost::STATUS_DRAFT : BlogPost::STATUS_PUBLISHED,
-                'published_at' => $draft ? null : now()->subDays($daysAgo)->setTime(10, 0),
+            ['สไลด์แนวนอน: รณรงค์ฉีดวัคซีนไข้หวัดใหญ่', 1600, 600, true, [21, 128, 61], false],
+            ['สไลด์แนวนอน: ตารางคลินิกพิเศษประจำเดือน', 1600, 600, true, [29, 78, 216], false],
+            ['สไลด์แนวตั้ง: ประกาศ one page งดบริการทันตกรรม', 1240, 1754, true, [180, 83, 9], false],
+            ['โปสเตอร์แนวตั้ง: 10 เคล็ดลับเลิกบุหรี่', 1240, 1754, false, [109, 40, 217], true],
+            ['โปสเตอร์แนวนอน: ป้องกันโรคพิษสุนัขบ้า', 1754, 1240, false, [190, 24, 93], false],
+            ['โปสเตอร์แนวตั้ง: ล้างมือ 7 ขั้นตอน', 1240, 1754, false, [13, 148, 136], false],
+            ['โปสเตอร์จัตุรัส: บริจาคโลหิต', 1400, 1400, false, [185, 28, 28], false],
+        ] as $order => [$title, $width, $height, $slide, $colour, $popup]) {
+            $make([
+                'announcement_type_id' => $types[$slide ? 'news' : 'knowledge'] ?? null,
+                'title' => $title,
+                'image_path' => $this->picture('announcements/pictures', $title, $width, $height, $colour),
+                'in_slider' => $slide,
+                'is_popup' => $popup,
+                'starts_at' => now()->subDays(10 + $order)->setTime(9, 0),
             ]);
-            $post->views = $draft ? 0 : mt_rand(10, 600);
-            $post->save();
-            $this->keep($post);
+        }
+
+        foreach ([
+            ['กิจกรรมรับบริจาคโลหิตประจำไตรมาส', 'activities', 6, 3],
+            ['อบรมฟื้นฟูการช่วยชีวิตขั้นพื้นฐานสำหรับบุคลากร', 'activities', 9, 12],
+            ['ออกหน่วยแพทย์เคลื่อนที่ ตำบลบัวเชด', 'activities', 4, 25],
+            ['กิจกรรมวันพยาบาลแห่งชาติ', 'activities', 0, 40],
+            ['ล้างมือ 7 ขั้นตอน ป้องกันโรคติดต่อ', 'knowledge', 0, 8],
+            ['ไข้เลือดออก: อาการที่ต้องรีบมาโรงพยาบาล', 'knowledge', 0, 20],
+            ['การดูแลเท้าสำหรับผู้ป่วยเบาหวาน', 'knowledge', 0, 55],
+        ] as $index => [$title, $type, $photos, $daysAgo]) {
+            $make([
+                'announcement_type_id' => $types[$type] ?? null,
+                'department_id' => $boards ? $boards[$index % count($boards)] : null,
+                'title' => $title,
+                'body' => '<h2>หัวข้อย่อยตัวอย่าง</h2><p>เนื้อหาตัวอย่างของบทความ ใช้สำหรับดูการจัดวางตัวอักษร ระยะบรรทัด และรูปภาพในหน้าอ่าน เนื้อหาจริงจะเขียนโดยเจ้าหน้าที่ของโรงพยาบาล</p><ul><li>ประเด็นที่หนึ่ง</li><li>ประเด็นที่สอง</li><li>ประเด็นที่สาม</li></ul><blockquote>ข้อความเน้นตัวอย่าง</blockquote><p>ย่อหน้าปิดท้ายตัวอย่าง</p>',
+                'image_path' => $this->picture('announcements/pictures', $title, 1600, 900, [[21, 128, 61], [29, 78, 216], [109, 40, 217], [180, 83, 9]][$index % 4]),
+                'gallery' => $photos ? array_map(fn (int $n) => $this->picture('announcements/albums', "ภาพกิจกรรม $n", $n % 3 ? 1600 : 1200, $n % 3 ? 1200 : 1600, [mt_rand(20, 160), mt_rand(60, 160), mt_rand(60, 200)]), range(1, $photos)) : null,
+                'starts_at' => now()->subDays($daysAgo)->setTime(10, 0),
+            ]);
         }
     }
 
@@ -300,7 +299,7 @@ class DemoData
     private function visits(): void
     {
         // More on weekdays, growing slowly, most of it on the home page and the announcements: as a real site's would be.
-        $shares = ['home' => 30, 'news' => 22, 'procurement' => 16, 'ita' => 6, 'articles' => 8, 'schedule' => 7, 'departments' => 2, 'pages' => 3, 'contact' => 4, 'downloads' => 1, 'search' => 1];
+        $shares = ['home' => 30, 'news' => 30, 'procurement' => 16, 'ita' => 6, 'schedule' => 7, 'departments' => 2, 'pages' => 3, 'contact' => 4, 'downloads' => 1, 'search' => 1];
 
         for ($back = 120; $back >= 1; $back--) {
             $day = now()->subDays($back);

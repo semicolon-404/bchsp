@@ -28,7 +28,6 @@ class DepartmentController extends Controller
             'department' => $department,
             'posters' => $announcements->filter(fn ($announcement) => $announcement->image_path)->take(self::ON_BOARD),
             'notices' => $announcements->reject(fn ($announcement) => $announcement->image_path)->take(self::ON_BOARD),
-            'posts' => $department->posts()->published()->with('category')->latest('published_at')->limit(6)->get(),
         ]);
     }
 }

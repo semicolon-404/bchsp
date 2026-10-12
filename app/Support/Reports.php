@@ -5,7 +5,6 @@ namespace App\Support;
 use App\Models\AccessLog;
 use App\Models\Announcement;
 use App\Models\AnnouncementType;
-use App\Models\BlogPost;
 use App\Models\ItaItem;
 use App\Models\User;
 use Illuminate\Support\Carbon;
@@ -62,7 +61,6 @@ class Reports
     public static function summary(Carbon $from, Carbon $until): array
     {
         $announcements = Announcement::query()->whereBetween('starts_at', [$from, $until])->where('starts_at', '<=', now());
-        $articles = BlogPost::published()->whereBetween('published_at', [$from, $until]);
         $types = AnnouncementType::orderBy('sort_order')->get();
 
         return [
@@ -79,10 +77,6 @@ class Reports
                 'types' => $types->mapWithKeys(fn (AnnouncementType $type) => [$type->name => (clone $announcements)->where('announcement_type_id', $type->id)->count()])->all(),
                 'monthly' => self::perMonth((clone $announcements)->pluck('starts_at'), $from, $until),
                 'top' => (clone $announcements)->with('type')->where('views', '>', 0)->orderByDesc('views')->limit(10)->get(),
-            ],
-            'articles' => [
-                'total' => (clone $articles)->count(),
-                'top' => (clone $articles)->where('views', '>', 0)->orderByDesc('views')->limit(10)->get(),
             ],
             'ita' => self::ita(Announcement::fiscalYearOf($until->copy()->min(now()))),
             'staff' => self::staff($from, $until),
@@ -166,15 +160,9 @@ class Reports
         }
         $rows[] = [];
 
-        $rows[] = [__('Articles published'), $summary['articles']['total']];
-        $rows[] = [];
-
         $rows[] = [__('Most read'), __('Type'), __('Times opened')];
         foreach ($summary['announcements']['top'] as $one) {
             $rows[] = [$one->title, (string) $one->type?->name, (int) $one->views];
-        }
-        foreach ($summary['articles']['top'] as $one) {
-            $rows[] = [$one->title, __('Article'), (int) $one->views];
         }
         $rows[] = [];
 

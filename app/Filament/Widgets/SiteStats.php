@@ -3,7 +3,6 @@
 namespace App\Filament\Widgets;
 
 use App\Models\Announcement;
-use App\Models\BlogPost;
 use App\Support\Visits;
 use Filament\Widgets\StatsOverviewWidget;
 use Filament\Widgets\StatsOverviewWidget\Stat;
@@ -32,8 +31,8 @@ class SiteStats extends StatsOverviewWidget
                 ->description(__('Last month: :count', ['count' => number_format($lastMonth)])),
             Stat::make(__('Announcements this month'), number_format(Announcement::published()->where('starts_at', '>=', now()->startOfMonth())->count()))
                 ->description(__('In all: :count', ['count' => number_format(Announcement::published()->count())])),
-            Stat::make(__('Articles this month'), number_format(BlogPost::published()->where('published_at', '>=', now()->startOfMonth())->count()))
-                ->description(__('In all: :count', ['count' => number_format(BlogPost::published()->count())])),
+            Stat::make(__('Showing now'), number_format(Announcement::current()->count()))
+                ->description(__('On the slides: :count', ['count' => number_format(Announcement::slides()->count())])),
         ];
     }
 }

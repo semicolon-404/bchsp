@@ -31,8 +31,8 @@ use Filament\Tables\Table;
 use UnitEnum;
 
 /**
- * What the hospital tells the public: notices, procurement results, job
- * openings. Each has a type, may carry PDF files, can be pinned to the top,
+ * What the hospital tells the public, and the one place staff post it: notices,
+ * procurement results, job openings, posters, health knowledge, activities. Each has a type, may carry PDF files, can be pinned to the top,
  * and shows between two dates, so one can be prepared ahead and takes itself
  * down afterwards.
  */
@@ -46,7 +46,7 @@ class AnnouncementResource extends Resource
 
     protected static string|UnitEnum|null $navigationGroup = 'Announcements';
 
-    protected static ?string $navigationLabel = 'Announcements';
+    protected static ?string $navigationLabel = 'Post an announcement or poster';
 
     protected static ?string $modelLabel = 'announcement';
 
@@ -87,6 +87,23 @@ class AnnouncementResource extends Resource
                         Toggle::make('in_slider')
                             ->label(__('Also show this picture among the slides of the home page'))
                             ->helperText(__('It leads to this announcement, and leaves the slides when the announcement ends. A wide picture suits the slides best.')),
+                        Toggle::make('is_popup')
+                            ->label(__('Open this picture over the page when the site is first opened'))
+                            ->helperText(__('One at a time: when several are marked, the pinned or newest one opens. A visitor who closes it is not shown it again.')),
+                        OptimizedUpload::on(FileUpload::make('gallery'))
+                            ->label(__('Album of photographs (optional)'))
+                            ->image()
+                            ->multiple()
+                            ->maxFiles(Announcement::MAX_PHOTOS)
+                            // No SVG: it can carry a script.
+                            ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp'])
+                            ->disk('public')
+                            ->directory('announcements/albums')
+                            ->visibility('public')
+                            ->maxSize(8192)
+                            ->reorderable()
+                            ->panelLayout('grid')
+                            ->helperText(__('The photographs of an activity, shown as an album under the text. Up to :count, 8 MB each; they are made smaller by themselves. Do not use one in which a patient can be recognised.', ['count' => Announcement::MAX_PHOTOS])),
                         FileUpload::make('attachments')
                             ->label(__('PDF files'))
                             ->multiple()

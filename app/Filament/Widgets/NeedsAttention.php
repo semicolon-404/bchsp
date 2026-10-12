@@ -4,10 +4,8 @@ namespace App\Filament\Widgets;
 
 use App\Filament\Pages\SystemStatus;
 use App\Filament\Resources\Announcements\AnnouncementResource;
-use App\Filament\Resources\BlogPosts\BlogPostResource;
 use App\Filament\Resources\ItaItems\ItaItemResource;
 use App\Models\Announcement;
-use App\Models\BlogPost;
 use App\Support\Reports;
 use App\Support\SiteSettings;
 use App\Support\SystemHealth;
@@ -37,7 +35,6 @@ class NeedsAttention extends Widget
             }
         };
 
-        $add(BlogPost::where('status', BlogPost::STATUS_DRAFT)->count(), '{1} :count article is still a draft|[2,*] :count articles are still drafts', BlogPostResource::getUrl('index'));
         $add(Announcement::current()->whereNotNull('ends_at')->where('ends_at', '<=', now()->addDays(7))->count(), '{1} :count announcement ends within a week|[2,*] :count announcements end within a week', AnnouncementResource::getUrl('index'), 'info');
         $add(Announcement::where('starts_at', '>', now())->count(), '{1} :count announcement is waiting for its date|[2,*] :count announcements are waiting for their dates', AnnouncementResource::getUrl('index'), 'info');
 
