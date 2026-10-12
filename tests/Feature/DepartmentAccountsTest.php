@@ -115,11 +115,13 @@ class DepartmentAccountsTest extends TestCase
             ->assertCanNotSeeTableRecords([$this->pharmacy])
             ->assertActionHidden('create')
             ->assertActionHidden(TestAction::make(DeleteAction::class)->table($this->dental))
-            ->callAction(TestAction::make(EditAction::class)->table($this->dental), ['description' => 'Fillings and extractions.', 'phone' => '044-579076 ต่อ 120'])
+            ->callAction(TestAction::make(EditAction::class)->table($this->dental), ['description' => 'Fillings and extractions.', 'phone' => '044-579076 ต่อ 120', 'headline' => 'Care for teeth and gums', 'facebook_url' => 'https://www.facebook.com/dental'])
             ->assertHasNoFormErrors();
 
         $this->assertSame('Fillings and extractions.', $this->dental->fresh()->description);
         $this->assertSame('044-579076 ต่อ 120', $this->dental->fresh()->phone);
+        $this->assertSame('Care for teeth and gums', $this->dental->fresh()->headline);
+        $this->assertSame(['Facebook' => 'https://www.facebook.com/dental'], $this->dental->fresh()->links());
         // Its name and whether it is shown stay the administrator's.
         $this->assertSame('Dental', $this->dental->fresh()->name);
         $this->assertTrue($this->dental->fresh()->is_active);

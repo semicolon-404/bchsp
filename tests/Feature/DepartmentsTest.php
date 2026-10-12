@@ -7,6 +7,7 @@ use App\Filament\Resources\Departments\Pages\ManageDepartments;
 use App\Http\Middleware\SetLocale;
 use App\Models\Announcement;
 use App\Models\AnnouncementType;
+use App\Models\ClinicSession;
 use App\Models\Department;
 use App\Models\User;
 use App\Support\SiteSettings;
@@ -15,6 +16,7 @@ use Filament\Actions\EditAction;
 use Filament\Actions\Testing\TestAction;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Livewire;
 use Tests\TestCase;
@@ -69,13 +71,13 @@ class DepartmentsTest extends TestCase
         $this->actingAs(User::factory()->admin()->create())->get(route('departments.show', $department))->assertOk();
     }
 
-    public function test_a_department_has_a_board_of_what_it_put_out_itself(): void
+    public function test_a_departments_page_shows_what_it_posted_itself_newest_first(): void
     {
         $dental = Department::factory()->create(['name' => 'Dental']);
         $pharmacy = Department::factory()->create(['name' => 'Pharmacy']);
 
-        Announcement::factory()->create(['title' => 'Brush twice a day', 'department_id' => $dental->id, 'image_path' => 'announcements/brush.webp']);
-        Announcement::factory()->create(['title' => 'Dental clinic closed on Friday', 'department_id' => $dental->id]);
+        Announcement::factory()->create(['title' => 'Brush twice a day', 'department_id' => $dental->id, 'image_path' => 'announcements/brush.webp', 'body' => '<p>Morning and <strong>night</strong>.</p>']);
+        Announcement::factory()->create(['title' => 'Dental clinic closed on Friday', 'department_id' => $dental->id, 'starts_at' => now()->subDays(3)]);
         Announcement::factory()->create(['title' => 'Old dental notice', 'department_id' => $dental->id, 'ends_at' => now()->subHour()]);
         Announcement::factory()->scheduled()->create(['title' => 'Dental notice for next week', 'department_id' => $dental->id]);
         Announcement::factory()->create(['title' => 'Medicine by post', 'department_id' => $pharmacy->id]);
@@ -83,8 +85,10 @@ class DepartmentsTest extends TestCase
 
         $this->get(route('departments.show', $dental))
             ->assertOk()
-            ->assertSeeInOrder(['Posters and announcements', 'Brush twice a day', 'Dental clinic closed on Friday'])
+            ->assertSeeInOrder(['Posts', 'Brush twice a day', 'Morning and night.', 'Dental clinic closed on Friday'])
             ->assertSee('announcements/brush.webp')
+            // How many it has put out in all, the ended one too.
+            ->assertSeeInOrder(['3</span> posts'], false)
             ->assertDontSee('Old dental notice')
             ->assertDontSee('Dental notice for next week')
             ->assertDontSee('Medicine by post')
@@ -123,11 +127,136 @@ class DepartmentsTest extends TestCase
         $this->get('/announcements?department[]=1')->assertOk()->assertSee('4 announcements');
     }
 
-    public function test_a_department_that_put_out_nothing_has_no_board(): void
+    public function test_a_department_that_posted_nothing_says_so(): void
     {
         $this->get(route('departments.show', Department::factory()->create()))
             ->assertOk()
-            ->assertDontSee('Posters and announcements');
+            ->assertSee('This department has not posted anything yet.')
+            ->assertDontSee('See all');
+    }
+
+    public function test_a_department_has_a_profile_a_cover_a_round_picture_a_line_and_where_else_it_is_found(): void
+    {
+        $dental = Department::factory()->create([
+            'name' => 'กลุ่มงานทันตกรรม', 'headline' => 'Care for teeth and gums', 'phone' => '044-579076 ต่อ 120',
+            'image_path' => 'departments/cover.webp', 'avatar_path' => 'departments/avatars/tooth.webp',
+            'facebook_url' => 'https://www.facebook.com/dental', 'line_url' => 'javascript:alert(1)',
+        ]);
+        $plain = Department::factory()->create(['name' => 'งานเวชระเบียน']);
+
+        $this->get(route('departments.show', $dental))
+            ->assertOk()
+            ->assertSeeInOrder(['departments/cover.webp', 'departments/avatars/tooth.webp', '<h1', 'กลุ่มงานทันตกรรม', 'Care for teeth and gums', 'href="tel:044579076"', 'href="https://www.facebook.com/dental"'], false)
+            // What is not a web address over HTTPS is never a link.
+            ->assertDontSee('javascript:alert', false)
+            ->assertDontSee('LINE');
+
+        // Without pictures: a band of colour, and the first letter of its name past "งาน".
+        $this->assertSame('ท', $dental->initial());
+        $this->assertSame('ว', $plain->initial());
+        $this->get(route('departments.show', $plain))->assertOk()->assertSee('>ว</span>', false)->assertDontSee('<img', false);
+
+        // And in the list of departments.
+        $this->get('/departments')->assertSee('departments/avatars/tooth.webp', false)->assertSee('Care for teeth and gums');
+    }
+
+    public function test_a_profile_lists_its_services_its_people_and_when_it_is_open(): void
+    {
+        // A Tuesday morning.
+        $this->travelTo(Carbon::parse('2026-11-10 09:30', config('app.timezone')));
+
+        $dental = Department::factory()->create([
+            'name' => 'Dental', 'email' => 'dental@example.org', 'services' => "Fillings\n\n  Scaling  \nDentures",
+            'people' => [
+                ['name' => 'Dr Somchai', 'position' => 'Dentist', 'photo' => 'departments/people/somchai.webp'],
+                ['name' => 'Malee', 'position' => null, 'photo' => null],
+                ['name' => '  ', 'position' => 'Nobody'],
+                'nonsense',
+            ],
+        ]);
+        ClinicSession::factory()->create(['name' => 'Dental clinic', 'department_id' => $dental->id, 'days' => [1, 2, 3], 'starts_at' => '08:00', 'ends_at' => '12:00']);
+        ClinicSession::factory()->create(['name' => 'Afternoon dentures', 'department_id' => $dental->id, 'days' => [0, 1, 2, 3, 4, 5, 6], 'starts_at' => '13:00', 'ends_at' => '16:00']);
+        ClinicSession::factory()->create(['name' => 'Clinic of another']);
+
+        $this->assertSame(['Fillings', 'Scaling', 'Dentures'], $dental->serviceList());
+        $this->assertSame(['Dr Somchai', 'Malee'], array_column($dental->staff(), 'name'));
+
+        $this->get(route('departments.show', $dental))
+            ->assertOk()
+            ->assertSeeInOrder(['Open now', '2</span> people', 'href="mailto:dental@example.org"', 'Services', 'Fillings', 'Scaling', 'Dentures', 'When it is open', 'Dental clinic', 'Mon Tue Wed', '08.00–12.00', 'Afternoon dentures', 'Every day'], false)
+            ->assertDontSee('Clinic of another')
+            // Who works there is on a tab of its own.
+            ->assertDontSee('Dr Somchai');
+
+        $this->get(route('departments.show', ['department' => $dental, 'tab' => 'people']))
+            ->assertOk()
+            ->assertSeeInOrder(['Our people', 'departments/people/somchai.webp', 'Dr Somchai', 'Dentist', 'Malee'], false)
+            ->assertDontSee('Nobody');
+
+        // In the evening it says so.
+        $this->travelTo(Carbon::parse('2026-11-10 19:00', config('app.timezone')));
+        $this->get(route('departments.show', $dental))->assertSee('Closed now')->assertDontSee('Open now');
+
+        // One with no people has no such tab, and one with no schedule does not say whether it is open.
+        $plain = Department::factory()->create();
+        $this->get(route('departments.show', ['department' => $plain, 'tab' => 'people']))->assertOk()->assertDontSee('Our people')->assertDontSee('Closed now');
+    }
+
+    public function test_the_photograph_of_someone_taken_off_the_list_is_removed(): void
+    {
+        Storage::fake('public');
+        Storage::disk('public')->put('departments/people/a.webp', 'x');
+        Storage::disk('public')->put('departments/people/b.webp', 'x');
+
+        $department = Department::factory()->create(['people' => [['name' => 'A', 'photo' => 'departments/people/a.webp'], ['name' => 'B', 'photo' => 'departments/people/b.webp']]]);
+
+        $department->update(['people' => [['name' => 'B', 'photo' => 'departments/people/b.webp']]]);
+        Storage::disk('public')->assertMissing('departments/people/a.webp');
+        Storage::disk('public')->assertExists('departments/people/b.webp');
+
+        $department->delete();
+        Storage::disk('public')->assertMissing('departments/people/b.webp');
+    }
+
+    public function test_every_picture_a_department_posted_is_gathered_on_one_tab(): void
+    {
+        $dental = Department::factory()->create(['name' => 'Dental']);
+        $day = Announcement::factory()->create(['title' => 'Dental health day', 'department_id' => $dental->id, 'image_path' => 'announcements/pictures/day.webp', 'gallery' => ['announcements/albums/a.webp', 'announcements/albums/b.webp']]);
+        Announcement::factory()->create(['title' => 'Words only', 'department_id' => $dental->id]);
+        Announcement::factory()->create(['title' => 'Of another', 'image_path' => 'announcements/pictures/other.webp']);
+        Announcement::factory()->scheduled()->create(['department_id' => $dental->id, 'image_path' => 'announcements/pictures/later.webp']);
+
+        $this->assertCount(3, $dental->photos());
+
+        $this->get(route('departments.show', $dental))->assertSeeInOrder(['3</span> photographs'], false)->assertDontSee('albums/a.webp', false);
+
+        $this->get(route('departments.show', ['department' => $dental, 'tab' => 'photos']))
+            ->assertOk()
+            ->assertSeeInOrder(['pictures/day.webp', 'albums/a.webp', 'albums/b.webp'], false)
+            ->assertSee('href="'.route('announcements.show', $day).'"', false)
+            ->assertDontSee('other.webp', false)
+            ->assertDontSee('later.webp', false)
+            ->assertDontSee('Words only');
+
+        $this->get(route('departments.show', ['department' => $dental, 'tab' => 'nonsense']))->assertOk()->assertSee('Words only');
+        $this->get(route('departments.show', $dental).'?tab[]=1')->assertOk();
+    }
+
+    public function test_the_departments_pictures_go_when_they_are_replaced_and_when_it_does(): void
+    {
+        Storage::fake('public');
+        Storage::disk('public')->put('departments/avatars/old.webp', 'x');
+        Storage::disk('public')->put('departments/avatars/new.webp', 'x');
+        Storage::disk('public')->put('departments/cover.webp', 'x');
+
+        $department = Department::factory()->create(['avatar_path' => 'departments/avatars/old.webp', 'image_path' => 'departments/cover.webp']);
+
+        $department->update(['avatar_path' => 'departments/avatars/new.webp']);
+        Storage::disk('public')->assertMissing('departments/avatars/old.webp');
+
+        $department->delete();
+        Storage::disk('public')->assertMissing('departments/avatars/new.webp');
+        Storage::disk('public')->assertMissing('departments/cover.webp');
     }
 
     public function test_an_announcement_leads_back_to_its_department(): void

@@ -40,7 +40,7 @@ class DemoData
     ];
 
     /** @var array{models: array<class-string, list<int>>, files: list<string>, visits: list<array{0: string, 1: string, 2: int}>} */
-    private array $made = ['models' => [], 'files' => [], 'visits' => []];
+    private array $made = ['models' => [], 'files' => [], 'visits' => [], 'profiles' => []];
 
     /** Where the list of what was made is kept, when not in the usual place. The tests keep their own: clearing the site's would leave its sample content with no way out. */
     public static ?string $manifestAt = null;
@@ -68,6 +68,7 @@ class DemoData
         try {
             $this->announcements();
             $this->postersAndArticles();
+            $this->profiles();
             $this->ita();
             $this->documents();
             $this->visits();
@@ -88,7 +89,7 @@ class DemoData
      */
     public static function clear(): int
     {
-        $made = json_decode((string) @file_get_contents(self::manifest()), true) ?: ['models' => [], 'files' => [], 'visits' => []];
+        $made = json_decode((string) @file_get_contents(self::manifest()), true) ?: ['models' => [], 'files' => [], 'visits' => [], 'profiles' => []];
         $removed = 0;
 
         foreach ($made['models'] as $class => $ids) {
@@ -102,6 +103,11 @@ class DemoData
                 $record->delete();
                 $removed++;
             }
+        }
+
+        // What was lent to a real department's profile is taken back; what it had of its own was never touched.
+        foreach ($made['profiles'] ?? [] as $id => $fields) {
+            Department::whereKey($id)->update(array_fill_keys($fields, null));
         }
 
         Storage::disk('public')->delete($made['files']);
@@ -189,6 +195,26 @@ class DemoData
         $make(['announcement_type_id' => $types['news'] ?? null, 'title' => 'ประกาศที่ใกล้สิ้นสุด: งดให้บริการทันตกรรมวันศุกร์นี้', 'starts_at' => now()->subDays(3), 'ends_at' => now()->addDays(2)]);
         $make(['announcement_type_id' => $types['news'] ?? null, 'title' => 'ประกาศที่ตั้งเวลาไว้: จะเผยแพร่สัปดาห์หน้า', 'starts_at' => now()->addDays(7)]);
         $make(['announcement_type_id' => $types['procurement'] ?? null, 'title' => 'ประกาศชื่อยาวมากเพื่อทดสอบการตัดบรรทัด: ประกาศผลผู้ชนะการจัดซื้อยาและวัสดุเภสัชกรรม เวชภัณฑ์มิใช่ยา วัสดุวิทยาศาสตร์การแพทย์ และวัสดุทันตกรรม ประจำไตรมาสที่ 1 ปีงบประมาณ 2570 ของโรงพยาบาลบัวเชด อำเภอบัวเชด จังหวัดสุรินทร์', 'starts_at' => now()->subDays(4)]);
+    }
+
+    /** A cover, a round picture, a line and a few words for the units that got sample posts: only where the unit has none of its own. */
+    private function profiles(): void
+    {
+        foreach (Department::whereKey($this->boards())->get() as $index => $department) {
+            $lent = array_filter([
+                'headline' => self::MARK.' ข้อความแนะนำหน่วยงานสั้น ๆ หนึ่งบรรทัด',
+                'description' => $department->description ? null : self::MARK." ข้อความตัวอย่างบอกว่าหน่วยงานนี้ทำอะไร ให้บริการใคร และติดต่อได้อย่างไร\nเจ้าหน้าที่ของหน่วยงานแก้ข้อความนี้ได้เองจากหลังบ้าน",
+                'facebook_url' => 'https://www.facebook.com/',
+                'services' => self::MARK." บริการตัวอย่างที่หนึ่ง\nบริการตัวอย่างที่สอง\nบริการตัวอย่างที่สาม\nให้คำปรึกษาทางโทรศัพท์ในเวลาราชการ",
+                'people' => array_map(fn (int $n) => ['name' => self::MARK." ชื่อ นามสกุล $n", 'position' => ['หัวหน้ากลุ่มงาน', 'พยาบาลวิชาชีพชำนาญการ', 'นักวิชาการสาธารณสุข', 'เจ้าพนักงานธุรการ'][$n - 1], 'photo' => $n <= 2 ? $this->picture('departments/people', "บุคลากร $n", 400, 400, [mt_rand(20, 160), mt_rand(60, 160), mt_rand(60, 200)]) : null], range(1, 4)),
+                'image_path' => $this->picture('departments', 'ภาพปกหน่วยงาน 3:1', 1800, 600, [[21, 128, 61], [29, 78, 216], [180, 83, 9]][$index % 3]),
+                'avatar_path' => $this->picture('departments/avatars', 'โลโก้', 400, 400, [[13, 148, 136], [109, 40, 217], [185, 28, 28]][$index % 3]),
+            ], fn ($value, string $field) => $value !== null && blank($department->getAttribute($field)), ARRAY_FILTER_USE_BOTH);
+
+            // Straight into the table: nothing of the department's own is replaced, so there is nothing for the model to tidy.
+            Department::whereKey($department->id)->update($lent);
+            $this->made['profiles'][$department->id] = array_keys($lent);
+        }
     }
 
     /**
