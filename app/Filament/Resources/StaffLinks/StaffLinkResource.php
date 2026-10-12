@@ -9,6 +9,7 @@ use App\Models\StaffLink;
 use BackedEnum;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\EditAction;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Resources\Resource;
@@ -20,8 +21,8 @@ use Filament\Tables\Table;
 use UnitEnum;
 
 /**
- * The links on the "For staff" page of the site: the services people who work
- * at the hospital open from there. Drag the rows to put them in order.
+ * Links to services that live elsewhere: for staff (the "For staff" page) and for
+ * the public ("Services online"). Drag the rows to put them in order.
  */
 class StaffLinkResource extends Resource
 {
@@ -33,7 +34,7 @@ class StaffLinkResource extends Resource
 
     protected static string|UnitEnum|null $navigationGroup = 'Hospital';
 
-    protected static ?string $navigationLabel = 'Services for staff';
+    protected static ?string $navigationLabel = 'Links to services';
 
     protected static ?string $modelLabel = 'service';
 
@@ -58,6 +59,13 @@ class StaffLinkResource extends Resource
                     ->url()
                     ->startsWith(['https://', 'http://'])
                     ->maxLength(500)
+                    ->columnSpanFull(),
+                Select::make('audience')
+                    ->label(__('Who it is for'))
+                    ->options(collect(StaffLink::AUDIENCES)->map(fn (string $label) => __($label))->all())
+                    ->default('staff')
+                    ->required()
+                    ->selectablePlaceholder(false)
                     ->columnSpanFull(),
                 TextInput::make('group')
                     ->label(__('Heading to list it under (optional)'))
@@ -84,6 +92,11 @@ class StaffLinkResource extends Resource
                     ->label(__('Name'))
                     ->searchable()
                     ->description(fn (StaffLink $record) => $record->url),
+                TextColumn::make('audience')
+                    ->label(__('Who it is for'))
+                    ->formatStateUsing(fn (string $state) => __($state === 'public' ? 'The public' : 'Staff'))
+                    ->badge()
+                    ->color(fn (string $state) => $state === 'public' ? 'success' : 'gray'),
                 TextColumn::make('group')
                     ->label(__('Heading'))
                     ->badge()

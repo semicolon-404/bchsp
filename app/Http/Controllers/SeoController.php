@@ -52,6 +52,9 @@ class SeoController extends Controller
             ['loc' => route('downloads'), 'priority' => '0.5'],
             ['loc' => route('updates'), 'priority' => '0.4'],
             ['loc' => route('phones'), 'priority' => '0.6'],
+            ['loc' => route('faq'), 'priority' => '0.7'],
+            ['loc' => route('services'), 'priority' => '0.7'],
+            ['loc' => route('calendar'), 'priority' => '0.6'],
         ]);
 
         foreach (ItaItem::years() as $index => $year) {

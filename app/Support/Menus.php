@@ -2,9 +2,12 @@
 
 namespace App\Support;
 
+use App\Models\Announcement;
 use App\Models\AnnouncementType;
+use App\Models\Faq;
 use App\Models\ItaItem;
 use App\Models\SitePage;
+use App\Models\StaffLink;
 use Illuminate\Support\Facades\Route;
 
 /**
@@ -112,6 +115,15 @@ class Menus
                 $children = SitePage::menuLinks('about')
                     ->map(fn (SitePage $page) => $link($page->localTitle(), route('pages.show', $page), $request->routeIs('pages.show') && $request->route('page')?->is($page)))
                     ->all();
+                // What patients look for, each listed once it has something in it.
+                if (StaffLink::forThePublic()->exists()) {
+                    $children[] = $link(__('Services online'), route('services'), $request->routeIs('services'));
+                }
+
+                if (Faq::shown()->exists()) {
+                    $children[] = $link(__('Questions people ask'), route('faq'), $request->routeIs('faq'));
+                }
+
                 $children[] = $link(__('Clinic schedule'), route('schedule'), $request->routeIs('schedule'));
                 $children[] = $link(__('Departments'), route('departments.index'), $request->routeIs('departments.*'));
                 $children[] = $link(__('Contact us'), route('contact'), $request->routeIs('contact'));
@@ -148,8 +160,13 @@ class Menus
                     ->map(fn (AnnouncementType $one) => $link($one->localName(), route('announcements.index', ['type' => $one->slug]), $type === $one->slug))
                     ->all();
                 // An administrator can leave these out of the list (Site settings > Menus).
+                // The calendar, once anything has been given a day.
+                if (Announcement::hasEvents()) {
+                    $children[] = $link(__('Calendar'), route('calendar'), $request->routeIs('calendar'));
+                }
+
                 if (! in_array('downloads', self::newsHidden(), true)) {
-                    $children[] = $link(__('Downloads'), route('downloads'), $request->routeIs('downloads'));
+                    $children[] = $link(__('Downloads'), route('downloads'), $request->routeIs('downloads', 'calendar'));
                 }
 
                 foreach (self::ownLinks('news') as $own) {

@@ -12,6 +12,7 @@ use BackedEnum;
 use Filament\Actions\Action;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\EditAction;
+use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Repeater;
@@ -204,6 +205,13 @@ class AnnouncementResource extends Resource
                             ->visible(fn () => self::forTheWholeHospital())
                             ->label(__('Pin to the top of the list'))
                             ->helperText(__('Stays above newer announcements until unpinned or ended.')),
+                        DatePicker::make('event_on')
+                            ->label(__('Day it happens (optional)'))
+                            ->helperText(__('For something with a day of its own: a mobile unit, a blood drive, a clinic closed. It is then on the calendar. Not the day the announcement is shown.')),
+                        DatePicker::make('event_until')
+                            ->label(__('Until (optional)'))
+                            ->afterOrEqual('event_on')
+                            ->helperText(__('Only when it runs over several days.')),
                         DateTimePicker::make('starts_at')
                             ->label(__('Show from'))
                             ->default(fn () => now())

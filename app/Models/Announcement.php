@@ -54,7 +54,7 @@ class Announcement extends Model
     protected $fillable = [
         'announcement_type_id', 'author_id', 'department_id', 'status', 'review_note', 'pinned_in_department',
         'title', 'title_en', 'slug', 'body', 'body_en',
-        'image_path', 'in_slider', 'is_popup', 'gallery', 'attachments', 'attachment_names', 'links', 'is_pinned', 'starts_at', 'ends_at',
+        'image_path', 'in_slider', 'is_popup', 'gallery', 'attachments', 'attachment_names', 'links', 'is_pinned', 'starts_at', 'ends_at', 'event_on', 'event_until',
     ];
 
     protected $attributes = ['status' => self::STATUS_PUBLISHED, 'is_pinned' => false, 'pinned_in_department' => false, 'in_slider' => false, 'is_popup' => false];
@@ -72,6 +72,8 @@ class Announcement extends Model
             'gallery' => 'array',
             'starts_at' => 'datetime',
             'ends_at' => 'datetime',
+            'event_on' => 'date',
+            'event_until' => 'date',
         ];
     }
 
@@ -227,6 +229,27 @@ class Announcement extends Model
     public function isPublished(): bool
     {
         return $this->status === self::STATUS_PUBLISHED && (bool) $this->starts_at?->isPast();
+    }
+
+    /**
+     * What is on the calendar in a month, day by day: the announcements that were given the day of what they
+     * are about and are out. One that runs over several days is listed on the day it begins.
+     *
+     * @return \Illuminate\Support\Collection<string, Collection<int, Announcement>> [2026-11-03 => [...]]
+     */
+    public static function calendarOf(Carbon $month): \Illuminate\Support\Collection
+    {
+        return static::published()->with('type', 'department')
+            ->whereDate('event_on', '>=', $month->copy()->startOfMonth()->toDateString())
+            ->whereDate('event_on', '<=', $month->copy()->endOfMonth()->toDateString())
+            ->orderBy('event_on')->orderBy('id')->get()
+            ->groupBy(fn (Announcement $one) => $one->event_on->toDateString());
+    }
+
+    /** Whether anything at all is on the calendar: for the menu, which lists the calendar only then. */
+    public static function hasEvents(): bool
+    {
+        return static::published()->whereNotNull('event_on')->exists();
     }
 
     /** How many days one that has just come out is marked as new. */

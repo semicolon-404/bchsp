@@ -22,6 +22,17 @@
             · <a href="{{ route('announcements.index', array_filter(['type' => $announcement->type?->slug, 'year' => App\Models\Announcement::fiscalYearOf($announcement->starts_at ?? $announcement->created_at)])) }}" class="underline">{{ __('Fiscal year :year', ['year' => App\Models\Announcement::fiscalYearOf($announcement->starts_at ?? $announcement->created_at)]) }}</a>
         </p>
 
+        @if ($announcement->event_on)
+            {{-- The day of what it is about, which is not the day it was posted. --}}
+            <p class="mt-4 inline-flex flex-wrap items-center gap-2 rounded-lg border border-brand px-3 py-2">
+                <x-heroicon-m-calendar-days class="size-5 text-brand" aria-hidden="true" />
+                <span class="font-medium">{{ __('Takes place on') }}
+                    {{ $announcement->event_on->locale(app()->getLocale())->translatedFormat(app()->getLocale() === 'th' ? 'l j F ' : 'l j F Y') }}{{ app()->getLocale() === 'th' ? $announcement->event_on->year + 543 : '' }}@if ($announcement->event_until && ! $announcement->event_until->isSameDay($announcement->event_on)) – {{ $announcement->event_until->locale(app()->getLocale())->translatedFormat('j F') }}@endif
+                </span>
+                <a href="{{ route('calendar', ['month' => $announcement->event_on->format('Y-m')]) }}" class="text-sm text-brand underline">{{ __('Calendar') }}</a>
+            </p>
+        @endif
+
         @if ($announcement->isPublished())
             <x-site.share class="mt-4" :url="route('announcements.show', $announcement)" :title="$announcement->localTitle()" />
         @endif

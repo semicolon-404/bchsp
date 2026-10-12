@@ -127,7 +127,25 @@ class SitePagesTest extends TestCase
                 ->assertHasFormErrors(['slug']);
         }
 
-        $this->assertSame(1, SitePage::count());
+        $this->assertSame(0, SitePage::where('title', 'A page')->count());
+    }
+
+    public function test_a_new_site_has_outlines_for_the_hospital_to_write_and_shows_neither_until_it_does(): void
+    {
+        $guide = SitePage::where('slug', 'patient-guide')->firstOrFail();
+        $donate = SitePage::where('slug', 'donate')->firstOrFail();
+
+        $this->assertFalse($guide->is_published);
+        $this->assertFalse($donate->is_published);
+        // Headings saying what to write, and nothing made up under them.
+        $this->assertStringContainsString('<h2>เอกสารที่ต้องนำมา</h2>', $guide->body);
+        $this->assertStringContainsString('<h2>ช่องทางบริจาค</h2>', $donate->body);
+
+        $this->get('/p/patient-guide')->assertNotFound();
+        $this->get('/about')->assertDontSee('ขั้นตอนการรับบริการ');
+        $this->get('/sitemap.xml')->assertDontSee('patient-guide');
+
+        $this->actingAs(User::factory()->admin()->create())->get('/p/patient-guide')->assertOk()->assertSee('Not published yet');
     }
 
     public function test_an_administrator_takes_a_page_down(): void

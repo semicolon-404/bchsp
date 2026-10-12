@@ -86,6 +86,15 @@ class AnnouncementController extends Controller
         return view('announcements.show', ['announcement' => $announcement->load('type')]);
     }
 
+    /** /calendar: what happens in a month, day by day. ?month=2026-11; anything else is this month. */
+    public function calendar(Request $request): View
+    {
+        $asked = $request->query('month');
+        $month = is_string($asked) && preg_match('/^\d{4}-(0[1-9]|1[0-2])$/', $asked) ? Carbon::createFromFormat('Y-m-d', $asked.'-01')->startOfDay() : now()->startOfMonth();
+
+        return view('calendar', ['month' => $month, 'days' => Announcement::calendarOf($month)]);
+    }
+
     /**
      * The two dates a reader typed, as the first moment of one and the last of the other. Either may be left out;
      * typed the wrong way round they are swapped; anything that is not a date is nothing.
