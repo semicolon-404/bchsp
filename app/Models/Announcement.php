@@ -30,6 +30,15 @@ class Announcement extends Model
     /** @use HasFactory<AnnouncementFactory> */
     use HasFactory, InTwoLanguages;
 
+    /** Out for the public to read, once its first date has come. */
+    public const STATUS_PUBLISHED = 'published';
+
+    /** Still being written: only staff see it. */
+    public const STATUS_DRAFT = 'draft';
+
+    /** Written by the account of a department, and waiting for someone who posts for the whole hospital to approve it. */
+    public const STATUS_PENDING = 'pending';
+
     /** How many files one announcement can carry. */
     public const MAX_FILES = 10;
 
@@ -40,12 +49,12 @@ class Announcement extends Model
     public const SLIDES = 8;
 
     protected $fillable = [
-        'announcement_type_id', 'author_id', 'department_id',
+        'announcement_type_id', 'author_id', 'department_id', 'status', 'pinned_in_department',
         'title', 'title_en', 'slug', 'body', 'body_en',
         'image_path', 'in_slider', 'is_popup', 'gallery', 'attachments', 'attachment_names', 'links', 'is_pinned', 'starts_at', 'ends_at',
     ];
 
-    protected $attributes = ['is_pinned' => false, 'in_slider' => false, 'is_popup' => false];
+    protected $attributes = ['status' => self::STATUS_PUBLISHED, 'is_pinned' => false, 'pinned_in_department' => false, 'in_slider' => false, 'is_popup' => false];
 
     protected function casts(): array
     {
@@ -54,6 +63,7 @@ class Announcement extends Model
             'attachment_names' => 'array',
             'links' => 'array',
             'is_pinned' => 'boolean',
+            'pinned_in_department' => 'boolean',
             'in_slider' => 'boolean',
             'is_popup' => 'boolean',
             'gallery' => 'array',
@@ -67,6 +77,18 @@ class Announcement extends Model
         static::saving(function (Announcement $announcement) {
             $announcement->slug = Slug::unique($announcement, $announcement->slug ?: $announcement->title, 'announcement');
             $announcement->starts_at ??= now();
+
+            // Pinned to a department's page only while it belongs to one.
+            if (! $announcement->department_id) {
+                $announcement->pinned_in_department = false;
+            }
+        });
+
+        // One at a time on each department's page: pinning this one lets go of the one before.
+        static::saved(function (Announcement $announcement) {
+            if ($announcement->pinned_in_department && $announcement->department_id) {
+                static::where('department_id', $announcement->department_id)->whereKeyNot($announcement->id)->where('pinned_in_department', true)->update(['pinned_in_department' => false]);
+            }
         });
 
         // The files belong to the announcement alone: one taken off it, or the whole announcement deleted, removes them.
@@ -118,10 +140,19 @@ class Announcement extends Model
         return $this->belongsTo(User::class, 'author_id');
     }
 
-    /** Out: its first date has come. Everything the public can read, the archive included. */
+    /** Out: published, and its first date has come. Everything the public can read, the archive included. */
     public function scopePublished(Builder $query): void
     {
-        $query->where('starts_at', '<=', now());
+        $query->where('status', self::STATUS_PUBLISHED)->where('starts_at', '<=', now());
+    }
+
+    /**
+     * Whether what this account writes waits for approval before it is out: the account of a department,
+     * while the hospital asks for that (Site settings > Security).
+     */
+    public static function waitsForApproval(?User $user): bool
+    {
+        return (bool) $user?->postsForOneDepartment() && (bool) config('bchsp.security.department_approval');
     }
 
     /** Of a fiscal year, as written in Thailand (2569): from 1 October of the year before to 30 September. */
@@ -175,6 +206,7 @@ class Announcement extends Model
     public function scopeCurrent(Builder $query): void
     {
         $query
+            ->where('status', self::STATUS_PUBLISHED)
             ->where('starts_at', '<=', now())
             ->where(fn (Builder $query) => $query->whereNull('ends_at')->orWhere('ends_at', '>', now()));
     }
@@ -191,7 +223,7 @@ class Announcement extends Model
     /** Out, whether or not it has ended. */
     public function isPublished(): bool
     {
-        return (bool) $this->starts_at?->isPast();
+        return $this->status === self::STATUS_PUBLISHED && (bool) $this->starts_at?->isPast();
     }
 
     /** Still pinned to the top: pinned, and not ended. */
@@ -202,13 +234,15 @@ class Announcement extends Model
 
     public function isCurrent(): bool
     {
-        return (bool) $this->starts_at?->isPast() && ! $this->ends_at?->isPast();
+        return $this->isPublished() && ! $this->ends_at?->isPast();
     }
 
     /** What the panel's list says about it. */
     public function state(): string
     {
         return match (true) {
+            $this->status === self::STATUS_DRAFT => 'Draft',
+            $this->status === self::STATUS_PENDING => 'Waiting for approval',
             (bool) $this->starts_at?->isFuture() => 'Scheduled',
             (bool) $this->ends_at?->isPast() => 'In the archive',
             default => 'Showing',

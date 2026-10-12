@@ -29,6 +29,9 @@ return [
     'security' => [
         // Whether everyone who uses the panel must set up two-step sign-in before doing anything else (App\Support\TwoStep).
         'staff_two_step' => (bool) env('STAFF_TWO_STEP', true),
+        // Whether what the account of a department writes waits for someone who posts for the whole hospital
+        // to approve it before the public sees it (App\Models\Announcement::waitsForApproval()).
+        'department_approval' => (bool) env('DEPARTMENT_APPROVAL', true),
     ],
 
 ];

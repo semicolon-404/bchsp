@@ -67,6 +67,9 @@ class DepartmentAccountsTest extends TestCase
 
     public function test_what_it_posts_goes_on_its_own_board_and_takes_no_place_of_the_whole_hospitals(): void
     {
+        // With approval switched off (tests/Feature/PostingFlowTest.php has it on): what it posts is out at once.
+        config(['bchsp.security.department_approval' => false]);
+
         $this->actingAs($this->account);
 
         Livewire::test(CreateAnnouncement::class)

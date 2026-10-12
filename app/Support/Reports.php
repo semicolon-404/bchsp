@@ -60,7 +60,7 @@ class Reports
      */
     public static function summary(Carbon $from, Carbon $until): array
     {
-        $announcements = Announcement::query()->whereBetween('starts_at', [$from, $until])->where('starts_at', '<=', now());
+        $announcements = Announcement::query()->where('status', Announcement::STATUS_PUBLISHED)->whereBetween('starts_at', [$from, $until])->where('starts_at', '<=', now());
         $types = AnnouncementType::orderBy('sort_order')->get();
 
         return [

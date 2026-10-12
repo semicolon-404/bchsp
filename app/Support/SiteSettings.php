@@ -29,6 +29,7 @@ class SiteSettings
         // The hospital's name, wherever the site names itself.
         'app.name' => 'string',
         'bchsp.security.staff_two_step' => 'bool',
+        'bchsp.security.department_approval' => 'bool',
     ];
 
     /** Settings with no config value behind them: read with SiteSettings::get(). */

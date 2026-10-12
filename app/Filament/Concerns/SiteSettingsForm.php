@@ -338,6 +338,9 @@ trait SiteSettingsForm
                         Toggle::make(self::field('bchsp.security.staff_two_step'))
                             ->label(__('Everyone who uses this panel must have two-step sign-in'))
                             ->helperText(__('Someone who has not set it up is taken to do so before anything else. Set up your own first: it applies to you too.')),
+                        Toggle::make(self::field('bchsp.security.department_approval'))
+                            ->label(__('What a department\'s account posts waits for approval'))
+                            ->helperText(__('It is shown to the public only after an administrator, or an author who posts for the whole hospital, approves it. Switched off, a department\'s posts are out at once.')),
                     ]),
             ]);
     }

@@ -44,7 +44,7 @@ class DepartmentController extends Controller
             'photoCount' => $photos->count(),
             'photos' => $tab === 'photos' ? $photos : collect(),
             // Its timeline: what is showing now, pinned first, then the newest.
-            'posts' => $tab === 'posts' ? $department->announcements()->current()->with('type')->inListOrder()->limit(self::ON_PAGE)->get() : collect(),
+            'posts' => $tab === 'posts' ? $department->announcements()->current()->with('type')->orderByDesc('pinned_in_department')->inListOrder()->limit(self::ON_PAGE)->get() : collect(),
         ]);
     }
 }

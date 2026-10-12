@@ -21,6 +21,7 @@ use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Resources\Resource;
 use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\IconColumn;
@@ -165,14 +166,32 @@ class AnnouncementResource extends Resource
                             ->relationship('type', 'name', fn ($query) => $query->orderBy('sort_order'))
                             ->preload()
                             ->required(),
+                        Select::make('status')
+                            ->label(__('Status'))
+                            // The account of a department cannot put its own writing out while the hospital asks to see it first.
+                            ->options(fn () => Announcement::waitsForApproval(auth()->user())
+                                ? [Announcement::STATUS_DRAFT => __('Draft'), Announcement::STATUS_PENDING => __('Send for approval')]
+                                : [Announcement::STATUS_DRAFT => __('Draft'), Announcement::STATUS_PUBLISHED => __('Published')])
+                            ->default(fn () => Announcement::waitsForApproval(auth()->user()) ? Announcement::STATUS_PENDING : Announcement::STATUS_PUBLISHED)
+                            ->required()
+                            ->selectablePlaceholder(false)
+                            ->helperText(fn () => Announcement::waitsForApproval(auth()->user())
+                                ? __('It is shown to the public after it has been approved. Every change is looked at again.')
+                                : __('A draft is seen by staff only, whatever its dates.')),
                         Select::make('department_id')
                             ->label(__('Department (optional)'))
                             ->relationship('department', 'name', fn ($query) => $query->orderBy('sort_order')->orderBy('name'))
                             ->preload()
                             ->searchable()
+                            ->live()
                             // The account of a department posts for that department: there is nothing to choose (set in the pages).
                             ->visible(fn () => self::forTheWholeHospital())
                             ->helperText(__('Also shown on the board of this department, on its own page.')),
+                        Toggle::make('pinned_in_department')
+                            ->label(__('Pin to the top of the department\'s page'))
+                            ->helperText(__('One at a time: pinning this lets go of the one pinned before.'))
+                            ->visible(fn (Get $get) => ! self::forTheWholeHospital() || filled($get('department_id')))
+                            ->live(),
                         // What takes a place of the whole hospital's is for those who post for the whole hospital.
                         Toggle::make('is_pinned')
                             ->visible(fn () => self::forTheWholeHospital())
@@ -235,8 +254,14 @@ class AnnouncementResource extends Resource
                     ->color(fn (string $state) => match ($state) {
                         'Showing' => 'success',
                         'Scheduled' => 'warning',
+                        'Waiting for approval' => 'danger',
                         default => 'gray',
                     }),
+                TextColumn::make('views')
+                    ->label(__('Times opened'))
+                    ->numeric()
+                    ->sortable()
+                    ->toggleable(),
                 TextColumn::make('fiscal_year')
                     ->label(__('Fiscal year'))
                     ->state(fn (Announcement $record) => Announcement::fiscalYearOf($record->starts_at ?? $record->created_at)),
@@ -261,6 +286,9 @@ class AnnouncementResource extends Resource
                     ->visible(fn () => self::forTheWholeHospital())
                     ->label(__('Department'))
                     ->relationship('department', 'name'),
+                SelectFilter::make('status')
+                    ->label(__('Status'))
+                    ->options([Announcement::STATUS_PUBLISHED => __('Published'), Announcement::STATUS_PENDING => __('Waiting for approval'), Announcement::STATUS_DRAFT => __('Draft')]),
                 SelectFilter::make('fiscal_year')
                     ->label(__('Fiscal year'))
                     ->options(fn () => collect(Announcement::query()->pluck('starts_at')->map(fn ($date) => Announcement::fiscalYearOf($date))->unique()->sortDesc()->values())->mapWithKeys(fn ($year) => [$year => $year])->all())
@@ -269,6 +297,15 @@ class AnnouncementResource extends Resource
                     ->label(__('Pinned')),
             ])
             ->recordActions([
+                // For those who post for the whole hospital: let what a department wrote out.
+                Action::make('approve')
+                    ->label(__('Approve'))
+                    ->icon(Heroicon::OutlinedCheckCircle)
+                    ->color('success')
+                    ->visible(fn (Announcement $record) => $record->status === Announcement::STATUS_PENDING && self::forTheWholeHospital())
+                    ->requiresConfirmation()
+                    ->modalDescription(__('It will be shown to the public from its "Show from" date.'))
+                    ->action(fn (Announcement $record) => $record->update(['status' => Announcement::STATUS_PUBLISHED])),
                 Action::make('view')
                     ->label(__('View on the site'))
                     ->icon(Heroicon::OutlinedArrowTopRightOnSquare)

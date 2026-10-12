@@ -24,6 +24,10 @@
     $announcements = $shows('announcements') ? App\Models\Announcement::current()->with('type')->inListOrder()->limit(5)->get() : collect();
     // The slides sit beside the announcements, unless an administrator gave them a section of their own.
     $slides = $shows('announcements') && ! $shows('slides') ? App\Models\Announcement::slides() : collect();
+    // The departments that posted most lately, newest first: a way in to their own pages.
+    $posting = $shows('announcements')
+        ? App\Models\Department::shown()->whereKey($lately = App\Models\Announcement::current()->whereNotNull('department_id')->latest('starts_at')->limit(60)->pluck('department_id')->unique()->take(8)->values())->get()->sortBy(fn ($one) => $lately->search($one->id))->values()
+        : collect();
     $departments = $shows('departments') ? App\Models\Department::shown()->limit(6)->get() : collect();
 @endphp
 <x-layouts.site :description="__('News, announcements and services of :name.', ['name' => $name])">
@@ -121,6 +125,22 @@
                         </ul>
                     @endif
                 </div>
+
+                @if ($posting->isNotEmpty())
+                    <div class="mt-10">
+                        <h3 class="eyebrow">{{ __('From the departments') }}</h3>
+                        <ul class="mt-4 flex flex-wrap gap-3">
+                            @foreach ($posting as $one)
+                                <li>
+                                    <a href="{{ route('departments.show', $one) }}" class="chip min-h-12 gap-2 py-1 pl-1 pr-4 text-ink">
+                                        <x-site.department-avatar :department="$one" class="size-9 text-sm" />{{ $one->localName() }}
+                                    </a>
+                                </li>
+                            @endforeach
+                            <li><a href="{{ route('departments.index') }}" class="chip min-h-12">{{ __('All departments') }} &rarr;</a></li>
+                        </ul>
+                    </div>
+                @endif
             </div>
         </section>
     @endif

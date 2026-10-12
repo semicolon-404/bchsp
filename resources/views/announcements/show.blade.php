@@ -22,6 +22,10 @@
             · <a href="{{ route('announcements.index', array_filter(['type' => $announcement->type?->slug, 'year' => App\Models\Announcement::fiscalYearOf($announcement->starts_at ?? $announcement->created_at)])) }}" class="underline">{{ __('Fiscal year :year', ['year' => App\Models\Announcement::fiscalYearOf($announcement->starts_at ?? $announcement->created_at)]) }}</a>
         </p>
 
+        @if ($announcement->isPublished())
+            <x-site.share class="mt-4" :url="route('announcements.show', $announcement)" :title="$announcement->localTitle()" />
+        @endif
+
         @if ($announcement->department?->is_active)
             <p class="mt-2 text-sm text-muted">{{ __('Put out by') }} <a href="{{ route('departments.show', $announcement->department) }}" class="font-semibold text-brand underline">{{ $announcement->department->localName() }}</a></p>
         @endif
@@ -65,6 +69,14 @@
                                 <span class="min-w-0 flex-1 break-words">{{ $file['name'] }}</span>
                                 <span class="shrink-0 font-mono text-sm text-muted">PDF · {{ $file['size'] }}</span>
                             </a>
+                            {{--
+                                Read in place, on a screen wide enough to read a page on: opened by the reader, so a phone
+                                on a slow line is not made to fetch the file. The browser's own reader shows it.
+                            --}}
+                            <details class="mt-2 hidden md:block">
+                                <summary class="cursor-pointer text-sm font-semibold text-brand underline">{{ __('Read it here') }}</summary>
+                                <iframe src="{{ $file['url'] }}#view=FitH" title="{{ $file['name'] }}" loading="lazy" class="mt-2 h-[80vh] w-full rounded-lg border border-line bg-surface"></iframe>
+                            </details>
                         </li>
                     @endforeach
                     {{-- Documents kept elsewhere (Google Drive): the reader is told where a press will take them. --}}
