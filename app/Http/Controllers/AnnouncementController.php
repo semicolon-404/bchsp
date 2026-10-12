@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Announcement;
 use App\Models\AnnouncementType;
+use App\Models\Department;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
@@ -12,7 +13,7 @@ use Illuminate\View\View;
 /**
  * The announcements as visitors read them: the list, which is also the archive,
  * narrowed by type, by when it came out (a fiscal year, today, this week, this month, or dates of the reader's own)
- * and by a word in the title, as rows or as cards; and one announcement with its files.
+ * by the department that put it out and by a word in the title, as rows or as cards; and one announcement with its files.
  */
 class AnnouncementController extends Controller
 {
@@ -42,9 +43,14 @@ class AnnouncementController extends Controller
             default => [null, null],
         };
         $term = is_string($request->query('q')) ? mb_substr(trim($request->query('q')), 0, 80) : '';
+        // The departments that have put something out: only those are offered, and only one of those is taken.
+        $departments = Department::shown()->whereHas('announcements', fn ($query) => $query->published())->get();
+        $department = is_string($request->query('department')) ? $departments->firstWhere('slug', $request->query('department')) : null;
 
         return view('announcements.index', [
             'type' => $type,
+            'department' => $department,
+            'departments' => $departments,
             'types' => AnnouncementType::orderBy('sort_order')->orderBy('name')->get(),
             'year' => $year,
             'years' => $years,
@@ -56,6 +62,7 @@ class AnnouncementController extends Controller
             'announcements' => Announcement::published()
                 ->with('type')
                 ->when($type, fn ($query) => $query->where('announcement_type_id', $type->id))
+                ->when($department, fn ($query) => $query->where('department_id', $department->id))
                 ->when($year, fn ($query) => $query->ofFiscalYear($year))
                 ->when($from, fn ($query) => $query->where('starts_at', '>=', $from))
                 ->when($until, fn ($query) => $query->where('starts_at', '<=', $until))

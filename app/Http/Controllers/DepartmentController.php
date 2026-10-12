@@ -26,6 +26,8 @@ class DepartmentController extends Controller
 
         return view('departments.show', [
             'department' => $department,
+            // More than the board holds, or some that have ended: the whole list is a press away.
+            'inAll' => $department->announcements()->published()->count(),
             'posters' => $announcements->filter(fn ($announcement) => $announcement->image_path)->take(self::ON_BOARD),
             'notices' => $announcements->reject(fn ($announcement) => $announcement->image_path)->take(self::ON_BOARD),
         ]);

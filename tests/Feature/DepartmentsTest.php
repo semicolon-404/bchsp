@@ -91,6 +91,38 @@ class DepartmentsTest extends TestCase
             ->assertDontSee('Notice of the whole hospital');
     }
 
+    public function test_the_board_leads_to_everything_the_department_put_out_and_the_list_can_be_narrowed_to_it(): void
+    {
+        $dental = Department::factory()->create(['name' => 'Dental']);
+        $pharmacy = Department::factory()->create(['name' => 'Pharmacy']);
+        Department::factory()->create(['name' => 'Records']);
+
+        Announcement::factory()->create(['title' => 'Brush twice a day', 'department_id' => $dental->id]);
+        Announcement::factory()->ended()->create(['title' => 'Old dental notice', 'department_id' => $dental->id]);
+        Announcement::factory()->create(['title' => 'Medicine by post', 'department_id' => $pharmacy->id]);
+        Announcement::factory()->create(['title' => 'Notice of the whole hospital']);
+
+        $all = route('announcements.index', ['department' => $dental->slug]);
+
+        // The board says how many there are in all, the ended ones too.
+        $this->get(route('departments.show', $dental))->assertSee('href="'.$all.'"', false)->assertSee('See all 2');
+
+        $this->get($all)
+            ->assertOk()
+            ->assertSee('2 announcements')
+            ->assertSee('Brush twice a day')
+            ->assertSee('Old dental notice')
+            ->assertDontSee('Medicine by post')
+            ->assertDontSee('Notice of the whole hospital')
+            // The choice is kept in the other choices of the page.
+            ->assertSee('department='.$dental->slug.'&amp;view=cards', false);
+
+        // Only departments that have put something out are offered; one that is not is nothing.
+        $this->get('/announcements')->assertSee('Every department')->assertSee('Pharmacy')->assertDontSee('Records');
+        $this->get('/announcements?department=no-such')->assertOk()->assertSee('4 announcements');
+        $this->get('/announcements?department[]=1')->assertOk()->assertSee('4 announcements');
+    }
+
     public function test_a_department_that_put_out_nothing_has_no_board(): void
     {
         $this->get(route('departments.show', Department::factory()->create()))

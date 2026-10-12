@@ -40,8 +40,13 @@
     @if ($posters->isNotEmpty() || $notices->isNotEmpty())
         <div class="wrap pb-10 sm:pb-14">
                 <section aria-labelledby="board-heading">
-                    <p class="eyebrow">{{ __('Board') }}</p>
-                    <h2 id="board-heading" class="mt-2 text-2xl">{{ __('Posters and announcements') }}</h2>
+                    <div class="flex flex-wrap items-end justify-between gap-3">
+                        <div>
+                            <p class="eyebrow">{{ __('Board') }}</p>
+                            <h2 id="board-heading" class="mt-2 text-2xl">{{ __('Posters and announcements') }}</h2>
+                        </div>
+                        <a href="{{ route('announcements.index', ['department' => $department->slug]) }}" class="btn btn-line">{{ __('See all :count', ['count' => number_format($inAll)]) }} &rarr;</a>
+                    </div>
 
                     @if ($posters->isNotEmpty())
                         <div class="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
