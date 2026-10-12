@@ -13,8 +13,8 @@ class ManageDepartments extends ManageRecords
     protected function getHeaderActions(): array
     {
         return [
-            // A new one goes to the end of the list.
-            CreateAction::make()->mutateDataUsing(fn (array $data) => $data + ['sort_order' => (int) DepartmentResource::getModel()::max('sort_order') + 1]),
+            // Adding one is the administrator's. A new one goes to the end of the list.
+            CreateAction::make()->visible(fn () => DepartmentResource::canCreate())->mutateDataUsing(fn (array $data) => $data + ['sort_order' => (int) DepartmentResource::getModel()::max('sort_order') + 1]),
         ];
     }
 }

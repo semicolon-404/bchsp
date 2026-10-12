@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\ClinicSessions;
 
+use App\Filament\Concerns\NotForDepartments;
 use App\Filament\Concerns\TranslatesNames;
 use App\Filament\Resources\ClinicSessions\Pages\ManageClinicSessions;
 use App\Models\ClinicSession;
@@ -27,7 +28,7 @@ use UnitEnum;
  */
 class ClinicSessionResource extends Resource
 {
-    use TranslatesNames;
+    use NotForDepartments, TranslatesNames;
 
     protected static ?string $model = ClinicSession::class;
 

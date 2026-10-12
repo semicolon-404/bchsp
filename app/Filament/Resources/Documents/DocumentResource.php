@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Documents;
 
+use App\Filament\Concerns\NotForDepartments;
 use App\Filament\Concerns\TranslatesNames;
 use App\Filament\Resources\Documents\Pages\ManageDocuments;
 use App\Models\Document;
@@ -25,7 +26,7 @@ use UnitEnum;
  */
 class DocumentResource extends Resource
 {
-    use TranslatesNames;
+    use NotForDepartments, TranslatesNames;
 
     protected static ?string $model = Document::class;
 

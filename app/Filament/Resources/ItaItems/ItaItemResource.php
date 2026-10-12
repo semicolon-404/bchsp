@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\ItaItems;
 
+use App\Filament\Concerns\NotForDepartments;
 use App\Filament\Concerns\TranslatesNames;
 use App\Filament\Resources\ItaItems\Pages\CreateItaItem;
 use App\Filament\Resources\ItaItems\Pages\EditItaItem;
@@ -32,7 +33,7 @@ use UnitEnum;
  */
 class ItaItemResource extends Resource
 {
-    use TranslatesNames;
+    use NotForDepartments, TranslatesNames;
 
     protected static ?string $model = ItaItem::class;
 

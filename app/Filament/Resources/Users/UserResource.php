@@ -74,6 +74,12 @@ class UserResource extends Resource
                     ->selectablePlaceholder(false)
                     ->disabled(fn (?User $record) => $record?->is(auth()->user()) ?? false)
                     ->helperText(__('An author writes and publishes content. An administrator can also change settings, menus and staff.')),
+                Select::make('department_id')
+                    ->label(__('Posts for one department (optional)'))
+                    ->relationship('department', 'name', fn ($query) => $query->orderBy('sort_order')->orderBy('name'))
+                    ->preload()
+                    ->searchable()
+                    ->helperText(__('An author with a department posts on that department\'s board and keeps its page, and reaches nothing else. Left blank, the author posts for the whole hospital.')),
                 TextInput::make('password')
                     ->label(__('Password'))
                     ->password()
@@ -108,6 +114,9 @@ class UserResource extends Resource
                     ->formatStateUsing(fn (Role $state) => __($state->label()))
                     ->badge()
                     ->color(fn (Role $state) => $state === Role::Admin ? 'primary' : 'gray'),
+                TextColumn::make('department.name')
+                    ->label(__('Department'))
+                    ->placeholder('—'),
                 TextColumn::make('created_at')
                     ->label(__('Added'))
                     ->date()

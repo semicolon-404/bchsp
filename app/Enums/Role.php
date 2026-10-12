@@ -8,6 +8,7 @@ enum Role: string
     // Runs the site: settings, menus, people, and everything an author can do.
     case Admin = 'admin';
     // Writes and publishes content: announcements (posters and articles among them), documents.
+    // One with a department on the account posts for that department alone (User::postsForOneDepartment()).
     case Author = 'author';
 
     public function label(): string

@@ -28,6 +28,7 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 use UnitEnum;
 
 /**
@@ -55,6 +56,20 @@ class AnnouncementResource extends Resource
     protected static ?int $navigationSort = 1;
 
     protected static ?string $recordTitleAttribute = 'title';
+
+    /** The account of one department sees and changes what that department put out, and nothing else. */
+    public static function getEloquentQuery(): Builder
+    {
+        $user = auth()->user();
+
+        return parent::getEloquentQuery()->when($user?->postsForOneDepartment(), fn (Builder $query) => $query->where('department_id', $user->department_id));
+    }
+
+    /** Whether whoever is signed in posts for the whole hospital: an administrator, or an author with no department. */
+    public static function forTheWholeHospital(): bool
+    {
+        return ! auth()->user()?->postsForOneDepartment();
+    }
 
     public static function form(Schema $schema): Schema
     {
@@ -88,6 +103,7 @@ class AnnouncementResource extends Resource
                             ->label(__('Also show this picture among the slides of the home page'))
                             ->helperText(__('It leads to this announcement, and leaves the slides when the announcement ends. A wide picture suits the slides best.')),
                         Toggle::make('is_popup')
+                            ->visible(fn () => self::forTheWholeHospital())
                             ->label(__('Open this picture over the page when the site is first opened'))
                             ->helperText(__('One at a time: when several are marked, the pinned or newest one opens. A visitor who closes it is not shown it again.')),
                         OptimizedUpload::on(FileUpload::make('gallery'))
@@ -154,8 +170,12 @@ class AnnouncementResource extends Resource
                             ->relationship('department', 'name', fn ($query) => $query->orderBy('sort_order')->orderBy('name'))
                             ->preload()
                             ->searchable()
+                            // The account of a department posts for that department: there is nothing to choose (set in the pages).
+                            ->visible(fn () => self::forTheWholeHospital())
                             ->helperText(__('Also shown on the board of this department, on its own page.')),
+                        // What takes a place of the whole hospital's is for those who post for the whole hospital.
                         Toggle::make('is_pinned')
+                            ->visible(fn () => self::forTheWholeHospital())
                             ->label(__('Pin to the top of the list'))
                             ->helperText(__('Stays above newer announcements until unpinned or ended.')),
                         DateTimePicker::make('starts_at')
@@ -238,6 +258,7 @@ class AnnouncementResource extends Resource
                     ->label(__('Type'))
                     ->relationship('type', 'name'),
                 SelectFilter::make('department_id')
+                    ->visible(fn () => self::forTheWholeHospital())
                     ->label(__('Department'))
                     ->relationship('department', 'name'),
                 SelectFilter::make('fiscal_year')

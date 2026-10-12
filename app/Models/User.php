@@ -11,6 +11,7 @@ use Filament\Auth\MultiFactor\App\Contracts\HasAppAuthenticationRecovery;
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Panel;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
@@ -37,6 +38,7 @@ class User extends Authenticatable implements FilamentUser, HasAppAuthentication
         'email',
         'password',
         'role',
+        'department_id',
     ];
 
     /**
@@ -74,5 +76,21 @@ class User extends Authenticatable implements FilamentUser, HasAppAuthentication
     public function isAdmin(): bool
     {
         return $this->role === Role::Admin;
+    }
+
+    /** The unit of the hospital this account posts for, when it is the account of one. */
+    public function department(): BelongsTo
+    {
+        return $this->belongsTo(Department::class);
+    }
+
+    /**
+     * Whether this is the account of one department: an author with a department. It posts on that
+     * department's board and keeps its page, and reaches nothing of the others or of the whole hospital.
+     * An administrator runs everything whatever department is written on the account.
+     */
+    public function postsForOneDepartment(): bool
+    {
+        return ! $this->isAdmin() && $this->department_id !== null;
     }
 }

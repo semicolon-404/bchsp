@@ -2,7 +2,6 @@
 
 namespace App\Filament\Resources\Departments;
 
-use App\Filament\Concerns\AdminOnly;
 use App\Filament\Concerns\TranslatesNames;
 use App\Filament\Resources\Departments\Pages\ManageDepartments;
 use App\Models\Department;
@@ -20,6 +19,8 @@ use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\ToggleColumn;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
 use UnitEnum;
 
 /**
@@ -28,7 +29,41 @@ use UnitEnum;
  */
 class DepartmentResource extends Resource
 {
-    use AdminOnly, TranslatesNames;
+    use TranslatesNames;
+
+    /** An administrator keeps them all; the account of a department keeps the page of its own. */
+    public static function canAccess(): bool
+    {
+        return (bool) (auth()->user()?->isAdmin() || auth()->user()?->postsForOneDepartment());
+    }
+
+    public static function getEloquentQuery(): Builder
+    {
+        $user = auth()->user();
+
+        return parent::getEloquentQuery()->when(! $user?->isAdmin(), fn (Builder $query) => $query->whereKey($user?->department_id));
+    }
+
+    /** Adding, removing, ordering, renaming and hiding departments is the administrator's. */
+    public static function canCreate(): bool
+    {
+        return (bool) auth()->user()?->isAdmin();
+    }
+
+    public static function canDelete(Model $record): bool
+    {
+        return (bool) auth()->user()?->isAdmin();
+    }
+
+    public static function canReorder(): bool
+    {
+        return (bool) auth()->user()?->isAdmin();
+    }
+
+    public static function getNavigationLabel(): string
+    {
+        return __(auth()->user()?->isAdmin() ? 'Departments' : 'Our department\'s page');
+    }
 
     protected static ?string $model = Department::class;
 
@@ -54,10 +89,12 @@ class DepartmentResource extends Resource
                 TextInput::make('name')
                     ->label(__('Name'))
                     ->required()
-                    ->maxLength(150),
+                    ->maxLength(150)
+                    ->disabled(fn () => ! auth()->user()->isAdmin()),
                 TextInput::make('name_en')
                     ->label(__('Name in English (optional)'))
-                    ->maxLength(150),
+                    ->maxLength(150)
+                    ->disabled(fn () => ! auth()->user()->isAdmin()),
                 Textarea::make('description')
                     ->label(__('What it does'))
                     ->rows(4)
@@ -96,7 +133,8 @@ class DepartmentResource extends Resource
                     ->columnSpanFull(),
                 Toggle::make('is_active')
                     ->label(__('Shown on the site'))
-                    ->default(true),
+                    ->default(true)
+                    ->visible(fn () => auth()->user()->isAdmin()),
             ]);
     }
 
@@ -104,7 +142,7 @@ class DepartmentResource extends Resource
     {
         return $table
             ->defaultSort('sort_order')
-            ->reorderable('sort_order')
+            ->reorderable('sort_order', fn () => self::canCreate())
             ->columns([
                 TextColumn::make('name')
                     ->label(__('Name'))
@@ -118,11 +156,12 @@ class DepartmentResource extends Resource
                     ->limit(40)
                     ->placeholder('—'),
                 ToggleColumn::make('is_active')
-                    ->label(__('Shown on the site')),
+                    ->label(__('Shown on the site'))
+                    ->disabled(fn () => ! auth()->user()->isAdmin()),
             ])
             ->recordActions([
                 EditAction::make(),
-                DeleteAction::make(),
+                DeleteAction::make()->visible(fn () => self::canCreate()),
             ]);
     }
 

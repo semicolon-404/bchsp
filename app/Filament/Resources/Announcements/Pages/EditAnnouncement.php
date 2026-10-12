@@ -10,6 +10,16 @@ class EditAnnouncement extends EditRecord
 {
     protected static string $resource = AnnouncementResource::class;
 
+    /** The account of a department cannot hand what it wrote to another department. */
+    protected function mutateFormDataBeforeSave(array $data): array
+    {
+        if (auth()->user()->postsForOneDepartment()) {
+            $data['department_id'] = auth()->user()->department_id;
+        }
+
+        return $data;
+    }
+
     protected function getHeaderActions(): array
     {
         return [
