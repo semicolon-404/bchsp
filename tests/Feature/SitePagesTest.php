@@ -26,6 +26,30 @@ class SitePagesTest extends TestCase
             ->assertSee('Opened as a ten-bed hospital.');
     }
 
+    public function test_a_page_of_a_group_leads_on_to_the_one_before_and_the_one_after(): void
+    {
+        $history = SitePage::factory()->create(['title' => 'History', 'section' => 'about', 'position' => 1]);
+        $vision = SitePage::factory()->create(['title' => 'Vision', 'section' => 'about', 'position' => 2]);
+        $structure = SitePage::factory()->create(['title' => 'Structure', 'section' => 'about', 'position' => 3]);
+        SitePage::factory()->create(['title' => 'Hidden', 'section' => 'about', 'position' => 2, 'is_published' => false]);
+        $alone = SitePage::factory()->create(['title' => 'Privacy']);
+
+        $this->get(route('pages.show', $vision))
+            ->assertOk()
+            ->assertSee('href="'.route('about').'"', false)
+            ->assertSee('<a href="'.route('pages.show', $history).'" rel="prev"', false)
+            ->assertSee('<a href="'.route('pages.show', $structure).'" rel="next"', false)
+            // What a swipe on a phone follows.
+            ->assertSee('data-swipe-prev="'.route('pages.show', $history).'"', false)
+            ->assertSee('data-swipe-next="'.route('pages.show', $structure).'"', false)
+            ->assertDontSee('Hidden');
+
+        // The first has nothing before it, the last nothing after; a page in no group leads nowhere.
+        $this->get(route('pages.show', $history))->assertDontSee('rel="prev"', false)->assertSee('rel="next"', false);
+        $this->get(route('pages.show', $structure))->assertSee('rel="prev"', false)->assertDontSee('rel="next"', false);
+        $this->get(route('pages.show', $alone))->assertOk()->assertDontSee('data-swipe', false);
+    }
+
     public function test_a_page_that_is_not_out_is_seen_only_by_an_administrator(): void
     {
         SitePage::factory()->create(['slug' => 'draft', 'is_published' => false]);

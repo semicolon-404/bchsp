@@ -76,6 +76,20 @@ class SitePage extends Model
             ->get(['id', 'slug', 'title', 'title_en']));
     }
 
+    /**
+     * The page before this one and the page after it in its group, in the group's order: what a reader turns to
+     * without going back to the list. Nothing for a page in no group, or one that is not out.
+     *
+     * @return array{?SitePage, ?SitePage}
+     */
+    public function neighbours(): array
+    {
+        $pages = filled($this->section) ? static::menuLinks($this->section)->values() : collect();
+        $place = $pages->search(fn (SitePage $one) => $one->is($this));
+
+        return $place === false ? [null, null] : [$pages->get($place - 1), $pages->get($place + 1)];
+    }
+
     public function getRouteKeyName(): string
     {
         return 'slug';
