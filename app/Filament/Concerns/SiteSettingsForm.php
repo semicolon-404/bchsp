@@ -5,6 +5,7 @@ namespace App\Filament\Concerns;
 use App\Support\Footer;
 use App\Support\HomeLayout;
 use App\Support\Menus;
+use App\Support\OptimizedUpload;
 use App\Support\SiteSettings as Settings;
 use App\Support\Theme;
 use App\Support\Wording;
@@ -253,6 +254,17 @@ trait SiteSettingsForm
                             ->label(__('Show the logo in the top bar'))
                             ->helperText(__('Switched off, the top bar shows the name alone. The home page keeps the logo.'))
                             ->inline(false),
+                        OptimizedUpload::on(FileUpload::make(self::field('site.hero_image')))
+                            ->label(__('Photograph behind the top of the home page (optional)'))
+                            ->image()
+                            // No SVG: it can carry a script.
+                            ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp'])
+                            ->disk('public')
+                            ->directory('site')
+                            ->visibility('public')
+                            ->maxSize(8192)
+                            ->helperText(__('A wide photograph of the hospital: the building, or the team. It is shown faded behind the name, so the words stay easy to read. Do not use one in which a patient can be recognised.'))
+                            ->columnSpanFull(),
                         TextInput::make(self::field('site.motto'))
                             ->label(__('Motto (optional)'))
                             ->maxLength(200)

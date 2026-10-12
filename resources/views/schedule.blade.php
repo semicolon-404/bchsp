@@ -14,7 +14,7 @@
         <p class="mt-3 text-muted">{{ __('Hours can change on public holidays. Phone before a long journey.') }}</p>
 
         @if ($week->flatten()->isEmpty())
-            <p class="card mt-8 text-muted">{{ __('Nothing has been added here yet.') }}</p>
+            <x-site.empty class="mt-8" icon="calendar-days" />
         @else
             <div class="mt-8 space-y-4">
                 @foreach ($week as $day => $sessions)

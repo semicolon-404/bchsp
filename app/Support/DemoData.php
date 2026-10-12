@@ -40,7 +40,7 @@ class DemoData
     ];
 
     /** @var array{models: array<class-string, list<int>>, files: list<string>, visits: list<array{0: string, 1: string, 2: int}>} */
-    private array $made = ['models' => [], 'files' => [], 'visits' => [], 'profiles' => []];
+    private array $made = ['models' => [], 'files' => [], 'visits' => [], 'profiles' => [], 'settings' => []];
 
     /** Where the list of what was made is kept, when not in the usual place. The tests keep their own: clearing the site's would leave its sample content with no way out. */
     public static ?string $manifestAt = null;
@@ -69,6 +69,12 @@ class DemoData
             $this->announcements();
             $this->postersAndArticles();
             $this->profiles();
+
+            // A photograph behind the top of the home page, while the hospital has not given its own.
+            if (blank(SiteSettings::get('site.hero_image'))) {
+                SiteSettings::save(['site.hero_image' => $this->picture('site', 'ภาพโรงพยาบาล (ส่วนต้อนรับ)', 2000, 1100, [21, 128, 61])]);
+                $this->made['settings'][] = 'site.hero_image';
+            }
             $this->ita();
             $this->documents();
             $this->visits();
@@ -108,6 +114,11 @@ class DemoData
         // What was lent to a real department's profile is taken back; what it had of its own was never touched.
         foreach ($made['profiles'] ?? [] as $id => $fields) {
             Department::whereKey($id)->update(array_fill_keys($fields, null));
+        }
+
+        // A setting the samples filled in is emptied again.
+        if ($made['settings'] ?? []) {
+            SiteSettings::save(array_fill_keys($made['settings'], null));
         }
 
         Storage::disk('public')->delete($made['files']);

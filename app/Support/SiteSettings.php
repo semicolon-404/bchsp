@@ -52,7 +52,8 @@ class SiteSettings
         'maintenance.enabled', 'maintenance.message',
         // The hospital's name for a reader in English, and its logo: a path on the public disk, or nothing.
         // The logo can be left out of the bar at the top of every page.
-        'site.name_en', 'site.logo', 'site.show_logo',
+        // A photograph of the hospital behind the first screen of the home page: a path on the public disk, or nothing.
+        'site.name_en', 'site.logo', 'site.show_logo', 'site.hero_image',
         // What the home page says under the name, and of the hospital itself: plain text, one item to a line.
         'site.motto', 'identity.vision', 'identity.mission', 'identity.values',
         'contact.address', 'contact.phone', 'contact.emergency_phone', 'contact.email',
@@ -139,6 +140,14 @@ class SiteSettings
     public static function logoUrl(): ?string
     {
         $path = self::get('site.logo');
+
+        return is_string($path) ? Storage::disk('public')->url($path) : null;
+    }
+
+    /** The address of the photograph behind the first screen of the home page, or null when there is none. */
+    public static function heroUrl(): ?string
+    {
+        $path = self::get('site.hero_image');
 
         return is_string($path) ? Storage::disk('public')->url($path) : null;
     }

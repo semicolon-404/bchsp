@@ -143,13 +143,22 @@
         {{-- As many columns as there is something for: the hospital, contact, social links, and the administrator's own groups of links (App\Support\Footer). --}}
         <div class="wrap grid gap-10 py-12 sm:grid-cols-2 lg:grid-cols-[repeat(auto-fit,minmax(13rem,1fr))]">
             <div>
-                <p class="text-lg font-semibold">{{ $name }}</p>
+                <p class="flex items-center gap-3 text-lg font-semibold">
+                    @if ($logo)
+                        <img src="{{ $logo }}" alt="" class="h-10 w-auto shrink-0">
+                    @else
+                        <span class="flex size-10 shrink-0 items-center justify-center rounded bg-brand text-on-brand" aria-hidden="true"><x-heroicon-s-plus class="size-6" /></span>
+                    @endif
+                    {{ $name }}
+                </p>
                 @if ($about = App\Support\Footer::about())
                     <p class="mt-3 whitespace-pre-line text-muted">{{ $about }}</p>
                 @endif
                 @if ($address)
                     <p class="mt-3 whitespace-pre-line text-muted">{{ $address }}</p>
                 @endif
+                {{-- The map itself is on the contact page, loaded when asked for: here is the way to it. --}}
+                <p class="mt-3"><a href="{{ route('contact') }}" class="inline-flex items-center gap-2 font-semibold text-brand underline"><x-heroicon-m-map-pin class="size-4" aria-hidden="true" />{{ __('Map and directions') }}</a></p>
                 {{-- Pages written in the panel that asked to be linked here (App\Models\SitePage). --}}
                 @if ($pages->isNotEmpty())
                     <ul class="mt-4 space-y-2">

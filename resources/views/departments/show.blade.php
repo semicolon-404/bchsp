@@ -59,10 +59,10 @@
                                 <span class="size-2 rounded-full {{ $openNow ? 'bg-syn-function' : 'bg-muted' }}" aria-hidden="true"></span>{{ $openNow ? __('Open now') : __('Closed now') }}
                             </span>
                         @endif
-                        <span><span class="font-semibold text-ink">{{ number_format($inAll) }}</span> {{ __('posts') }}</span>
-                        <span><span class="font-semibold text-ink">{{ number_format($photoCount) }}</span> {{ __('photographs') }}</span>
+                        <span><span class="font-semibold text-ink" data-count>{{ number_format($inAll) }}</span> {{ __('posts') }}</span>
+                        <span><span class="font-semibold text-ink" data-count>{{ number_format($photoCount) }}</span> {{ __('photographs') }}</span>
                         @if ($people)
-                            <span><span class="font-semibold text-ink">{{ number_format(count($people)) }}</span> {{ __('people') }}</span>
+                            <span><span class="font-semibold text-ink" data-count>{{ number_format(count($people)) }}</span> {{ __('people') }}</span>
                         @endif
                     </p>
                 </div>
@@ -100,7 +100,7 @@
                         @endforeach
                     </ul>
                 @else
-                    <p class="card mt-4 text-muted">{{ __('Nothing has been added here yet.') }}</p>
+                    <x-site.empty class="mt-4" icon="photo" />
                 @endif
             </section>
         @elseif ($tab === 'people')
@@ -208,7 +208,7 @@
                             @endforeach
                         </ul>
                     @else
-                        <p class="card mt-4 text-muted">{{ __('This department has not posted anything yet.') }}</p>
+                        <x-site.empty class="mt-4" icon="megaphone">{{ __('This department has not posted anything yet.') }}</x-site.empty>
                     @endif
                 </section>
             </div>

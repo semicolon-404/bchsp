@@ -26,7 +26,7 @@
                 ] as [$label, $figure])
                     <div class="card">
                         <dt class="text-sm text-muted">{{ __($label) }}</dt>
-                        <dd class="mt-1 font-mono text-2xl text-brand">{{ $figure }}</dd>
+                        <dd class="mt-1 font-mono text-2xl text-brand" @if ($label === 'Releases so far') data-count @endif>{{ $figure }}</dd>
                     </div>
                 @endforeach
             </dl>
@@ -73,7 +73,7 @@
                     </ul>
                 </article>
             @empty
-                <p class="card mt-4 text-muted">{{ __('Nothing has been added here yet.') }}</p>
+                <x-site.empty class="mt-4" icon="sparkles" />
             @endforelse
         </section>
 

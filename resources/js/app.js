@@ -1,5 +1,6 @@
 import './bootstrap';
 import { startMenu } from './menu';
+import { startMotion } from './motion';
 import { startPopup } from './popup';
 import { startShare } from './share';
 import { startSlider } from './slider';
@@ -14,3 +15,4 @@ startSlider();
 startSwipe();
 startSpot();
 startShare();
+startMotion();

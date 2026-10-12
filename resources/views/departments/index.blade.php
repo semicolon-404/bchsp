@@ -5,7 +5,7 @@
         <h1 class="mt-2 text-3xl sm:text-4xl">{{ __('Departments and services') }}</h1>
 
         @if ($departments->isEmpty())
-            <p class="card mt-8 text-muted">{{ __('Nothing has been added here yet.') }}</p>
+            <x-site.empty class="mt-8" icon="building-office-2" />
         @else
             <div class="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
                 @foreach ($departments as $department)

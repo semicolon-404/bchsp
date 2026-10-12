@@ -399,6 +399,108 @@ html.is-mourning {
         border-color: var(--color-brand);
     }
 
+    /* A card that leads somewhere rises a little under the pointer, where there is one and motion is welcome. */
+    @media (hover: hover) and (prefers-reduced-motion: no-preference) {
+        a.card {
+            transition: border-color 200ms, transform 250ms ease, box-shadow 250ms ease;
+        }
+
+        a.card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 14px 30px -16px color-mix(in srgb, var(--color-ink) 45%, transparent);
+        }
+    }
+
+    /*
+     * Parts of a page that rise into place as they are scrolled to. The class is put on by
+     * resources/js/motion.js, never written in a page: without scripts nothing is hidden.
+     */
+    .rise {
+        opacity: 0;
+        transform: translateY(14px);
+        transition: opacity 500ms ease, transform 500ms ease;
+    }
+
+    .rise.is-in {
+        opacity: 1;
+        transform: none;
+    }
+
+    /* The hospital's name on the home page: from the colour of the words into the colour of the site. */
+    .hero-name {
+        background: linear-gradient(115deg, var(--color-ink) 35%, var(--color-brand));
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+        /* Thai marks above and below the line are cut off by the clip without room for them. */
+        padding-block: 0.15em;
+    }
+
+    @media (forced-colors: active) {
+        .hero-name {
+            background: none;
+            color: CanvasText;
+        }
+    }
+
+    /*
+     * The first screen of the home page: a soft light in the colour of the site behind the name, and, when the
+     * hospital has given one, a photograph of itself behind everything, faded so the words stay easy to read.
+     */
+    .home-screen {
+        position: relative;
+        overflow: hidden;
+        isolation: isolate;
+    }
+
+    .home-screen::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        z-index: -1;
+        background:
+            radial-gradient(38rem 26rem at 18% 40%, color-mix(in srgb, var(--color-brand) 16%, transparent), transparent 70%),
+            radial-gradient(30rem 22rem at 85% 75%, color-mix(in srgb, var(--color-brand) 8%, transparent), transparent 70%);
+        pointer-events: none;
+    }
+
+    .hero-photo {
+        position: absolute;
+        inset: 0;
+        z-index: -2;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        opacity: 0.28;
+    }
+
+    .hero-veil {
+        position: absolute;
+        inset: 0;
+        z-index: -1;
+        background: linear-gradient(to bottom, color-mix(in srgb, var(--color-page) 55%, transparent), var(--color-page) 96%);
+        pointer-events: none;
+    }
+
+    /* The mark at the head of a line in a list of places: a symbol in the colour of the site. */
+    .door-mark {
+        display: flex;
+        width: 2.5rem;
+        height: 2.5rem;
+        flex-shrink: 0;
+        align-items: center;
+        justify-content: center;
+        border-radius: 0.6rem;
+        background: var(--color-raised);
+        color: var(--color-brand);
+        transition: background-color 200ms, color 200ms;
+    }
+
+    a:hover > .door-mark {
+        background: var(--color-brand);
+        color: var(--color-on-brand);
+    }
+
     /*
      * A soft light in the colour of the site under the pointer, on every card and editor window (the place is
      * set by resources/js/spot.js). Under a finger there is no pointer to follow: there it comes up for a
@@ -578,5 +680,20 @@ html.is-mourning {
         font-family: var(--font-mono);
         font-size: 0.875rem;
         line-height: 1.8;
+    }
+}
+
+/*
+ * From one page of the site to the next, the old page fades into the new one (browsers that can; the rest change
+ * at once, as before). Not for a reader who has asked for less motion.
+ */
+@media (prefers-reduced-motion: no-preference) {
+    @view-transition {
+        navigation: auto;
+    }
+
+    ::view-transition-old(root),
+    ::view-transition-new(root) {
+        animation-duration: 180ms;
     }
 }

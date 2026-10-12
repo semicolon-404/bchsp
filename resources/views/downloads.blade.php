@@ -23,7 +23,7 @@
                 </ul>
             </section>
         @empty
-            <p class="card mt-8 text-muted">{{ __('Nothing has been added here yet.') }}</p>
+            <x-site.empty class="mt-8" icon="arrow-down-tray" />
         @endforelse
     </div>
 </x-layouts.site>

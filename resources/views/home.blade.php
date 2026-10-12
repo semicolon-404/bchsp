@@ -43,13 +43,18 @@
         and what is open today (drawn as an editor's window, read as a list).
     --}}
     <section class="home-screen">
+        @if ($photo = SiteSettings::heroUrl())
+            {{-- The hospital itself, faded behind the words (Site settings > The hospital). Decoration: it says nothing a reader needs. --}}
+            <img src="{{ $photo }}" alt="" aria-hidden="true" class="hero-photo" fetchpriority="high">
+            <div class="hero-veil" aria-hidden="true"></div>
+        @endif
         <div @class(['wrap grid items-center gap-12 py-14 sm:py-20', 'lg:grid-cols-2' => $sessions->isNotEmpty()])>
             <div @class(['text-center', 'lg:text-left' => $sessions->isNotEmpty()])>
                 @if ($logo = SiteSettings::logoUrl())
                     <img src="{{ $logo }}" alt="" @class(['mx-auto mb-6 h-20 w-auto', 'lg:mx-0' => $sessions->isNotEmpty()])>
                 @endif
                 <p class="eyebrow">{{ __('Welcome to') }}</p>
-                <h1 class="mt-4 text-4xl leading-tight sm:text-5xl md:text-6xl">{{ $name }}</h1>
+                <h1 class="hero-name mt-4 text-4xl leading-tight sm:text-5xl md:text-6xl">{{ $name }}</h1>
                 <p @class(['mx-auto mt-6 max-w-xl text-lg text-muted sm:text-xl', 'lg:mx-0' => $sessions->isNotEmpty()])>{{ $motto ? '“'.$motto.'”' : __('News, announcements and services of the hospital, in one place.') }}</p>
 
                 @if ($phone || $emergency)
@@ -167,16 +172,16 @@
                 </div>
                 <ul>
                     @foreach ([
-                        [route('announcements.index', ['type' => 'procurement']), 'Procurement', 'Procurement plans, invitations to bid and results, by fiscal year.'],
-                        [route('announcements.index', ['type' => 'activities']), 'Activities', 'Photographs and news of what the hospital has been doing.'],
-                        [route('announcements.index', ['type' => 'knowledge']), 'Health knowledge', 'Health knowledge written by the hospital\'s own staff.'],
-                        [route('schedule'), 'Clinic schedule', 'Which clinic is open on which day, and at what time.'],
-                        [route('about'), 'About us', 'History, vision, structure and the people who run the hospital.'],
-                        [route('contact'), 'Contact and map', 'Address, phone numbers, opening hours and a map.'],
-                    ] as $index => [$address, $label, $about])
+                        [route('announcements.index', ['type' => 'procurement']), 'Procurement', 'Procurement plans, invitations to bid and results, by fiscal year.', 'clipboard-document-list'],
+                        [route('announcements.index', ['type' => 'activities']), 'Activities', 'Photographs and news of what the hospital has been doing.', 'camera'],
+                        [route('announcements.index', ['type' => 'knowledge']), 'Health knowledge', 'Health knowledge written by the hospital\'s own staff.', 'heart'],
+                        [route('schedule'), 'Clinic schedule', 'Which clinic is open on which day, and at what time.', 'calendar-days'],
+                        [route('about'), 'About us', 'History, vision, structure and the people who run the hospital.', 'building-office-2'],
+                        [route('contact'), 'Contact and map', 'Address, phone numbers, opening hours and a map.', 'map-pin'],
+                    ] as $index => [$address, $label, $about, $mark])
                         <li class="border-b border-line last:border-b-0">
                             <a href="{{ $address }}" id="door-{{ $index }}" class="group flex items-center gap-4 px-4 py-4 text-ink no-underline hover:bg-raised">
-                                <span class="font-mono text-sm text-syn-comment" aria-hidden="true">{{ str_pad((string) ($index + 1), 2, '0', STR_PAD_LEFT) }}</span>
+                                <span class="door-mark" aria-hidden="true"><x-dynamic-component :component="'heroicon-o-'.$mark" class="size-5" /></span>
                                 <span class="min-w-0 flex-1">
                                     <span class="block font-medium group-hover:text-brand">{{ __($label) }}</span>
                                     <span class="mt-0.5 block text-sm text-muted">{{ __($about) }}</span>
