@@ -50,7 +50,8 @@ class SiteSettings
         // Closed to visitors while something is being worked on (App\Http\Middleware\MaintenanceMode).
         'maintenance.enabled', 'maintenance.message',
         // The hospital's name for a reader in English, and its logo: a path on the public disk, or nothing.
-        'site.name_en', 'site.logo',
+        // The logo can be kept and switched off: then no page shows it.
+        'site.name_en', 'site.logo', 'site.show_logo',
         // What the home page says under the name, and of the hospital itself: plain text, one item to a line.
         'site.motto', 'identity.vision', 'identity.mission', 'identity.values',
         'contact.address', 'contact.phone', 'contact.emergency_phone', 'contact.email',
@@ -127,12 +128,18 @@ class SiteSettings
         return is_string($english) ? $english : (string) config('app.name');
     }
 
-    /** The address of the logo an administrator uploaded, or null when there is none. */
+    /** Whether the logo is shown. On unless switched off. */
+    public static function showsLogo(): bool
+    {
+        return self::get('site.show_logo', true) !== false;
+    }
+
+    /** The address of the logo an administrator uploaded, or null when there is none or it is switched off. */
     public static function logoUrl(): ?string
     {
         $path = self::get('site.logo');
 
-        return is_string($path) ? Storage::disk('public')->url($path) : null;
+        return is_string($path) && self::showsLogo() ? Storage::disk('public')->url($path) : null;
     }
 
     /** The address of the map to embed on the contact page, or null when there is none or it is not a Google Maps embed. */

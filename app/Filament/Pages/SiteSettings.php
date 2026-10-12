@@ -79,6 +79,7 @@ class SiteSettings extends Page
         $values['menu_news_shown'] = array_values(array_diff(array_keys(Menus::NEWS_OPTIONAL), Menus::newsHidden()));
         $values['footer_links'] = Footer::links();
         $values[self::field('footer.show_visits')] = Footer::showsVisits();
+        $values[self::field('site.show_logo')] = Settings::showsLogo();
 
         unset($values['wording']);
         $values['wording_rows'] = Wording::rows();

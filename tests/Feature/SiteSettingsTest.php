@@ -105,6 +105,25 @@ class SiteSettingsTest extends TestCase
         $this->assertStringContainsString($path, SiteSettings::logoUrl());
     }
 
+    public function test_a_logo_switched_off_is_kept_but_not_shown(): void
+    {
+        Storage::fake('public');
+        $this->actingAs(User::factory()->admin()->create());
+
+        Livewire::test(SettingsPage::class)
+            ->assertFormSet(['site__show_logo' => true])
+            ->fillForm(['site__logo' => UploadedFile::fake()->image('logo.png', 300, 300), 'site__show_logo' => false])
+            ->call('save')
+            ->assertHasNoFormErrors();
+
+        $this->assertIsString(SiteSettings::get('site.logo'));
+        $this->assertNull(SiteSettings::logoUrl());
+
+        SiteSettings::save(['site.show_logo' => true]);
+
+        $this->assertNotNull(SiteSettings::logoUrl());
+    }
+
     public function test_a_logo_that_could_carry_a_script_is_refused(): void
     {
         Storage::fake('public');
