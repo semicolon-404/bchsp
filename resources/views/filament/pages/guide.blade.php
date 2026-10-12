@@ -26,7 +26,7 @@
                     <ul style="margin-top: 0.25rem; padding-left: 1.25rem; list-style: disc;">
                         <li><strong>โปสเตอร์ / ภาพแผ่นเดียว</strong>: อัปโหลดที่ช่อง "ภาพหน้าปก / ภาพประกาศ" ใส่หัวข้อแล้วเผยแพร่ได้เลย</li>
                         <li><strong>ข้อความ</strong>: พิมพ์ที่ช่อง "รายละเอียด"</li>
-                        <li><strong>ภาพกิจกรรมหลายภาพ</strong>: อัปโหลดที่ช่อง "อัลบั้มภาพ" ได้สูงสุด {{ AppModelsAnnouncement::MAX_PHOTOS }} ภาพ</li>
+                        <li><strong>ภาพกิจกรรมหลายภาพ</strong>: อัปโหลดที่ช่อง "อัลบั้มภาพ" ได้สูงสุด {{ \App\Models\Announcement::MAX_PHOTOS }} ภาพ</li>
                         <li><strong>เอกสาร</strong>: แนบ PDF หรือวางลิงก์ Google Drive (ไฟล์ใหญ่ควรใช้ Google Drive)</li>
                     </ul>
                 </li>
