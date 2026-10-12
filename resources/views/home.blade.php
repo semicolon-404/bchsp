@@ -39,7 +39,7 @@
         The first screen answers what people come for before they scroll: whose site this is, how to call,
         and what is open today (drawn as an editor's window, read as a list).
     --}}
-    <section class="home-screen border-b border-line">
+    <section class="home-screen">
         <div @class(['wrap grid items-center gap-12 py-14 sm:py-20', 'lg:grid-cols-2' => $sessions->isNotEmpty()])>
             <div @class(['text-center', 'lg:text-left' => $sessions->isNotEmpty()])>
                 @if ($logo = SiteSettings::logoUrl())
@@ -100,7 +100,7 @@
             What is new, in one place: the pictures staff put up, one at a time in a frame of one size, beside
             the newest few announcements. The whole list, with its kinds and years, is a page of its own.
         --}}
-        <section id="news" class="scroll-mt-16 border-b border-line bg-surface">
+        <section id="news" class="scroll-mt-16 bg-surface">
             <div class="wrap py-16 sm:py-24">
                 <div class="flex flex-wrap items-end justify-between gap-3">
                     <div>
@@ -132,7 +132,7 @@
         The rest of the site as one list, drawn as a window of the editor: each line a part of the site,
         what is in it, and the way there. A list, not a wall of cards: read top to bottom in a few seconds.
     --}}
-    <section class="border-b border-line" aria-label="{{ __('Shortcuts') }}">
+    <section aria-label="{{ __('Shortcuts') }}">
         <div class="wrap grid items-center gap-10 py-16 sm:py-24 lg:grid-cols-5">
             <div class="text-center lg:col-span-2 lg:text-left">
                 <p class="eyebrow">{{ __('Shortcuts') }}</p>
@@ -178,7 +178,7 @@
             Vision, mission and core values, one at a time. The tabs are radio buttons and the stylesheet shows the
             panel of the one that is ticked (.tabs in app.css): no script, and the arrow keys move between them.
         --}}
-        <section id="identity" class="scroll-mt-16 border-b border-line">
+        <section id="identity" class="scroll-mt-16">
             <div class="wrap py-16 sm:py-24">
                 <h2 class="text-center text-3xl sm:text-4xl">{{ __('Identity of the organisation') }}</h2>
                 <span class="mx-auto mt-4 block h-1 w-16 rounded-full bg-brand" aria-hidden="true"></span>
@@ -229,7 +229,7 @@
 
     @case('departments')
     @if ($departments->isNotEmpty())
-        <section class="border-b border-line">
+        <section>
             <div class="wrap py-12 sm:py-16">
                 <div class="flex flex-wrap items-end justify-between gap-3">
                     <div>
@@ -250,7 +250,7 @@
 
     @case('articles')
     @if ($articles->isNotEmpty())
-        <section class="border-b border-line">
+        <section>
             <div class="wrap py-12 sm:py-16">
                 <div class="flex flex-wrap items-end justify-between gap-3">
                     <div>
