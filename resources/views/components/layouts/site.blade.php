@@ -201,6 +201,10 @@
         <div class="border-t border-line">
             <div class="wrap flex flex-wrap items-center justify-between gap-x-6 gap-y-1 py-4 font-mono text-sm text-muted">
                 <p>{{ App\Support\Footer::copyright() }}</p>
+                {{-- The newest release and its day: the site is looked after, and here is what changed (/updates). --}}
+                @if ($release = App\Models\SiteUpdate::newest())
+                    <p><a href="{{ route('updates') }}" class="text-muted underline decoration-line underline-offset-4 hover:text-brand">v{{ $release->version }} · {{ __('updated :date', ['date' => $release->releasedOn()]) }}</a></p>
+                @endif
                 {{-- Pages opened, as plain totals: nothing is kept about who opened them (App\Support\Visits). --}}
                 @if (App\Support\Footer::showsVisits())
                     @php($visits = App\Support\Visits::totals())

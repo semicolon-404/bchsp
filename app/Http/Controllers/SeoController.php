@@ -36,6 +36,7 @@ class SeoController extends Controller
             ['loc' => route('departments.index'), 'priority' => '0.7'],
             ['loc' => route('contact'), 'priority' => '0.7'],
             ['loc' => route('downloads'), 'priority' => '0.5'],
+            ['loc' => route('updates'), 'priority' => '0.4'],
         ]);
 
         foreach (ItaItem::years() as $index => $year) {
