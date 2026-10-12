@@ -3,9 +3,12 @@
 namespace App\Support;
 
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Process;
+use PDO;
 use RuntimeException;
+use Throwable;
 
 /**
  * A copy of the database, taken every night (routes/console.php) and kept for
@@ -20,7 +23,12 @@ use RuntimeException;
  * sync program (Google Drive for desktop, OneDrive) sends off the machine.
  * Until that is set, the System status page says the copies are in one place only.
  *
+ * The copy is made by the mysqldump program where the server lets PHP run programs. Shared hosting
+ * often does not (proc_open switched off): there, or with BACKUP_MYSQLDUMP=php, the site writes the
+ * copy itself, table by table (writeItself()). Either copy is brought back the same way.
+ *
  * To bring one back:  gunzip -c db-....sql.gz | mysql -u USER -p DATABASE
+ * (or unpack it and import the .sql file in phpMyAdmin)
  */
 class Backups
 {
@@ -36,6 +44,21 @@ class Backups
         File::ensureDirectoryExists(self::folder());
 
         $plain = self::folder().DIRECTORY_SEPARATOR.'db-'.now()->format('Y-m-d-His').'.sql';
+
+        if (self::writesItself()) {
+            try {
+                self::writeItself($connection, $plain);
+            } catch (Throwable $e) {
+                @unlink($plain);
+
+                throw new RuntimeException('The database could not be copied: '.$e->getMessage(), previous: $e);
+            }
+
+            $packed = self::pack($plain);
+            self::prune();
+
+            return $packed;
+        }
 
         // The password travels in the environment of that one process, not on the command line where other
         // users of the server could read it. --single-transaction: a consistent copy without locking the site.
@@ -64,6 +87,104 @@ class Backups
         self::prune();
 
         return $packed;
+    }
+
+    /** Whether the site writes the copy itself: asked for (BACKUP_MYSQLDUMP=php), or the server does not let PHP run programs. */
+    public static function writesItself(): bool
+    {
+        $program = trim((string) config('bchsp.backup.mysqldump'));
+
+        return $program === '' || strtolower($program) === 'php' || ! function_exists('proc_open');
+    }
+
+    /**
+     * Write the whole database as SQL, without any program but PHP: every table's definition, then its rows.
+     *
+     * On a connection of its own, so that what it sets does not reach the rest of the request: one view of
+     * the data from start to end (a consistent snapshot, without locking the site), times in UTC as
+     * mysqldump writes them, and rows read one at a time so that a large table does not fill the memory.
+     *
+     * @param  array<string, mixed>  $connection
+     */
+    private static function writeItself(array $connection, string $plain): void
+    {
+        config(['database.connections.backup-copy' => ['charset' => 'utf8mb4', 'collation' => 'utf8mb4_unicode_ci'] + $connection]);
+        DB::purge('backup-copy');
+
+        $pdo = DB::connection('backup-copy')->getPdo();
+        $out = fopen($plain, 'wb');
+
+        try {
+            $pdo->exec("SET NAMES utf8mb4, time_zone = '+00:00'");
+            $pdo->exec('SET SESSION TRANSACTION ISOLATION LEVEL REPEATABLE READ');
+            $pdo->exec('START TRANSACTION WITH CONSISTENT SNAPSHOT');
+
+            fwrite($out, '-- '.$connection['database'].', copied '.now()->toIso8601String()." by the site itself\n"
+                ."SET NAMES utf8mb4;\nSET time_zone = '+00:00';\nSET FOREIGN_KEY_CHECKS = 0;\nSET SQL_MODE = 'NO_AUTO_VALUE_ON_ZERO';\n\n");
+
+            $tables = $pdo->query("SHOW FULL TABLES WHERE Table_type = 'BASE TABLE'")->fetchAll(PDO::FETCH_NUM);
+
+            foreach ($tables as [$table]) {
+                $name = '`'.str_replace('`', '``', $table).'`';
+
+                fwrite($out, "DROP TABLE IF EXISTS $name;\n".$pdo->query("SHOW CREATE TABLE $name")->fetch(PDO::FETCH_NUM)[1].";\n\n");
+
+                // Bytes that are not text (a blob, a binary key) are written as hexadecimal: no character set can spoil them.
+                $binary = [];
+
+                foreach ($pdo->query("SHOW COLUMNS FROM $name")->fetchAll(PDO::FETCH_ASSOC) as $column) {
+                    if (preg_match('/blob|binary|^bit/i', $column['Type'])) {
+                        $binary[$column['Field']] = true;
+                    }
+                }
+
+                $pdo->setAttribute(PDO::MYSQL_ATTR_USE_BUFFERED_QUERY, false);
+                $rows = $pdo->query("SELECT * FROM $name");
+                $batch = [];
+                $size = 0;
+
+                while ($row = $rows->fetch(PDO::FETCH_ASSOC)) {
+                    $values = [];
+
+                    foreach ($row as $field => $value) {
+                        $values[] = match (true) {
+                            $value === null => 'NULL',
+                            isset($binary[$field]) => $value === '' ? "''" : '0x'.bin2hex($value),
+                            default => $pdo->quote((string) $value),
+                        };
+                    }
+
+                    $batch[] = '('.implode(',', $values).')';
+                    $size += strlen(end($batch));
+
+                    // Statements of about half a megabyte: quick to bring back, and under any server's limit.
+                    if ($size > 512 * 1024) {
+                        fwrite($out, "INSERT INTO $name VALUES\n".implode(",\n", $batch).";\n");
+                        $batch = [];
+                        $size = 0;
+                    }
+                }
+
+                $rows->closeCursor();
+                $pdo->setAttribute(PDO::MYSQL_ATTR_USE_BUFFERED_QUERY, true);
+
+                if ($batch !== []) {
+                    fwrite($out, "INSERT INTO $name VALUES\n".implode(",\n", $batch).";\n");
+                }
+
+                fwrite($out, "\n");
+            }
+
+            fwrite($out, "SET FOREIGN_KEY_CHECKS = 1;\n");
+            $pdo->exec('COMMIT');
+
+            if ($tables === []) {
+                throw new RuntimeException('the database has no tables.');
+            }
+        } finally {
+            fclose($out);
+            DB::purge('backup-copy');
+        }
     }
 
     /** Squeeze the copy (text shrinks to a fifth or less) and remove the plain one. */

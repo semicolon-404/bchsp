@@ -7,6 +7,7 @@ return [
 
     'backup' => [
         // The mysqldump program. On XAMPP for Windows: C:\\xampp\\mysql\\bin\\mysqldump.exe
+        // "php", or a server that does not let PHP run programs (shared hosting): the site writes the copy itself.
         'mysqldump' => env('BACKUP_MYSQLDUMP', 'mysqldump'),
         // The database connection to copy. Blank = the one the site uses.
         'connection' => env('BACKUP_CONNECTION'),

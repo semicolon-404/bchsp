@@ -71,6 +71,24 @@ class BackupsAndStatusTest extends TestCase
             && end($process->command) === 'bchsp_site');
     }
 
+    public function test_where_programs_cannot_be_run_the_site_writes_the_copy_itself(): void
+    {
+        $this->assertFalse(Backups::writesItself());
+
+        config(['bchsp.backup.mysqldump' => 'php']);
+        $this->assertTrue(Backups::writesItself());
+
+        // Nothing answers at that address: the copy fails, says so, and no program was tried.
+        $this->onMariaDb();
+        config(['database.connections.pretend.port' => '1']);
+
+        $this->artisan('backup:database')->expectsOutputToContain('The database could not be copied')->assertFailed();
+
+        $this->assertNull(Backups::latest());
+        $this->assertSame([], glob($this->folder.DIRECTORY_SEPARATOR.'*.sql') ?: []);
+        Process::assertNothingRan();
+    }
+
     public function test_a_copy_that_failed_says_why_and_leaves_nothing_behind(): void
     {
         $this->onMariaDb(works: false);
