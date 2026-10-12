@@ -226,16 +226,6 @@ class Announcement extends Model
         return static::current()->where('in_slider', true)->whereNotNull('image_path')->inListOrder()->limit(self::SLIDES)->get();
     }
 
-    /**
-     * Every picture that is showing now, for the page of posters (/posters).
-     *
-     * @return Collection<int, Announcement>
-     */
-    public static function posters(int $limit = 48): Collection
-    {
-        return static::current()->whereNotNull('image_path')->inListOrder()->limit($limit)->get();
-    }
-
     /** The one whose picture opens over the page: the first of those marked for it. One at a time: two windows in a row are a nuisance. */
     public static function popup(): ?Announcement
     {

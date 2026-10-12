@@ -101,7 +101,7 @@ A - Agility'])
         $this->get('/')
             ->assertSee('href="'.route('schedule').'"', false)
             ->assertSee('href="'.route('contact').'"', false)
-            ->assertSee('href="'.route('posters').'"', false);
+            ->assertSee('href="'.route('announcements.index', ['type' => 'activities']).'"', false);
 
         SiteSettings::save(['home.layout' => [['key' => 'departments', 'shown' => true]]]);
 

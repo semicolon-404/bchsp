@@ -45,7 +45,7 @@ class DemoDataTest extends TestCase
 
         // Posters upright and wide, some among the slides, one of them opening over the page.
         $this->assertNotNull(Announcement::popup());
-        $this->assertGreaterThan(10, Announcement::posters()->count());
+        $this->assertGreaterThan(10, Announcement::current()->whereNotNull('image_path')->count());
 
         // Announcements of every type over more than two fiscal years, in every state the list has to show.
         $this->assertGreaterThan(60, Announcement::count());
@@ -87,7 +87,7 @@ class DemoDataTest extends TestCase
         $year = array_key_first(Announcement::fiscalYears());
 
         foreach (['/', '/announcements', '/announcements?type=procurement&year='.$year, '/announcements?page=3', route('announcements.show', $notice),
-            '/posters', '/announcements?type=knowledge&view=cards', route('announcements.show', $post), '/ita', '/ita/'.ItaItem::min('year'), '/downloads', '/menu', '/search?q='.urlencode('ตัวอย่าง'), '/sitemap.xml'] as $address) {
+            '/announcements?type=knowledge&view=cards', route('announcements.show', $post), '/ita', '/ita/'.ItaItem::min('year'), '/downloads', '/menu', '/search?q='.urlencode('ตัวอย่าง'), '/sitemap.xml'] as $address) {
             $this->get($address)->assertOk();
         }
 

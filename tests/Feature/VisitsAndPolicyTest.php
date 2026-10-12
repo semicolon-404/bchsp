@@ -80,7 +80,7 @@ class VisitsAndPolicyTest extends TestCase
         $page = SitePage::factory()->create();
 
         foreach (['/', '/', '/announcements', route('announcements.show', $notice), '/announcements?type=procurement', route('announcements.show', $bid),
-            '/posters', '/ita', '/schedule', '/departments', route('pages.show', $page), '/about', '/contact', '/downloads', '/search?q=xx', '/menu'] as $address) {
+            '/announcements?view=cards', '/ita', '/schedule', '/departments', route('pages.show', $page), '/about', '/contact', '/downloads', '/search?q=xx', '/menu'] as $address) {
             $this->get($address, self::BROWSER)->assertOk();
         }
 

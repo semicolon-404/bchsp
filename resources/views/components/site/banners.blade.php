@@ -1,10 +1,9 @@
 {{--
     The pictures of announcements, where the site shows them for their own sake (App\Models\Announcement):
-    the slides, the grid of posters, and the one that opens over the page. Each leads to its announcement.
+    the slides, and the one that opens over the page. Each leads to its announcement.
 
     <x-site.banners part="banners" />                      the slides as a section of the home page
     <x-site.banners part="stage" :banners="$slides" />     the slider alone, in a frame of the shape given (home page)
-    <x-site.banners part="all" />                          every picture showing now in one grid, for the page of their own (/posters)
     <x-site.banners part="popup" />
 --}}
 @props(['part', 'banners' => null, 'frame' => 'aspect-[4/3]'])
@@ -57,21 +56,6 @@
                     </div>
                 @endif
             </div>
-@elseif ($part === 'all')
-    @php($pictures = Announcement::posters())
-    @if ($pictures->isNotEmpty())
-        {{-- Every poster in a frame of the same upright shape, with its name under it: a tidy row whatever was uploaded. --}}
-        <ul class="mt-8 grid grid-cols-2 gap-4 lg:grid-cols-4">
-            @foreach ($pictures as $poster)
-                <li class="card overflow-hidden p-0">
-                    {!! $framed($poster, 'aspect-[3/4]') !!}
-                    <p class="line-clamp-2 border-t border-line px-3 py-2 text-sm">{{ $poster->localTitle() }}</p>
-                </li>
-            @endforeach
-        </ul>
-    @else
-        <p class="card mt-8 text-muted">{{ __('Nothing has been added here yet.') }}</p>
-    @endif
 @elseif ($part === 'popup')
     @php($popup = Announcement::popup())
     @if ($popup)

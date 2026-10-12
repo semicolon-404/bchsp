@@ -83,7 +83,6 @@ class Visits
         return match (true) {
             $route === 'home' => 'home',
             $route === 'ita' => 'ita',
-            $route === 'posters' => 'news',
             $route === 'schedule' => 'schedule',
             str_starts_with($route, 'departments.') => 'departments',
             in_array($route, ['pages.show', 'about'], true) => 'pages',

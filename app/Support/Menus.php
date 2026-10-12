@@ -148,10 +148,6 @@ class Menus
                     ->map(fn (AnnouncementType $one) => $link($one->localName(), route('announcements.index', ['type' => $one->slug]), $type === $one->slug))
                     ->all();
                 // An administrator can leave these out of the list (Site settings > Menus).
-                if (! in_array('posters', self::newsHidden(), true)) {
-                    $children[] = $link(__('Posters'), route('posters'), $request->routeIs('posters'));
-                }
-
                 if (! in_array('downloads', self::newsHidden(), true)) {
                     $children[] = $link(__('Downloads'), route('downloads'), $request->routeIs('downloads'));
                 }
@@ -163,7 +159,7 @@ class Menus
                 return [
                     'url' => route('announcements.index'),
                     // Any announcement is news, except the list of procurement notices, which has its own place.
-                    'active' => ($request->routeIs('announcements.*') && $type !== self::PROCUREMENT) || $request->routeIs('downloads', 'posters'),
+                    'active' => ($request->routeIs('announcements.*') && $type !== self::PROCUREMENT) || $request->routeIs('downloads'),
                     'children' => $children,
                 ];
 
@@ -187,7 +183,7 @@ class Menus
     public const OWN_PLACES = ['top' => 'In the top bar', 'about' => 'Under About us', 'news' => 'Under News'];
 
     /** What News lists that can be left out => what the settings page calls it. */
-    public const NEWS_OPTIONAL = ['posters' => 'Posters', 'downloads' => 'Downloads'];
+    public const NEWS_OPTIONAL = ['downloads' => 'Downloads'];
 
     /** How many links of their own an administrator can add. */
     public const MAX_OWN = 12;

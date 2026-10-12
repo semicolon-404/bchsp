@@ -148,7 +148,7 @@
                 <ul>
                     @foreach ([
                         [route('announcements.index', ['type' => 'procurement']), 'Procurement', 'Procurement plans, invitations to bid and results, by fiscal year.'],
-                        [route('posters'), 'Campaigns and notices', 'Campaign posters and one-page notices from the hospital.'],
+                        [route('announcements.index', ['type' => 'activities']), 'Activities', 'Photographs and news of what the hospital has been doing.'],
                         [route('announcements.index', ['type' => 'knowledge']), 'Health knowledge', 'Health knowledge written by the hospital\'s own staff.'],
                         [route('schedule'), 'Clinic schedule', 'Which clinic is open on which day, and at what time.'],
                         [route('about'), 'About us', 'History, vision, structure and the people who run the hospital.'],

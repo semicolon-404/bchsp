@@ -90,7 +90,7 @@ class SearchAndSeoTest extends TestCase
 
         $this->assertNotFalse(simplexml_load_string($xml));
 
-        foreach ([route('home'), route('contact'), route('announcements.show', $notice), route('posters'), route('pages.show', $page), route('departments.show', $department), route('ita'), route('ita', ['year' => 2568])] as $url) {
+        foreach ([route('home'), route('contact'), route('announcements.show', $notice), route('pages.show', $page), route('departments.show', $department), route('ita'), route('ita', ['year' => 2568])] as $url) {
             $this->assertStringContainsString('<loc>'.e($url).'</loc>', $xml);
         }
 

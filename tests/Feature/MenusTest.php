@@ -81,13 +81,13 @@ class MenusTest extends TestCase
         $this->get('/about')->assertDontSee('New name');
     }
 
-    public function test_news_opens_onto_every_kind_of_announcement_but_procurement_then_posters_and_downloads(): void
+    public function test_news_opens_onto_every_kind_of_announcement_but_procurement_then_downloads(): void
     {
         AnnouncementType::factory()->create(['name' => 'Public hearings', 'sort_order' => 9]);
 
         $news = collect(Menus::items('top'))->firstWhere('key', 'news');
 
-        $this->assertSame(['News', 'Job openings', 'Health knowledge', 'Activities', 'Public hearings', 'Posters', 'Downloads'], array_column($news['children'], 'label'));
+        $this->assertSame(['News', 'Job openings', 'Health knowledge', 'Activities', 'Public hearings', 'Downloads'], array_column($news['children'], 'label'));
         $this->assertSame(route('announcements.index', ['type' => 'jobs']), $news['children'][1]['url']);
 
         $procurement = collect(Menus::items('top'))->firstWhere('key', 'procurement');
@@ -122,7 +122,7 @@ class MenusTest extends TestCase
         $page = SitePage::factory()->create(['section' => 'about']);
 
         $this->assertSame(['home'], $this->markedOn('/'));
-        $this->assertSame(['news'], $this->markedOn('/posters'));
+        $this->assertSame(['news'], $this->markedOn('/announcements?view=cards'));
         $this->assertSame(['news'], $this->markedOn(route('announcements.show', $notice)));
         $this->assertSame(['news'], $this->markedOn('/announcements?type=jobs'));
         $this->assertSame(['procurement'], $this->markedOn('/announcements?type=procurement'));
@@ -152,7 +152,7 @@ class MenusTest extends TestCase
 
         $this->get('/menu')
             ->assertOk()
-            ->assertSeeInOrder(['Everything on this website', 'About us', 'History of the hospital', 'Departments', 'Contact us', 'ITA', 'News', 'Job openings', 'Health knowledge', 'Posters', 'Downloads', 'Procurement', 'For staff']);
+            ->assertSeeInOrder(['Everything on this website', 'About us', 'History of the hospital', 'Departments', 'Contact us', 'ITA', 'News', 'Job openings', 'Health knowledge', 'Downloads', 'Procurement', 'For staff']);
     }
 
     public function test_what_staff_use_has_a_page_of_its_own_out_of_the_public_menu_and_of_search_engines(): void

@@ -102,18 +102,12 @@ class PicturesAndAlbumsTest extends TestCase
         $this->get(route('announcements.show', $plain))->assertOk()->assertDontSee('photograph');
     }
 
-    public function test_every_picture_showing_now_is_on_the_page_of_posters(): void
+    public function test_the_page_of_posters_is_the_list_shown_as_cards(): void
     {
-        $poster = Announcement::factory()->create(['title' => 'Ten tips to stop smoking', 'image_path' => 'announcements/pictures/tips.webp']);
-        Announcement::factory()->create(['title' => 'Words only']);
-        Announcement::factory()->ended()->create(['title' => 'Last year', 'image_path' => 'announcements/pictures/old.webp']);
+        Announcement::factory()->create(['title' => 'Ten tips to stop smoking', 'image_path' => 'announcements/pictures/tips.webp']);
 
-        $this->get('/posters')
-            ->assertOk()
-            ->assertSee('<a href="'.route('announcements.show', $poster).'" class="relative block', false)
-            ->assertSee('tips.webp', false)
-            ->assertDontSee('Words only')
-            ->assertDontSee('old.webp', false);
+        $this->get('/posters')->assertRedirect('/announcements?view=cards');
+        $this->get('/announcements?view=cards')->assertOk()->assertSee('tips.webp', false);
     }
 
     public function test_an_address_of_an_article_shared_before_still_leads_somewhere(): void

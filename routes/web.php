@@ -25,7 +25,8 @@ Route::view('/about', 'about')->name('about');
 Route::view('/contact', 'contact')->name('contact');
 Route::view('/schedule', 'schedule')->name('schedule');
 Route::view('/downloads', 'downloads')->name('downloads');
-Route::view('/posters', 'posters')->name('posters');
+// The page of posters is the list of announcements shown as cards: an address shared before still leads there.
+Route::redirect('/posters', '/announcements?view=cards', 301);
 Route::get('/ita/{year?}', [ItaController::class, 'show'])->whereNumber('year')->name('ita');
 
 // Everything on the site in one list (the dock's "Menu" tab), and the page of services for staff.
