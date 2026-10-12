@@ -52,6 +52,9 @@
                 @endif
             </dl>
 
+            {{-- Every department's own number is on a page of its own. --}}
+            <p class="lg:col-span-2"><a href="{{ route('phones') }}" class="inline-flex items-center gap-2 font-semibold text-brand underline"><x-heroicon-m-phone class="size-4" aria-hidden="true" />{{ __('Phone numbers of every department') }} &rarr;</a></p>
+
             @if ($map)
                 {{--
                     The map comes from Google, which learns the visitor's address when it loads. So it loads

@@ -6,6 +6,7 @@ use App\Models\Announcement;
 use App\Models\Department;
 use App\Models\ItaItem;
 use App\Models\SitePage;
+use App\Support\SiteSettings;
 use Illuminate\Http\Response;
 
 /** Machine-readable files for search engines. */
@@ -27,6 +28,19 @@ class SeoController extends Controller
         return response(implode("\n", $lines)."\n", 200, ['Content-Type' => 'text/plain; charset=UTF-8']);
     }
 
+    /**
+     * The newest announcements as a feed (RSS 2.0), for a reader's news program or another site that wants
+     * to show the hospital's news as it comes out. Titles and the start of each text; never a draft.
+     */
+    public function feed(): Response
+    {
+        $items = Announcement::published()->with('type')->orderByDesc('starts_at')->orderByDesc('id')->limit(30)->get();
+
+        return response()
+            ->view('seo.feed', ['items' => $items, 'name' => SiteSettings::name()])
+            ->header('Content-Type', 'application/rss+xml; charset=UTF-8');
+    }
+
     /** Every page the public can open, with when it last changed where that is known. */
     public function sitemap(): Response
     {
@@ -37,6 +51,7 @@ class SeoController extends Controller
             ['loc' => route('contact'), 'priority' => '0.7'],
             ['loc' => route('downloads'), 'priority' => '0.5'],
             ['loc' => route('updates'), 'priority' => '0.4'],
+            ['loc' => route('phones'), 'priority' => '0.6'],
         ]);
 
         foreach (ItaItem::years() as $index => $year) {

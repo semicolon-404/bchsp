@@ -1,4 +1,5 @@
 import './bootstrap';
+import { startFilter } from './filter';
 import { startMenu } from './menu';
 import { startMotion } from './motion';
 import { startPopup } from './popup';
@@ -16,3 +17,4 @@ startSwipe();
 startSpot();
 startShare();
 startMotion();
+startFilter();

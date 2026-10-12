@@ -33,6 +33,8 @@
     @else
         {{-- One address for a page, whatever was added to it; and how a link to it looks when shared. --}}
         <link rel="canonical" href="{{ url()->current() }}">
+        {{-- For a reader's news program: the newest announcements as a feed. --}}
+        <link rel="alternate" type="application/rss+xml" title="{{ $name }}" href="{{ route('feed') }}">
         <meta property="og:type" content="website">
         <meta property="og:site_name" content="{{ $name }}">
         <meta property="og:title" content="{{ $title ?: $name }}">

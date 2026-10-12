@@ -20,6 +20,7 @@
 
         <h1 class="text-3xl sm:text-4xl">{{ $page->localTitle() }}</h1>
         <div class="rich mt-8">{!! $page->renderedBody() !!}</div>
+        <x-site.updated :at="$page->updated_at" class="mt-10" />
 
         @if ($before || $after)
             <nav class="mt-12 grid gap-3 border-t border-line pt-6 sm:grid-cols-2" aria-label="{{ __('Other pages of this group') }}"

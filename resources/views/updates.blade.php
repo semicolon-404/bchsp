@@ -9,6 +9,12 @@
     $planned = SiteUpdate::planned()->get();
     $released = SiteUpdate::released()->get();
     $newest = $released->first();
+
+    // This month in figures, counted from what is on the site: it keeps itself up to date.
+    $month = App\Models\Announcement::published()->where('starts_at', '>=', now()->startOfMonth());
+    $posted = (clone $month)->count();
+    $posting = (clone $month)->whereNotNull('department_id')->distinct()->count('department_id');
+    $opened = App\Support\Visits::totals()['month'];
 @endphp
 <x-layouts.site :title="__('Website updates')" :description="__('What is new on the website of :name, and what is being worked on.', ['name' => App\Support\SiteSettings::name()])">
     <div class="wrap max-w-4xl py-10 sm:py-14">
@@ -31,6 +37,22 @@
                 @endforeach
             </dl>
         @endif
+
+        <section class="mt-10" aria-labelledby="month-heading">
+            <h2 id="month-heading" class="text-2xl">{{ __('This month on the site') }}</h2>
+            <dl class="mt-4 grid grid-cols-3 gap-3">
+                @foreach ([
+                    ['Announcements posted', $posted],
+                    ['Departments that posted', $posting],
+                    ['Pages opened', $opened],
+                ] as [$label, $figure])
+                    <div class="card px-3 py-4 text-center">
+                        <dd class="font-mono text-2xl text-brand" data-count>{{ number_format($figure) }}</dd>
+                        <dt class="mt-1 text-sm text-muted">{{ __($label) }}</dt>
+                    </div>
+                @endforeach
+            </dl>
+        </section>
 
         @if ($planned->isNotEmpty())
             <section class="mt-10" aria-labelledby="planned-heading">

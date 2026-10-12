@@ -104,5 +104,27 @@
 
             <div class="mt-10">{{ $announcements->links('components.site.pagination') }}</div>
         @endif
+
+        {{-- What others have read most, on the first page of the whole list: a way in for someone who came with nothing in mind. --}}
+        @if ($mostRead->isNotEmpty())
+            <section class="mt-12" aria-labelledby="most-read-heading">
+                <h2 id="most-read-heading" class="text-xl">{{ __('Most read') }}</h2>
+                <ol class="card mt-3 p-0">
+                    @foreach ($mostRead as $one)
+                        <li class="border-b border-line last:border-b-0">
+                            <a href="{{ route('announcements.show', $one) }}" class="group flex items-center gap-4 px-4 py-3 no-underline">
+                                <span class="w-6 shrink-0 text-center font-mono text-lg font-semibold text-brand" aria-hidden="true">{{ $loop->iteration }}</span>
+                                <span class="min-w-0 flex-1 text-ink group-hover:text-brand">{{ $one->localTitle() }}</span>
+                                <span class="shrink-0 font-mono text-xs text-muted">{{ trans_choice('{1} opened :count time|[2,*] opened :count times', $one->views, ['count' => number_format($one->views)]) }}</span>
+                            </a>
+                        </li>
+                    @endforeach
+                </ol>
+            </section>
+        @endif
+
+        <p class="mt-10 text-sm text-muted">
+            <a href="{{ route('feed') }}" class="inline-flex items-center gap-1 underline"><x-heroicon-m-rss class="size-4" aria-hidden="true" />{{ __('Follow new announcements (RSS)') }}</a>
+        </p>
     </div>
 </x-layouts.site>

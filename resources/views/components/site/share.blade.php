@@ -11,6 +11,9 @@
     <span class="text-sm text-muted">{{ __('Share') }}</span>
     <a href="https://social-plugins.line.me/lineit/share?url={{ urlencode($url) }}" target="_blank" rel="noopener noreferrer" class="chip min-h-9 px-3 text-sm">LINE<span class="sr-only"> {{ __('(opens in a new tab)') }}</span></a>
     <a href="https://www.facebook.com/sharer/sharer.php?u={{ urlencode($url) }}" target="_blank" rel="noopener noreferrer" class="chip min-h-9 px-3 text-sm">Facebook<span class="sr-only"> {{ __('(opens in a new tab)') }}</span></a>
+    <button type="button" class="chip min-h-9 gap-1 px-3 text-sm" data-print hidden>
+        <x-heroicon-m-printer class="size-4" aria-hidden="true" />{{ __('Print') }}
+    </button>
     <button type="button" class="chip min-h-9 gap-1 px-3 text-sm" data-copy="{{ $url }}" data-copied="{{ __('Copied') }}" hidden>
         <x-heroicon-m-link class="size-4" aria-hidden="true" /><span data-copy-label>{{ __('Copy link') }}</span>
     </button>

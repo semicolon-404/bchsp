@@ -14,6 +14,9 @@
         <div class="min-w-0">
             <p class="truncate font-medium">{{ $department->localName() }}</p>
             <p class="flex flex-wrap items-center gap-x-2 font-mono text-xs text-muted">
+                @if ($announcement->isNew())
+                    <span class="inline-flex items-center rounded bg-brand px-1.5 font-sans text-xs font-semibold text-on-brand">{{ __('New') }}</span>
+                @endif
                 @if ($announcement->pinned_in_department)
                     <span class="inline-flex items-center gap-1 rounded border border-brand px-1.5 font-sans font-semibold text-brand"><x-heroicon-s-bookmark class="size-3" aria-hidden="true" />{{ __('Pinned') }}</span>
                 @endif

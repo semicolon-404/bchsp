@@ -190,6 +190,7 @@
                                 <p class="border-t border-line px-5 py-3 text-sm"><a href="{{ route('schedule') }}" class="font-semibold text-brand underline">{{ __('The whole week') }} &rarr;</a></p>
                             </section>
                         @endif
+                        <x-site.updated :at="$department->updated_at" />
                     </aside>
                 @endif
 

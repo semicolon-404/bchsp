@@ -51,6 +51,8 @@ class AnnouncementController extends Controller
             'type' => $type,
             'department' => $department,
             'departments' => $departments,
+            // Only on the whole list as it opens: narrowed, or further on, the reader is after something already.
+            'mostRead' => $type || $department || $year || $period || $term !== '' || (int) $request->query('page', 1) > 1 ? collect() : Announcement::mostRead(),
             'types' => AnnouncementType::orderBy('sort_order')->orderBy('name')->get(),
             'year' => $year,
             'years' => $years,

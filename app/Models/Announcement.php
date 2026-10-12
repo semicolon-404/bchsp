@@ -226,6 +226,25 @@ class Announcement extends Model
         return $this->status === self::STATUS_PUBLISHED && (bool) $this->starts_at?->isPast();
     }
 
+    /** How many days one that has just come out is marked as new. */
+    public const NEW_FOR_DAYS = 7;
+
+    /** Out within the last few days: marked "New" in every list. */
+    public function isNew(): bool
+    {
+        return $this->isPublished() && $this->starts_at->gte(now()->subDays(self::NEW_FOR_DAYS));
+    }
+
+    /**
+     * What has been opened most among those that came out in the last months: for "Most read" beside the list.
+     *
+     * @return Collection<int, Announcement>
+     */
+    public static function mostRead(int $limit = 5, int $months = 6): Collection
+    {
+        return static::published()->with('type')->where('starts_at', '>=', now()->subMonthsNoOverflow($months))->where('views', '>', 0)->orderByDesc('views')->orderByDesc('starts_at')->limit($limit)->get();
+    }
+
     /** Still pinned to the top: pinned, and not ended. */
     public function isPinnedNow(): bool
     {

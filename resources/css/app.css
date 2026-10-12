@@ -697,3 +697,41 @@ html.is-mourning {
         animation-duration: 180ms;
     }
 }
+
+/*
+ * On paper: the page's own content and nothing of the site around it. Black on white whatever look the
+ * reader has chosen, links written out as they are, and what only makes sense on a screen left off.
+ */
+@media print {
+    :root, :root[data-theme='light'] {
+        --color-page: #ffffff;
+        --color-surface: #ffffff;
+        --color-raised: #ffffff;
+        --color-ink: #000000;
+        --color-muted: #333333;
+        --color-line: #bbbbbb;
+        --color-brand: #000000;
+    }
+
+    body {
+        background: #ffffff;
+    }
+
+    body > header, body > footer, .dock, dialog, [role='group'][aria-label], nav, details, iframe {
+        display: none !important;
+    }
+
+    /* What had not yet risen into place on the screen is on the paper all the same. */
+    .rise {
+        opacity: 1 !important;
+        transform: none !important;
+    }
+
+    .card::after, .code-block::after {
+        display: none;
+    }
+
+    a {
+        color: #000000;
+    }
+}

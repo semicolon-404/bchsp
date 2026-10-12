@@ -23,6 +23,7 @@ Route::get('/departments/{department}', [DepartmentController::class, 'show'])->
 
 Route::view('/about', 'about')->name('about');
 Route::view('/contact', 'contact')->name('contact');
+Route::view('/phones', 'phones')->name('phones');
 Route::view('/updates', 'updates')->name('updates');
 Route::view('/schedule', 'schedule')->name('schedule');
 Route::view('/downloads', 'downloads')->name('downloads');
@@ -46,6 +47,7 @@ Route::get('/admin/reports-download', [ReportController::class, 'download'])->na
 // For search engines (App\Http\Controllers\SeoController).
 Route::get('/robots.txt', [SeoController::class, 'robots'])->name('robots');
 Route::get('/sitemap.xml', [SeoController::class, 'sitemap'])->name('sitemap');
+Route::get('/feed', [SeoController::class, 'feed'])->name('feed');
 
 // The language switch (components/site/language-switch). Remembered for a year; read by the SetLocale middleware.
 Route::get('/language/{locale}', function (string $locale) {
