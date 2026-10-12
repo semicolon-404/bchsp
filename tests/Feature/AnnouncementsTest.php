@@ -76,6 +76,35 @@ class AnnouncementsTest extends TestCase
         $this->assertSame(2568, Announcement::fiscalYearOf(Carbon::parse('2025-09-30 23:59', 'Asia/Bangkok')));
     }
 
+    public function test_the_list_is_narrowed_to_today_this_week_this_month_or_dates_of_the_readers_own(): void
+    {
+        // A Sunday: the week began on Monday the 9th.
+        $this->travelTo(Carbon::parse('2026-11-15 09:00', 'Asia/Bangkok'));
+
+        Announcement::factory()->create(['title' => 'This morning', 'starts_at' => '2026-11-15 08:00']);
+        Announcement::factory()->create(['title' => 'On Tuesday', 'starts_at' => '2026-11-10 09:00']);
+        Announcement::factory()->create(['title' => 'Early this month', 'starts_at' => '2026-11-02 09:00']);
+        Announcement::factory()->create(['title' => 'In October', 'starts_at' => '2026-10-20 09:00']);
+
+        $this->get('/announcements')->assertSeeInOrder(['Any time', 'Today', 'This week', 'This month', 'Fiscal year', 'Choose the dates'])->assertSee('4 announcements');
+
+        $this->get('/announcements?year=today')->assertSee('1 announcement')->assertSee('This morning')->assertDontSee('On Tuesday');
+        $this->get('/announcements?year=week')->assertSee('2 announcements')->assertSee('On Tuesday')->assertDontSee('Early this month');
+        $this->get('/announcements?year=month')->assertSee('3 announcements')->assertSee('Early this month')->assertDontSee('In October');
+
+        // Both days are counted whole; the choice and the dates are kept from page to page and in the other choices.
+        $this->get('/announcements?year=custom&from=2026-10-20&to=2026-11-02')
+            ->assertSee('2 announcements')->assertSee('In October')->assertSee('Early this month')->assertDontSee('On Tuesday')
+            ->assertSee('value="2026-10-20"', false)->assertSee('value="2026-11-02"', false)
+            ->assertSee('year=custom&amp;from=2026-10-20&amp;to=2026-11-02&amp;view=cards', false);
+
+        // The wrong way round is put right; one date alone is enough; nonsense is nothing.
+        $this->get('/announcements?year=custom&from=2026-11-02&to=2026-10-20')->assertSee('2 announcements');
+        $this->get('/announcements?year=custom&from=2026-11-10')->assertSee('2 announcements')->assertDontSee('Early this month');
+        $this->get('/announcements?year=custom&from=2026-13-45&to=abc')->assertOk()->assertSee('4 announcements');
+        $this->get('/announcements?year=custom&from[]=1')->assertOk()->assertSee('4 announcements');
+    }
+
     public function test_the_list_is_narrowed_by_fiscal_year_and_each_year_says_how_many_it_holds(): void
     {
         $this->travelTo(Carbon::parse('2026-11-15 09:00', 'Asia/Bangkok'));

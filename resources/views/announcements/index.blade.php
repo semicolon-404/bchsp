@@ -1,11 +1,12 @@
 {{--
     /announcements: every announcement that is out, pinned ones first, then the newest. It is also the archive:
-    one that has ended stays here. Narrowed by type (the row of chips), by fiscal year and by a word in the title.
+    one that has ended stays here. Narrowed by type (the row of chips), by when it came out (a fiscal year, today,
+    this week, this month, or two dates of the reader's own) and by a word in the title.
     Shown as rows, or as cards with each one's cover (?view=cards): the choice is in the address, and kept from page to page.
 --}}
 @php
     // The address of this list with one thing changed, the rest kept; the page number starts over.
-    $with = fn (array $change) => route('announcements.index', array_filter(array_merge(['type' => $type?->slug, 'year' => $year, 'q' => $term, 'view' => $look === 'cards' ? 'cards' : null], $change), fn ($value) => filled($value)));
+    $with = fn (array $change) => route('announcements.index', array_filter(array_merge(['type' => $type?->slug, 'year' => $year ?? $period, 'from' => $from, 'to' => $to, 'q' => $term, 'view' => $look === 'cards' ? 'cards' : null], $change), fn ($value) => filled($value)));
 @endphp
 <x-layouts.site :title="($type ? $type->localName() : __('Announcements')).($year ? ' '.$year : '')" :description="__('Announcements, procurement notices and job openings from :name.', ['name' => App\Support\SiteSettings::name()])">
     <div class="wrap py-10 sm:py-14">
@@ -16,13 +17,13 @@
             <nav class="mt-6 flex flex-wrap gap-2" aria-label="{{ __('Types') }}">
                 <a href="{{ $with(['type' => null]) }}" @class(['chip', 'is-on' => ! $type]) aria-current="{{ $type ? 'false' : 'page' }}">{{ __('All') }}</a>
                 @foreach ($types as $one)
-                    <a href="{{ $with(['type' => $one->slug, 'year' => null]) }}" @class(['chip gap-2', 'is-on' => $type?->is($one)]) aria-current="{{ $type?->is($one) ? 'page' : 'false' }}"><x-site.type-mark :type="$one" bare />{{ $one->localName() }}</a>
+                    <a href="{{ $with(['type' => $one->slug, 'year' => $period]) }}" @class(['chip gap-2', 'is-on' => $type?->is($one)]) aria-current="{{ $type?->is($one) ? 'page' : 'false' }}"><x-site.type-mark :type="$one" bare />{{ $one->localName() }}</a>
                 @endforeach
             </nav>
         @endif
 
         {{-- Sent with GET: the address of what was found can be shared, and nothing typed here is kept by the site. --}}
-        <form action="{{ route('announcements.index') }}" method="get" role="search" class="mt-4 flex flex-wrap items-end gap-3">
+        <form action="{{ route('announcements.index') }}" method="get" role="search" class="group mt-4 flex flex-wrap items-end gap-3">
             @if ($type)
                 <input type="hidden" name="type" value="{{ $type->slug }}">
             @endif
@@ -30,22 +31,40 @@
                 <input type="hidden" name="view" value="cards">
             @endif
             <label class="block">
-                <span class="mb-1 block text-sm text-muted">{{ __('Fiscal year') }}</span>
+                <span class="mb-1 block text-sm text-muted">{{ __('Period') }}</span>
                 <select name="year" class="min-h-11 rounded-md border border-line bg-surface px-3 text-ink">
-                    <option value="">{{ __('Every year') }}</option>
-                    @foreach ($years as $one => $count)
-                        <option value="{{ $one }}" @selected($one === $year)>{{ $one }} ({{ number_format($count) }})</option>
+                    <option value="">{{ __('Any time') }}</option>
+                    @foreach (App\Http\Controllers\AnnouncementController::PERIODS as $one => $label)
+                        @continue($one === 'custom')
+                        <option value="{{ $one }}" @selected($one === $period)>{{ __($label) }}</option>
                     @endforeach
+                    <optgroup label="{{ __('Fiscal year') }}">
+                        @foreach ($years as $one => $count)
+                            <option value="{{ $one }}" @selected($one === $year)>{{ $one }} ({{ number_format($count) }})</option>
+                        @endforeach
+                    </optgroup>
+                    <option value="custom" @selected($period === 'custom')>{{ __('Choose the dates') }}…</option>
                 </select>
             </label>
+            {{-- The two dates take room only while "Choose the dates" is picked: by the browser at once, and by the server after sending. --}}
+            <div @class(['items-end gap-3 group-has-[option[value=custom]:checked]:flex', 'flex' => $period === 'custom', 'hidden' => $period !== 'custom'])>
+                <label class="block">
+                    <span class="mb-1 block text-sm text-muted">{{ __('From date') }}</span>
+                    <input type="date" name="from" value="{{ $from }}" class="min-h-11 rounded-md border border-line bg-surface px-3 text-ink">
+                </label>
+                <label class="block">
+                    <span class="mb-1 block text-sm text-muted">{{ __('To date') }}</span>
+                    <input type="date" name="to" value="{{ $to }}" class="min-h-11 rounded-md border border-line bg-surface px-3 text-ink">
+                </label>
+            </div>
             <label class="block min-w-0 flex-1 basis-56">
                 <span class="mb-1 block text-sm text-muted">{{ __('Word in the title') }}</span>
                 <input type="search" name="q" value="{{ $term }}" maxlength="80" placeholder="{{ __('e.g. medicine, dental, interview') }}"
                        class="min-h-11 w-full rounded-md border border-line bg-surface px-3 text-ink placeholder:text-muted">
             </label>
             <button class="btn btn-brand"><x-heroicon-m-funnel class="size-5" aria-hidden="true" />{{ __('Show') }}</button>
-            @if ($year || $term !== '')
-                <a href="{{ $with(['year' => null, 'q' => null]) }}" class="btn btn-line">{{ __('Clear') }}</a>
+            @if ($year || $period || $term !== '')
+                <a href="{{ $with(['year' => null, 'from' => null, 'to' => null, 'q' => null]) }}" class="btn btn-line">{{ __('Clear') }}</a>
             @endif
         </form>
 
