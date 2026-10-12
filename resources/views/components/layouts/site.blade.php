@@ -81,7 +81,9 @@
     <header class="sticky top-0 z-40 border-b border-line bg-page/90 backdrop-blur">
         <div class="wrap flex min-h-16 items-center gap-3 py-2">
             <a href="{{ route('home') }}" class="flex min-w-0 items-center gap-3 font-semibold text-ink no-underline">
-                @if ($logo)
+                {{-- Switched off in Site settings: the name alone, with neither the logo nor the mark that stands in for it. --}}
+                @if (! SiteSettings::showsLogo())
+                @elseif ($logo)
                     <img src="{{ $logo }}" alt="" class="h-8 w-auto shrink-0">
                 @else
                     <span class="flex size-8 shrink-0 items-center justify-center rounded bg-brand text-on-brand" aria-hidden="true">

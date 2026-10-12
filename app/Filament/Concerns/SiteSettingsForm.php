@@ -250,8 +250,8 @@ trait SiteSettingsForm
                             ->maxSize(2048)
                             ->helperText(__('PNG, JPG or WebP, up to 2 MB. A square or wide picture on a clear background reads best.')),
                         Toggle::make(self::field('site.show_logo'))
-                            ->label(__('Show the logo'))
-                            ->helperText(__('Switched off, the site shows the name alone; the picture is kept.'))
+                            ->label(__('Show the logo in the top bar'))
+                            ->helperText(__('Switched off, the top bar shows the name alone. The home page keeps the logo.'))
                             ->inline(false),
                         TextInput::make(self::field('site.motto'))
                             ->label(__('Motto (optional)'))
