@@ -10,7 +10,8 @@ use Illuminate\Mail\Mailables\Envelope;
 
 /**
  * Sent to the administrators when something on System status is wrong (App\Console\Commands\NotifyOfProblems):
- * last night's backup did not run, the disk is nearly full. Plain text, so that it reads in any mail program.
+ * last night's backup did not run, the disk is nearly full. A page with the site's colour, and the same words as
+ * plain text for a mail program that shows nothing else.
  */
 class SystemProblems extends Mailable
 {
@@ -26,6 +27,6 @@ class SystemProblems extends Mailable
 
     public function content(): Content
     {
-        return new Content(text: 'mail.system-problems');
+        return new Content(html: 'mail.system-problems-html', text: 'mail.system-problems');
     }
 }

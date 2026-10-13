@@ -80,7 +80,17 @@ class HomeScreenAndAlertsTest extends TestCase
 
         Mail::assertSent(SystemProblems::class, fn (SystemProblems $mail) => $mail->hasTo('admin@example.org') && ! $mail->hasTo('author@example.org') && $mail->problems !== []);
 
-        $text = (new SystemProblems([['name' => 'Backup', 'state' => 'problem', 'found' => 'None yet', 'advice' => 'Take one now.']]))->render();
+        $problems = [['name' => 'Backup', 'state' => 'problem', 'found' => 'None yet', 'advice' => 'Take one now.']];
+
+        // The page a mail program shows, with the way to System status as a button.
+        $page = (new SystemProblems($problems))->render();
+        $this->assertStringContainsString('<h1', $page);
+        $this->assertStringContainsString('None yet', $page);
+        $this->assertStringContainsString('Take one now.', $page);
+        $this->assertStringContainsString('href="'.url('/admin/system-status').'"', $page);
+
+        // And the same in plain text, for one that shows nothing else.
+        $text = view('mail.system-problems', ['problems' => $problems])->render();
 
         $this->assertStringContainsString('Backup: None yet', $text);
         $this->assertStringContainsString('Take one now.', $text);
