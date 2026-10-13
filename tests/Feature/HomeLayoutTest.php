@@ -150,6 +150,37 @@ A - Agility'])
         $this->get('/')->assertDontSee('<dialog', false);
     }
 
+    public function test_under_the_welcome_are_what_people_come_to_do_and_at_the_foot_how_to_call(): void
+    {
+        SiteSettings::save(['contact.phone' => '044-579076', 'contact.emergency_phone' => '1669', 'contact.address' => '221 Moo 4, Buachet, Surin']);
+
+        $this->get('/')
+            ->assertSeeInOrder([
+                '<h1', 'aria-label="What would you like to do?"', 'href="'.route('schedule').'"', 'href="'.route('phones').'"', 'href="'.route('departments.index').'"',
+                'aria-label="Shortcuts"', 'id="door-0"',
+                'id="reach-heading"', 'href="tel:1669"', 'href="tel:044579076"', '221 Moo 4, Buachet, Surin',
+            ], false)
+            // A place with nothing in it yet is not offered.
+            ->assertDontSee('href="'.route('faq').'"', false)
+            ->assertDontSee('href="'.route('services').'"', false);
+
+        // With no number to call there is no such band, and nothing to dial anywhere on the page.
+        SiteSettings::save(['contact.phone' => null, 'contact.emergency_phone' => null]);
+        $this->get('/')->assertDontSee('id="reach-heading"', false)->assertDontSee('tel:', false);
+    }
+
+    public function test_beside_the_news_are_its_kinds_and_what_is_coming_up_and_read_most(): void
+    {
+        Announcement::factory()->create(['title' => 'Blood drive', 'event_on' => now()->addDays(5)->toDateString(), 'views' => 40]);
+        Announcement::factory()->create(['title' => 'Already happened', 'event_on' => now()->subDays(5)->toDateString()]);
+
+        $page = $this->get('/')
+            ->assertSeeInOrder(['<section id="news"', 'href="'.route('announcements.index', ['type' => 'jobs']).'"', 'Coming up', 'Blood drive', 'Most read', 'Blood drive'], false)
+            ->getContent();
+
+        $this->assertStringNotContainsString('Already happened', str($page)->between('Coming up', 'Most read')->toString());
+    }
+
     public function test_the_section_reads_in_thai(): void
     {
         app()->setLocale('th');

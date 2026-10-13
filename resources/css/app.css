@@ -261,7 +261,8 @@ html.is-mourning {
     .home-screen {
         display: flex;
         align-items: center;
-        min-height: calc(100svh - 4rem);
+        /* The height of the window, but never taller than a page of it: on a tall screen the welcome does not push the news out of sight. */
+        min-height: min(calc(100svh - 4rem), 46rem);
     }
 
     .home-screen > * {

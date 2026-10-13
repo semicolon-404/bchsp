@@ -28,6 +28,24 @@
     $posting = $shows('announcements')
         ? App\Models\Department::shown()->whereKey($lately = App\Models\Announcement::current()->whereNotNull('department_id')->latest('starts_at')->limit(60)->pluck('department_id')->unique()->take(8)->values())->get()->sortBy(fn ($one) => $lately->search($one->id))->values()
         : collect();
+    // Beside the news as the page is read on: what has been given a day that is still to come, and what is read most.
+    $coming = $shows('announcements') ? App\Models\Announcement::published()->whereDate('event_on', '>=', now()->toDateString())->orderBy('event_on')->orderBy('id')->limit(3)->get() : collect();
+    $mostRead = $shows('announcements') ? App\Models\Announcement::mostRead(4) : collect();
+    $types = $shows('announcements') ? App\Models\AnnouncementType::orderBy('sort_order')->orderBy('name')->get() : collect();
+
+    // What people most often come to do, as large tiles under the first screen. A place is offered once it has something in it.
+    $actions = array_values(array_filter([
+        [route('schedule'), 'Clinic schedule', 'When each clinic is open', 'calendar-days'],
+        [route('phones'), 'Phone numbers', 'Every department\'s number', 'phone'],
+        [route('announcements.index'), 'Announcements', 'News and notices', 'megaphone'],
+        [route('departments.index'), 'Departments', 'Who looks after what', 'building-office-2'],
+        App\Models\StaffLink::forThePublic()->exists() ? [route('services'), 'Services online', 'Without coming in', 'computer-desktop'] : null,
+        App\Models\Faq::shown()->exists() ? [route('faq'), 'Questions people ask', 'Answers before you call', 'question-mark-circle'] : null,
+        App\Models\Announcement::hasEvents() ? [route('calendar'), 'Calendar', 'What happens when', 'calendar'] : null,
+        [route('contact'), 'Contact and map', 'How to reach us', 'map-pin'],
+    ]));
+    // (Not "$address": the list of the other parts of the site uses that name for where each line leads.)
+    $where = SiteSettings::get('contact.address');
     $departments = $shows('departments') ? App\Models\Department::shown()->limit(6)->get() : collect();
 @endphp
 <x-layouts.site :description="__('News, announcements and services of :name.', ['name' => $name])">
@@ -100,6 +118,23 @@
             @endif
         </div>
     </section>
+
+    {{-- What people most often come to do: a tile each, in reach before any scrolling on a wide screen. --}}
+    <section class="border-y border-line bg-surface" aria-label="{{ __('What would you like to do?') }}">
+        <ul @class(['wrap grid grid-cols-2 gap-3 py-6 sm:grid-cols-3', 'lg:grid-cols-5' => count($actions) === 5, 'lg:grid-cols-6' => count($actions) >= 6])>
+            @foreach (array_slice($actions, 0, 6) as [$to, $label, $about, $mark])
+                <li>
+                    <a href="{{ $to }}" class="card group flex h-full flex-col items-start gap-3 bg-page px-4 py-4 text-ink no-underline">
+                        <span class="door-mark" aria-hidden="true"><x-dynamic-component :component="'heroicon-o-'.$mark" class="size-5" /></span>
+                        <span>
+                            <span class="block font-medium leading-snug group-hover:text-brand">{{ __($label) }}</span>
+                            <span class="mt-0.5 block text-sm text-muted">{{ __($about) }}</span>
+                        </span>
+                    </a>
+                </li>
+            @endforeach
+        </ul>
+    </section>
     @break
 
     @case('announcements')
@@ -108,7 +143,7 @@
             What is new, in one place: the pictures staff put up, one at a time in a frame of one size, beside
             the newest few announcements. The whole list, with its kinds and years, is a page of its own.
         --}}
-        <section id="news" class="scroll-mt-16 bg-surface">
+        <section id="news" class="scroll-mt-16">
             <div class="wrap py-16 sm:py-24">
                 <div class="flex flex-wrap items-end justify-between gap-3">
                     <div>
@@ -123,13 +158,62 @@
                         <div class="lg:col-span-3"><x-site.banners part="stage" :banners="$slides" frame="aspect-[4/3]" /></div>
                     @endif
                     @if ($announcements->isNotEmpty())
-                        <ul @class(['card bg-page p-0', 'lg:col-span-2' => $slides->isNotEmpty(), 'mx-auto w-full max-w-4xl' => $slides->isEmpty()])>
+                        <ul @class(['card p-0', 'lg:col-span-2' => $slides->isNotEmpty(), 'mx-auto w-full max-w-4xl' => $slides->isEmpty()])>
                             @foreach ($announcements as $announcement)
-                                <x-site.announcement-row :announcement="$announcement" />
+                                <x-site.announcement-item :announcement="$announcement" />
                             @endforeach
                         </ul>
                     @endif
                 </div>
+
+                {{-- Each kind of announcement, one press away. --}}
+                @if ($types->isNotEmpty())
+                    <nav class="mt-8 flex flex-wrap gap-2" aria-label="{{ __('Types') }}">
+                        @foreach ($types as $one)
+                            <a href="{{ route('announcements.index', ['type' => $one->slug]) }}" class="chip gap-2"><x-site.type-mark :type="$one" bare />{{ $one->localName() }}</a>
+                        @endforeach
+                    </nav>
+                @endif
+
+                {{-- What is coming up, and what others have read most: each only when there is something to say. --}}
+                @if ($coming->isNotEmpty() || $mostRead->isNotEmpty())
+                    <div @class(['mt-10 grid gap-8', 'lg:grid-cols-2' => $coming->isNotEmpty() && $mostRead->isNotEmpty()])>
+                        @if ($coming->isNotEmpty())
+                            <div>
+                                <h3 class="flex items-center gap-2 text-xl"><x-heroicon-o-calendar-days class="size-5 text-brand" aria-hidden="true" />{{ __('Coming up') }}</h3>
+                                <ul class="card mt-3 p-0">
+                                    @foreach ($coming as $one)
+                                        <li class="border-b border-line last:border-b-0">
+                                            <a href="{{ route('announcements.show', $one) }}" class="group flex items-center gap-3 px-4 py-3 no-underline">
+                                                <span class="flex w-12 shrink-0 flex-col items-center rounded-lg border border-line bg-page py-1 text-center" aria-hidden="true">
+                                                    <span class="font-mono text-xl font-semibold leading-none text-brand">{{ $one->event_on->day }}</span>
+                                                    <span class="mt-0.5 font-mono text-xs text-muted">{{ $one->event_on->locale(app()->getLocale())->translatedFormat('M') }}</span>
+                                                </span>
+                                                <span class="line-clamp-2 min-w-0 flex-1 text-ink group-hover:text-brand">{{ $one->localTitle() }}<span class="sr-only"> ({{ $one->event_on->locale(app()->getLocale())->translatedFormat('j F') }})</span></span>
+                                            </a>
+                                        </li>
+                                    @endforeach
+                                </ul>
+                                <p class="mt-3 text-sm"><a href="{{ route('calendar') }}" class="font-semibold text-brand underline">{{ __('Calendar') }} &rarr;</a></p>
+                            </div>
+                        @endif
+                        @if ($mostRead->isNotEmpty())
+                            <div>
+                                <h3 class="flex items-center gap-2 text-xl"><x-heroicon-o-fire class="size-5 text-brand" aria-hidden="true" />{{ __('Most read') }}</h3>
+                                <ol class="card mt-3 p-0">
+                                    @foreach ($mostRead as $one)
+                                        <li class="border-b border-line last:border-b-0">
+                                            <a href="{{ route('announcements.show', $one) }}" class="group flex items-start gap-3 px-4 py-3 no-underline">
+                                                <span class="w-6 shrink-0 text-center font-mono text-xl font-semibold text-brand" aria-hidden="true">{{ $loop->iteration }}</span>
+                                                <span class="line-clamp-2 min-w-0 flex-1 text-ink group-hover:text-brand">{{ $one->localTitle() }}</span>
+                                            </a>
+                                        </li>
+                                    @endforeach
+                                </ol>
+                            </div>
+                        @endif
+                    </div>
+                @endif
 
                 @if ($posting->isNotEmpty())
                     <div class="mt-10">
@@ -156,42 +240,35 @@
         The rest of the site as one list, drawn as a window of the editor: each line a part of the site,
         what is in it, and the way there. A list, not a wall of cards: read top to bottom in a few seconds.
     --}}
-    <section aria-label="{{ __('Shortcuts') }}">
-        <div class="wrap grid items-center gap-10 py-16 sm:py-24 lg:grid-cols-5">
-            <div class="text-center lg:col-span-2 lg:text-left">
+    <section class="bg-surface" aria-label="{{ __('Shortcuts') }}">
+        <div class="wrap py-16 sm:py-24">
+            <div class="mx-auto max-w-2xl text-center">
                 <p class="eyebrow">{{ __('Shortcuts') }}</p>
                 <h2 class="mt-2 text-3xl sm:text-4xl">{{ __('The rest of the site') }}</h2>
-                <p class="mx-auto mt-4 max-w-md text-lg text-muted lg:mx-0">{{ __('Each has a page of its own. Choose one from the list.') }}</p>
+                <p class="mt-4 text-lg text-muted">{{ __('Each has a page of its own. Choose one from the list.') }}</p>
             </div>
-            <div class="code-block lg:col-span-3">
-                <div class="code-header" aria-hidden="true">
-                    <span class="code-dot bg-danger"></span>
-                    <span class="code-dot bg-syn-string"></span>
-                    <span class="code-dot bg-syn-function"></span>
-                    <span class="ml-3 font-mono text-sm text-muted">sitemap</span>
-                </div>
-                <ul>
-                    @foreach ([
-                        [route('announcements.index', ['type' => 'procurement']), 'Procurement', 'Procurement plans, invitations to bid and results, by fiscal year.', 'clipboard-document-list'],
-                        [route('announcements.index', ['type' => 'activities']), 'Activities', 'Photographs and news of what the hospital has been doing.', 'camera'],
-                        [route('announcements.index', ['type' => 'knowledge']), 'Health knowledge', 'Health knowledge written by the hospital\'s own staff.', 'heart'],
-                        [route('schedule'), 'Clinic schedule', 'Which clinic is open on which day, and at what time.', 'calendar-days'],
-                        [route('about'), 'About us', 'History, vision, structure and the people who run the hospital.', 'building-office-2'],
-                        [route('contact'), 'Contact and map', 'Address, phone numbers, opening hours and a map.', 'map-pin'],
-                    ] as $index => [$address, $label, $about, $mark])
-                        <li class="border-b border-line last:border-b-0">
-                            <a href="{{ $address }}" id="door-{{ $index }}" class="group flex items-center gap-4 px-4 py-4 text-ink no-underline hover:bg-raised">
+            <ul class="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                @foreach ([
+                    [route('announcements.index', ['type' => 'procurement']), 'Procurement', 'Procurement plans, invitations to bid and results, by fiscal year.', 'clipboard-document-list'],
+                    [route('announcements.index', ['type' => 'activities']), 'Activities', 'Photographs and news of what the hospital has been doing.', 'camera'],
+                    [route('announcements.index', ['type' => 'knowledge']), 'Health knowledge', 'Health knowledge written by the hospital\'s own staff.', 'heart'],
+                    [route('schedule'), 'Clinic schedule', 'Which clinic is open on which day, and at what time.', 'calendar-days'],
+                    [route('about'), 'About us', 'History, vision, structure and the people who run the hospital.', 'building-office-2'],
+                    [route('contact'), 'Contact and map', 'Address, phone numbers, opening hours and a map.', 'map-pin'],
+                ] as $index => [$address, $label, $about, $mark])
+                    <li>
+                        <a href="{{ $address }}" id="door-{{ $index }}" class="card group flex h-full flex-col bg-page text-ink no-underline">
+                            <span class="flex items-center justify-between gap-3">
                                 <span class="door-mark" aria-hidden="true"><x-dynamic-component :component="'heroicon-o-'.$mark" class="size-5" /></span>
-                                <span class="min-w-0 flex-1">
-                                    <span class="block font-medium group-hover:text-brand">{{ __($label) }}</span>
-                                    <span class="mt-0.5 block text-sm text-muted">{{ __($about) }}</span>
-                                </span>
-                                <x-heroicon-m-arrow-right class="size-5 shrink-0 text-muted transition group-hover:translate-x-1 group-hover:text-brand" aria-hidden="true" />
-                            </a>
-                        </li>
-                    @endforeach
-                </ul>
-            </div>
+                                <span class="font-mono text-sm text-syn-comment" aria-hidden="true">{{ str_pad((string) ($index + 1), 2, '0', STR_PAD_LEFT) }}</span>
+                            </span>
+                            <span class="mt-4 block text-lg font-medium group-hover:text-brand">{{ __($label) }}</span>
+                            <span class="mt-1 block flex-1 text-sm text-muted">{{ __($about) }}</span>
+                            <span class="mt-4 inline-flex items-center gap-1 text-sm font-semibold text-brand">{{ __('Open') }}<x-heroicon-m-arrow-right class="size-4 transition group-hover:translate-x-1" aria-hidden="true" /></span>
+                        </a>
+                    </li>
+                @endforeach
+            </ul>
         </div>
     </section>
     @break
@@ -202,7 +279,7 @@
             Vision, mission and core values, one at a time. The tabs are radio buttons and the stylesheet shows the
             panel of the one that is ticked (.tabs in app.css): no script, and the arrow keys move between them.
         --}}
-        <section id="identity" class="scroll-mt-16 bg-surface">
+        <section id="identity" class="scroll-mt-16">
             <div class="wrap py-16 sm:py-24">
                 <h2 class="text-center text-3xl sm:text-4xl">{{ __('Identity of the organisation') }}</h2>
                 <span class="mx-auto mt-4 block h-1 w-16 rounded-full bg-brand" aria-hidden="true"></span>
@@ -242,6 +319,7 @@
                         @endforeach
                     </div>
                 </div>
+                <p class="mt-10 text-center"><a href="{{ route('about') }}" class="btn btn-line">{{ __('Get to know the hospital') }} &rarr;</a></p>
             </div>
         </section>
     @endif
@@ -270,6 +348,37 @@
 
     @endswitch
     @endforeach
+
+    {{-- The last thing on the page, whatever the sections above: the numbers to call, large. Left out when there are none. --}}
+    @if ($phone || $emergency)
+        <section class="home-screen !min-h-0 border-t border-line" aria-labelledby="reach-heading">
+            <div class="wrap max-w-4xl py-16 text-center sm:py-20">
+                <p class="eyebrow">{{ __('Contact us') }}</p>
+                <h2 id="reach-heading" class="mt-2 text-3xl sm:text-4xl">{{ __('We are here when you need us') }}</h2>
+                <div @class(['mx-auto mt-8 grid max-w-3xl gap-4', 'sm:grid-cols-2' => $emergency && $phone])>
+                    @if ($emergency)
+                        <a href="{{ $dial($emergency) }}" class="card border-danger text-ink no-underline">
+                            <span class="block text-sm text-danger">{{ __('Emergency, 24 hours a day') }}</span>
+                            <span class="block font-mono text-4xl font-semibold text-danger">{{ $emergency }}</span>
+                        </a>
+                    @endif
+                    @if ($phone)
+                        <a href="{{ $dial($phone) }}" class="card text-ink no-underline">
+                            <span class="block text-sm text-muted">{{ __('The hospital') }}</span>
+                            <span class="block font-mono text-4xl font-semibold text-brand">{{ $phone }}</span>
+                        </a>
+                    @endif
+                </div>
+                @if ($where)
+                    <p class="mx-auto mt-6 inline-flex max-w-2xl items-start gap-2 text-muted"><x-heroicon-m-map-pin class="mt-1 size-5 shrink-0 text-brand" aria-hidden="true" /><span>{{ $where }}</span></p>
+                @endif
+                <p class="mt-6 flex flex-wrap justify-center gap-3">
+                    <a href="{{ route('contact') }}" class="btn btn-brand"><x-heroicon-m-map-pin class="size-5" aria-hidden="true" />{{ __('Map and directions') }}</a>
+                    <a href="{{ route('phones') }}" class="btn btn-line">{{ __('Phone numbers of every department') }}</a>
+                </p>
+            </div>
+        </section>
+    @endif
 
     <x-site.banners part="popup" />
 </x-layouts.site>
