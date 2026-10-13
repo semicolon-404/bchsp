@@ -45,6 +45,32 @@ class SiteColourTest extends TestCase
         $this->assertSame('#ff3d71', Theme::accent());
     }
 
+    public function test_left_alone_the_site_keeps_its_colour_and_wears_the_day_as_a_touch(): void
+    {
+        // A Tuesday in Thailand: pink is the day's colour, and the site is still its own green.
+        Carbon::setTestNow(Carbon::parse('2026-10-13 09:00', 'Asia/Bangkok'));
+
+        $this->assertSame('touch', Theme::mode());
+        $this->assertSame(Theme::GREEN, Theme::accent());
+        $this->assertSame('#ff3d71', Theme::touchOfTheDay());
+
+        $this->get('/')
+            ->assertSee(':root{--color-day:#ff3d71}', false)
+            ->assertSee('class="day-line"', false)
+            ->assertSee('class="day-dot"', false)
+            ->assertDontSee('--color-brand:#ff3d71', false);
+
+        // One colour and nothing else; or the whole site in the day's colour: neither has the touches.
+        foreach (['fixed', 'daily'] as $mode) {
+            SiteSettings::save([Theme::MODE => $mode]);
+
+            $this->assertNull(Theme::touchOfTheDay());
+            $this->get('/')->assertDontSee('--color-day', false)->assertDontSee('class="day-line"', false);
+        }
+
+        $this->assertSame('#ff3d71', Theme::accent());
+    }
+
     public function test_each_day_can_be_given_another_colour_and_a_bad_one_falls_back(): void
     {
         SiteSettings::save([Theme::MODE => 'daily', Theme::DAYS => ['#111111', 'not a colour', null]]);
@@ -90,7 +116,7 @@ class SiteColourTest extends TestCase
         $this->actingAs(User::factory()->admin()->create());
 
         Livewire::test(SettingsPage::class)
-            ->assertFormSet(['theme__mode' => 'fixed', 'theme__color' => Theme::GREEN, 'theme__mourning' => false, 'theme_day_1' => '#facc15'])
+            ->assertFormSet(['theme__mode' => 'touch', 'theme__color' => Theme::GREEN, 'theme__mourning' => false, 'theme_day_1' => '#facc15'])
             ->fillForm(['theme__color' => '#ff7a1a', 'theme__mourning' => true])
             ->call('save')
             ->assertHasNoFormErrors();

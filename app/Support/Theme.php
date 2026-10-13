@@ -6,16 +6,21 @@ namespace App\Support;
  * The site's colour, as an administrator set it (System > Site settings > "Colour of the site"): the one
  * accent colour that buttons, links, highlights and the admin panel all wear.
  *
- * Either one colour, or the colour of the day: seven colours, one for each day of the week,
- * changing by themselves at midnight in Thailand. And a mourning look, which turns the whole
- * site to black and white whatever the colour is.
+ * One colour, which is what the hospital is known by. The colour of the day (seven colours, one for each
+ * day of the week, changing by themselves at midnight in Thailand) is worn in one of two ways: as a touch
+ * (a fine line under the top bar, the name of the day over today's clinics, a dot at the foot of the page),
+ * or by the whole site in place of its one colour. And a mourning look, which turns the whole site to black
+ * and white whatever the colour is.
  *
- * Until an administrator changes something the site is its own green, as it always was.
+ * Until an administrator changes something the site is its own green with a touch of the day's colour:
+ * a site that changes colour every day is not known by any, and the red of a Sunday reads as an alarm.
  */
 class Theme
 {
-    /** "fixed" (one colour) or "daily" (the colour of the day). */
+    /** "touch" (one colour, with a touch of the day's), "fixed" (one colour and nothing else) or "daily" (the whole site in the colour of the day). */
     public const MODE = 'theme.mode';
+
+    public const MODES = ['touch', 'fixed', 'daily'];
 
     /** The one colour, "#rrggbb". */
     public const COLOR = 'theme.color';
@@ -52,9 +57,22 @@ class Theme
     /** The accent is also the colour of links, so in each look it is moved away from the page until it reads as text. */
     private const READS_FROM = 4.5;
 
+    public static function mode(): string
+    {
+        $saved = SiteSettings::get(self::MODE);
+
+        return in_array($saved, self::MODES, true) ? $saved : 'touch';
+    }
+
     public static function isDaily(): bool
     {
-        return SiteSettings::get(self::MODE) === 'daily';
+        return self::mode() === 'daily';
+    }
+
+    /** Today's colour, where it is worn as a touch beside the site's one colour; null where it is not. */
+    public static function touchOfTheDay(): ?string
+    {
+        return self::mode() === 'touch' ? self::days()[now()->dayOfWeek] : null;
     }
 
     public static function isMourning(): bool

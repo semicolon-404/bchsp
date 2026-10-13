@@ -79,7 +79,16 @@ trait SiteSettingsForm
                     ->components([
                         Radio::make(self::field(Theme::MODE))
                             ->label(__('The site wears'))
-                            ->options(['fixed' => __('One colour'), 'daily' => __('The colour of the day')])
+                            ->options([
+                                'touch' => __('One colour, with a touch of the colour of the day'),
+                                'fixed' => __('One colour'),
+                                'daily' => __('The colour of the day, all over'),
+                            ])
+                            ->descriptions([
+                                'touch' => __('Recommended. The hospital keeps its colour; the day shows as a fine line under the top bar and on the name of the day.'),
+                                'fixed' => __('The same every day, with nothing of the day.'),
+                                'daily' => __('Buttons, links and this panel change colour every day.'),
+                            ])
                             ->live()
                             ->columnSpanFull(),
                         Select::make('theme_pick')
@@ -103,7 +112,7 @@ trait SiteSettingsForm
                             fn (int $day) => ColorPicker::make('theme_day_'.$day)
                                 ->label(__(Theme::DAY_NAMES[$day]))
                                 ->regex('/^#[0-9a-fA-F]{6}$/')
-                                ->visible(fn (Get $get) => $get(self::field(Theme::MODE)) === 'daily'),
+                                ->visible(fn (Get $get) => $get(self::field(Theme::MODE)) !== 'fixed'),
                             array_keys(Theme::DAY_NAMES),
                         ),
                         Toggle::make(self::field(Theme::MOURNING))

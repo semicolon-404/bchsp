@@ -103,7 +103,7 @@
                         <span class="code-dot bg-danger" aria-hidden="true"></span>
                         <span class="code-dot bg-syn-string" aria-hidden="true"></span>
                         <span class="code-dot bg-syn-function" aria-hidden="true"></span>
-                        <h2 id="today-heading" class="ml-3 text-sm font-medium text-muted">{{ __('Open today') }} · {{ __(App\Models\ClinicSession::DAYS[now()->dayOfWeek]) }}</h2>
+                        <h2 id="today-heading" class="ml-3 text-sm font-medium text-muted">{{ __('Open today') }} · <span @class(['day-chip' => App\Support\Theme::touchOfTheDay()])>{{ __(App\Models\ClinicSession::DAYS[now()->dayOfWeek]) }}</span></h2>
                     </div>
                     <ul class="px-4 py-2">
                         @foreach ($sessions->take(7) as $session)

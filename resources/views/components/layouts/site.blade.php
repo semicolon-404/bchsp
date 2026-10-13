@@ -80,6 +80,10 @@
     @if ($themeCss = App\Support\Theme::css())
         <style>{!! $themeCss !!}</style>
     @endif
+    {{-- The colour of the day, worn as a touch beside the site's own (Theme::touchOfTheDay): a line, a name, a dot. --}}
+    @if ($day = App\Support\Theme::touchOfTheDay())
+        <style>:root{--color-day:{{ $day }}}</style>
+    @endif
 </head>
 <body data-worker="{{ route('worker') }}" data-lightbox-close="{{ __('Close') }}" data-lightbox-previous="{{ __('Previous') }}" data-lightbox-next="{{ __('Next') }}" class="has-dock flex min-h-screen flex-col font-sans antialiased">
     <a href="#main" class="btn btn-brand sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50">{{ __('Skip to the content') }}</a>
@@ -87,6 +91,9 @@
     <x-site.alert />
 
     <header class="sticky top-0 z-40 border-b border-line bg-page/90 backdrop-blur">
+        @if ($day)
+            <div class="day-line" aria-hidden="true"></div>
+        @endif
         <div class="wrap flex min-h-16 items-center gap-3 py-2">
             <a href="{{ route('home') }}" class="flex min-w-0 items-center gap-3 font-semibold text-ink no-underline">
                 {{-- Switched off in Site settings: the name alone, with neither the logo nor the mark that stands in for it. --}}
@@ -232,6 +239,9 @@
         <div class="border-t border-line">
             <div class="wrap flex flex-wrap items-center justify-between gap-x-6 gap-y-1 py-4 font-mono text-sm text-muted">
                 <p>{{ App\Support\Footer::copyright() }}</p>
+                @if ($day)
+                    <p class="inline-flex items-center gap-2"><span class="day-dot" aria-hidden="true"></span>{{ now()->locale(app()->getLocale())->translatedFormat('l j F ').(now()->year + (app()->getLocale() === 'th' ? 543 : 0)) }}</p>
+                @endif
                 {{-- The newest release and its day: the site is looked after, and here is what changed (/updates). --}}
                 @if ($release = App\Models\SiteUpdate::newest())
                     <p><a href="{{ route('updates') }}" class="text-muted underline decoration-line underline-offset-4 hover:text-brand">v{{ $release->version }} · {{ __('updated :date', ['date' => $release->releasedOn()]) }}</a></p>

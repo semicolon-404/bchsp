@@ -55,7 +55,7 @@ class SiteSettings extends Page
         }
 
         // The site's colour: what is in force, defaults included; the seven days as seven fields.
-        $values[self::field(Theme::MODE)] = Theme::isDaily() ? 'daily' : 'fixed';
+        $values[self::field(Theme::MODE)] = Theme::mode();
         $values[self::field(Theme::COLOR)] = Theme::hex(Settings::get(Theme::COLOR)) ?? Theme::GREEN;
         $values[self::field(Theme::MOURNING)] = Theme::isMourning();
         unset($values[self::field(Theme::DAYS)]);

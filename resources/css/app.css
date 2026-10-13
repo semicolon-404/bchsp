@@ -953,6 +953,38 @@ html.is-mourning {
     }
 }
 
+/*
+ * The colour of the day as a touch (App\Support\Theme::touchOfTheDay, --color-day): the site keeps its own
+ * colour, and the day shows in three small places. None of them carries words in that colour: a yellow or
+ * a pale blue would not read.
+ */
+@layer components {
+    .day-line {
+        position: absolute;
+        inset: auto 0 -1px 0;
+        height: 3px;
+        background: linear-gradient(90deg, var(--color-day), color-mix(in srgb, var(--color-day) 35%, transparent) 55%, transparent);
+        pointer-events: none;
+    }
+
+    .day-chip {
+        display: inline-block;
+        padding: 0.05rem 0.55rem;
+        border: 1px solid color-mix(in srgb, var(--color-day) 70%, var(--color-line));
+        border-radius: 9999px;
+        background: color-mix(in srgb, var(--color-day) 20%, transparent);
+        color: var(--color-ink);
+    }
+
+    .day-dot {
+        width: 0.6rem;
+        height: 0.6rem;
+        border-radius: 9999px;
+        background: var(--color-day);
+        box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-day) 25%, transparent);
+    }
+}
+
 @media print {
     :root, :root[data-theme='light'] {
         --color-page: #ffffff;
