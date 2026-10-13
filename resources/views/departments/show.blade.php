@@ -34,7 +34,7 @@
         <header class="card mt-4 overflow-hidden p-0">
             {{-- Three to one, cut to fit. Without a picture, a band of the site's colour is enough. --}}
             @if ($image = $department->imageUrl())
-                <a href="{{ $image }}" target="_blank" rel="noopener" class="block aspect-[3/1] bg-raised">
+                <a href="{{ $image }}" target="_blank" rel="noopener" class="block aspect-[3/1] bg-raised" data-lightbox>
                     <img src="{{ $image }}" alt="" class="size-full object-cover">
                     <span class="sr-only">{{ __('Open the picture at full size') }}</span>
                 </a>

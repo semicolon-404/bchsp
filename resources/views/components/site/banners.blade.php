@@ -64,10 +64,12 @@
             poster before (remembered in their browser). A <dialog>: Escape closes it and the page behind is inert.
         --}}
         <dialog data-popup="{{ $popup->id }}" aria-label="{{ $popup->localTitle() }}" class="popup">
-            <form method="dialog" class="flex justify-end p-2">
-                <button class="btn btn-line min-h-10 px-3 py-1 text-sm" autofocus><x-heroicon-m-x-mark class="size-5" aria-hidden="true" />{{ __('Close') }}</button>
+            <form method="dialog" class="flex items-center justify-between gap-3 border-b border-line px-4 py-2">
+                <p class="min-w-0 truncate font-medium">{{ $popup->localTitle() }}</p>
+                <button class="btn btn-line min-h-10 shrink-0 px-3 py-1 text-sm" autofocus><x-heroicon-m-x-mark class="size-5" aria-hidden="true" />{{ __('Close') }}</button>
             </form>
-            <a href="{{ route('announcements.show', $popup) }}" class="block"><img src="{{ $popup->imageUrl() }}" alt="{{ $popup->localTitle() }}" loading="lazy" class="mx-auto max-h-[calc(100vh-7rem)] w-auto max-w-full object-contain"></a>
+            <a href="{{ route('announcements.show', $popup) }}" class="block"><img src="{{ $popup->imageUrl() }}" alt="{{ $popup->localTitle() }}" loading="lazy" class="mx-auto max-h-[calc(100vh-11rem)] w-auto max-w-full object-contain"></a>
+            <p class="border-t border-line px-4 py-3 text-center"><a href="{{ route('announcements.show', $popup) }}" class="btn btn-brand">{{ __('Read the details') }} &rarr;</a></p>
         </dialog>
     @endif
 @endif

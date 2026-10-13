@@ -330,6 +330,122 @@ html.is-mourning {
         background: rgb(0 0 0 / 0.7);
     }
 
+    /* A photograph opened large over the page (resources/js/lightbox.js): the picture whole, on the dark, with the way to the next. */
+    .lightbox {
+        width: 100vw;
+        max-width: 100vw;
+        height: 100vh;
+        max-height: 100vh;
+        margin: 0;
+        padding: 0;
+        border: 0;
+        background: rgb(0 0 0 / 0.92);
+        color: #ffffff;
+    }
+
+    .lightbox[open] {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .lightbox::backdrop {
+        background: rgb(0 0 0 / 0.92);
+    }
+
+    .lightbox-picture {
+        max-width: 100vw;
+        max-height: calc(100vh - 4.5rem);
+        margin-top: 3.5rem;
+        object-fit: contain;
+    }
+
+    .lightbox-bar {
+        position: absolute;
+        inset: 0 0 auto;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0.5rem 0.75rem;
+        font-family: var(--font-mono, ui-monospace, monospace);
+    }
+
+    .lightbox-button {
+        display: flex;
+        width: 2.75rem;
+        height: 2.75rem;
+        align-items: center;
+        justify-content: center;
+        border: 1px solid rgb(255 255 255 / 0.3);
+        border-radius: 9999px;
+        background: rgb(0 0 0 / 0.5);
+        color: #ffffff;
+        font-size: 1.5rem;
+        line-height: 1;
+    }
+
+    .lightbox-button:hover {
+        background: rgb(255 255 255 / 0.2);
+    }
+
+    .lightbox-prev,
+    .lightbox-next {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+    }
+
+    .lightbox-prev {
+        left: 0.75rem;
+    }
+
+    .lightbox-next {
+        right: 0.75rem;
+    }
+
+    .lightbox-button[hidden] {
+        display: none;
+    }
+
+    /* "Back to the top": a round button at the corner, above the dock where there is one (resources/js/top.js shows it). */
+    .to-top {
+        position: fixed;
+        right: 1rem;
+        bottom: calc(1.25rem + env(safe-area-inset-bottom));
+        z-index: 35;
+        display: flex;
+        width: 2.75rem;
+        height: 2.75rem;
+        align-items: center;
+        justify-content: center;
+        border: 1px solid var(--color-line);
+        border-radius: 9999px;
+        background: color-mix(in srgb, var(--color-surface) 92%, transparent);
+        color: var(--color-brand);
+        box-shadow: 0 10px 30px -10px rgb(0 0 0 / 0.5);
+        backdrop-filter: blur(10px);
+        transition: border-color 150ms, transform 150ms;
+    }
+
+    .to-top[hidden] {
+        display: none;
+    }
+
+    .to-top:hover {
+        border-color: var(--color-brand);
+        transform: translateY(-2px);
+    }
+
+    .has-dock .to-top {
+        bottom: calc(5.5rem + env(safe-area-inset-bottom));
+    }
+
+    @media (min-width: 64rem) {
+        .has-dock .to-top {
+            bottom: 1.25rem;
+        }
+    }
+
     /* The dock of a phone or tablet (components/site/mobile-tabs): floating above the bottom edge, clear of the home indicator. */
     .dock {
         position: fixed;
@@ -718,7 +834,7 @@ html.is-mourning {
         background: #ffffff;
     }
 
-    body > header, body > footer, .dock, dialog, [role='group'][aria-label], nav, details, iframe {
+    body > header, body > footer, .dock, .to-top, dialog, [role='group'][aria-label], nav, details, iframe {
         display: none !important;
     }
 

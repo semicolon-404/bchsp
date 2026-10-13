@@ -81,7 +81,7 @@
         <style>{!! $themeCss !!}</style>
     @endif
 </head>
-<body data-worker="{{ route('worker') }}" class="has-dock flex min-h-screen flex-col font-sans antialiased">
+<body data-worker="{{ route('worker') }}" data-lightbox-close="{{ __('Close') }}" data-lightbox-previous="{{ __('Previous') }}" data-lightbox-next="{{ __('Next') }}" class="has-dock flex min-h-screen flex-col font-sans antialiased">
     <a href="#main" class="btn btn-brand sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50">{{ __('Skip to the content') }}</a>
 
     <x-site.alert />
@@ -244,6 +244,9 @@
             </div>
         </div>
     </footer>
+
+    {{-- On a long page, the way back to its top: shown by resources/js/top.js once the reader is well down it. --}}
+    <a href="#main" class="to-top" data-to-top hidden aria-label="{{ __('Back to the top') }}" title="{{ __('Back to the top') }}"><x-heroicon-m-arrow-up class="size-5" aria-hidden="true" /></a>
 
     <x-site.mobile-tabs />
 </body>

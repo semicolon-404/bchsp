@@ -52,7 +52,7 @@
     <article class="wrap max-w-3xl py-10 sm:py-14">
         @if ($image = $announcement->imageUrl())
             {{-- The announcement as one picture, shown whole whatever its shape; a press opens it at full size. --}}
-            <a href="{{ $image }}" target="_blank" rel="noopener" class="block">
+            <a href="{{ $image }}" target="_blank" rel="noopener" class="block" data-lightbox>
                 <img src="{{ $image }}" alt="{{ $announcement->localTitle() }}" class="mx-auto max-h-[85vh] w-auto max-w-full rounded-xl border border-line">
                 <span class="sr-only">{{ __('Open the picture at full size') }}</span>
             </a>
@@ -66,10 +66,11 @@
             {{-- The album: every photograph whole, each opening at full size. --}}
             <section class="mt-10" aria-label="{{ __('Photographs') }}">
                 <h2 class="eyebrow">{{ trans_choice('{1} :count photograph|[2,*] :count photographs', count($photos), ['count' => count($photos)]) }}</h2>
-                <ul class="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3">
+                {{-- A press opens the photograph large over the page, with the way to the next (resources/js/lightbox.js); without scripts, in a tab of its own. --}}
+                <ul class="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3" data-gallery>
                     @foreach ($photos as $photo)
                         <li>
-                            <a href="{{ $photo }}" target="_blank" rel="noopener" class="block overflow-hidden rounded-lg border border-line">
+                            <a href="{{ $photo }}" target="_blank" rel="noopener" class="block overflow-hidden rounded-lg border border-line" data-lightbox>
                                 <img src="{{ $photo }}" alt="{{ __('Photograph :number of :count', ['number' => $loop->iteration, 'count' => $loop->count]) }}" loading="lazy" class="aspect-[4/3] w-full object-cover">
                             </a>
                         </li>

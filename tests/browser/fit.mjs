@@ -85,13 +85,24 @@ const evaluate = async (expression) => (await send('Runtime.evaluate', { express
 
 await send('Page.enable');
 
+// To look at pages rather than only measure them:
+//   FIT_WHOLE=1            each picture is of the whole page, top to bottom, not just the first screen
+//   FIT_SCREENS=phone      only these screens (names from SCREENS, comma-separated)
+//   FIT_LOOKS=light        only this look
+const whole = process.env.FIT_WHOLE === '1';
+const screens = process.env.FIT_SCREENS ? SCREENS.filter(([name]) => process.env.FIT_SCREENS.split(',').includes(name)) : SCREENS;
+const looks = process.env.FIT_LOOKS ? process.env.FIT_LOOKS.split(',') : ['dark', 'light'];
+
+// What rises into place as it is scrolled to would never rise in a picture of the whole page: ask for no motion.
+if (whole) await send('Emulation.setEmulatedMedia', { features: [{ name: 'prefers-reduced-motion', value: 'reduce' }] });
+
 let failures = 0;
 
 for (const page of PAGES) {
-    for (const [name, width, height] of SCREENS) {
+    for (const [name, width, height] of screens) {
         await send('Emulation.setDeviceMetricsOverride', { width, height, deviceScaleFactor: 1, mobile: width < 1024 });
 
-        for (const look of ['dark', 'light']) {
+        for (const look of looks) {
             await send('Page.navigate', { url: base + page });
             await sleep(900);
             await evaluate(`localStorage.setItem('theme', '${look}')`);
@@ -104,7 +115,10 @@ for (const page of PAGES) {
             failures += fits ? 0 : 1;
             console.log(`${fits ? 'ok  ' : 'FAIL'} ${page.padEnd(8)} ${name.padEnd(12)} ${look.padEnd(5)} page ${measured.page}px in a window of ${measured.window}px`);
 
-            const picture = await send('Page.captureScreenshot', { format: 'png' });
+            const tall = whole ? Math.min(12000, await evaluate('document.documentElement.scrollHeight')) : 0;
+            const picture = await send('Page.captureScreenshot', whole
+                ? { format: 'png', captureBeyondViewport: true, clip: { x: 0, y: 0, width, height: tall, scale: 1 } }
+                : { format: 'png' });
             // A long Thai address would make a file name longer than Windows allows: the start of it is enough to tell pages apart.
             const file = page === '/' ? 'home' : `${String(PAGES.indexOf(page)).padStart(2, '0')}-${page.replace(/\W+/g, '-').replace(/^-/, '').slice(0, 40)}`;
 

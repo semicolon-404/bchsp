@@ -179,9 +179,9 @@
                             <h2 class="text-2xl">{{ __('Core values') }}</h2>
                             @if ($spelt)
                                 {{-- The letters as tiles, so the word they spell is seen before the list is read. --}}
-                                <p class="mt-5 flex flex-wrap gap-2" aria-hidden="true">
+                                <p class="mt-5 flex flex-wrap gap-1.5 sm:gap-2" aria-hidden="true">
                                     @foreach ($letters as [$letter])
-                                        <span class="flex size-11 items-center justify-center rounded-lg bg-brand font-mono text-xl font-bold text-on-brand sm:size-12">{{ mb_strtoupper($letter) }}</span>
+                                        <span class="flex size-10 items-center justify-center rounded-lg bg-brand font-mono text-xl font-bold text-on-brand sm:size-12">{{ mb_strtoupper($letter) }}</span>
                                     @endforeach
                                 </p>
                                 <ul class="mt-5 grid gap-2 sm:grid-cols-2">

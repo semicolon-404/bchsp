@@ -123,7 +123,8 @@
     <section class="border-y border-line bg-surface" aria-label="{{ __('What would you like to do?') }}">
         <ul @class(['wrap grid grid-cols-2 gap-3 py-6 sm:grid-cols-3', 'lg:grid-cols-5' => count($actions) === 5, 'lg:grid-cols-6' => count($actions) >= 6])>
             @foreach (array_slice($actions, 0, 6) as [$to, $label, $about, $mark])
-                <li>
+                {{-- On a phone, two to a row: an odd one out takes the whole of the last row. --}}
+                <li @class(['max-sm:col-span-2' => $loop->last && $loop->count % 2 === 1])>
                     <a href="{{ $to }}" class="card group flex h-full flex-col items-start gap-3 bg-page px-4 py-4 text-ink no-underline">
                         <span class="door-mark" aria-hidden="true"><x-dynamic-component :component="'heroicon-o-'.$mark" class="size-5" /></span>
                         <span>

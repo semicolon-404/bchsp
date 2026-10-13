@@ -16,30 +16,49 @@
     <meta name="robots" content="noindex">
     <title>{{ __('Back soon') }} · {{ \App\Support\SiteSettings::name() }}</title>
     <style>
-        body { margin: 0; min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 24px; box-sizing: border-box;
-               background: #ffffff; color: #18181b; font-family: 'Sarabun', 'Noto Sans Thai', system-ui, sans-serif; font-size: 1.125rem; text-align: center; }
-        main { max-width: 32rem; }
-        img { max-height: 72px; max-width: 100%; margin-bottom: 24px; }
-        h1 { margin: 0 0 12px; font-size: 2rem; }
-        p { margin: 0 0 12px; line-height: 1.8; color: #3f3f46; }
-        a { color: #0f5f5c; font-weight: 600; }
-        .emergency { margin-top: 24px; padding: 16px; border: 2px solid #b91c1c; border-radius: 12px; }
-        .emergency a { color: #b91c1c; font-size: 1.75rem; }
+        :root { --page: #ffffff; --ink: #18181b; --muted: #52525b; --line: #d4d4d8; --surface: #f4f4f5; --brand: #15803d; --danger: #b91c1c; }
+        @media (prefers-color-scheme: dark) {
+            :root { --page: #0a0a0a; --ink: #f4f4f5; --muted: #a1a1aa; --line: #3f3f46; --surface: #18181b; --brand: #4ade80; --danger: #f87171; }
+        }
+        * { box-sizing: border-box; }
+        body { margin: 0; min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 24px;
+               background: var(--page); color: var(--ink); font-family: 'IBM Plex Sans Thai', 'Sarabun', 'Noto Sans Thai', system-ui, sans-serif; font-size: 1.125rem; line-height: 1.7; text-align: center;
+               background-image: radial-gradient(38rem 26rem at 50% 20%, color-mix(in srgb, var(--brand) 14%, transparent), transparent 70%); }
+        main { width: 100%; max-width: 34rem; }
+        img { max-height: 84px; max-width: 100%; margin-bottom: 20px; }
+        .mark { display: inline-flex; width: 72px; height: 72px; margin-bottom: 20px; align-items: center; justify-content: center; border-radius: 20px; background: var(--brand); color: var(--page); font-size: 2.5rem; font-weight: 700; line-height: 1; }
+        h1 { margin: 0 0 12px; font-size: 2.25rem; line-height: 1.25;
+             background: linear-gradient(115deg, var(--ink) 30%, var(--brand)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+        p { margin: 0 0 12px; color: var(--muted); }
+        p strong { color: var(--ink); }
+        a { color: var(--brand); font-weight: 700; }
+        a:focus-visible { outline: 3px solid var(--brand); outline-offset: 2px; }
+        .numbers { display: grid; gap: 12px; margin-top: 24px; }
+        .number { display: block; padding: 16px; border: 1px solid var(--line); border-radius: 14px; background: var(--surface); color: var(--muted); text-decoration: none; }
+        .number strong { display: block; color: var(--brand); font-size: 1.75rem; font-family: 'JetBrains Mono', ui-monospace, monospace; }
+        .number.emergency { border-color: var(--danger); }
+        .number.emergency, .number.emergency strong { color: var(--danger); }
     </style>
 </head>
 <body>
     <main>
         @if ($logo = \App\Support\SiteSettings::logoUrl())
             <img src="{{ $logo }}" alt="">
+        @else
+            <span class="mark" aria-hidden="true">+</span>
         @endif
         <h1>{{ __('Back soon') }}</h1>
         <p>{{ $message ?: __('We are working on the website right now. Please come back in a little while.') }}</p>
         <p><strong>{{ \App\Support\SiteSettings::name() }}</strong></p>
-        @if ($phone)
-            <p>{{ __('Phone') }}: <a href="{{ $dial($phone) }}">{{ $phone }}</a></p>
-        @endif
-        @if ($emergency)
-            <p class="emergency">{{ __('Emergency') }}<br><a href="{{ $dial($emergency) }}">{{ $emergency }}</a></p>
+        @if ($phone || $emergency)
+            <div class="numbers">
+                @if ($emergency)
+                    <a class="number emergency" href="{{ $dial($emergency) }}">{{ __('Emergency') }}<strong>{{ $emergency }}</strong></a>
+                @endif
+                @if ($phone)
+                    <a class="number" href="{{ $dial($phone) }}">{{ __('Phone') }}<strong>{{ $phone }}</strong></a>
+                @endif
+            </div>
         @endif
     </main>
 </body>

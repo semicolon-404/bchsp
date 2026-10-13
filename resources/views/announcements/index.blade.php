@@ -94,14 +94,15 @@
 
         {{-- A tile for each kind, with how many it holds. --}}
         @if ($types->isNotEmpty())
-            <nav @class(['grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6', 'mt-10' => $featured->isNotEmpty()]) aria-label="{{ __('Types') }}">
-                <a href="{{ $with(['type' => null]) }}" @class(['card flex flex-col gap-2 px-4 py-4 text-ink no-underline', 'border-brand bg-raised' => ! $type]) aria-current="{{ $type ? 'false' : 'page' }}">
+            {{-- On a phone they are a row that slides sideways: six tiles stacked would push the list a screen further down. --}}
+            <nav @class(['-mx-4 flex gap-3 overflow-x-auto px-4 [scrollbar-width:none] sm:mx-0 sm:grid sm:grid-cols-3 sm:overflow-visible sm:px-0 lg:grid-cols-6', 'mt-10' => $featured->isNotEmpty()]) aria-label="{{ __('Types') }}">
+                <a href="{{ $with(['type' => null]) }}" @class(['card flex w-36 shrink-0 flex-col gap-2 px-4 py-4 text-ink no-underline sm:w-auto', 'border-brand bg-raised' => ! $type]) aria-current="{{ $type ? 'false' : 'page' }}">
                     <span class="flex size-9 items-center justify-center rounded-lg bg-raised text-brand" aria-hidden="true"><x-heroicon-o-squares-2x2 class="size-5" /></span>
                     <span class="font-medium leading-tight">{{ __('All') }}</span>
                     <span class="font-mono text-sm text-muted">{{ number_format($stats['all']) }}</span>
                 </a>
                 @foreach ($types as $one)
-                    <a href="{{ $with(['type' => $one->slug, 'year' => $period]) }}" @class(['card flex flex-col gap-2 px-4 py-4 text-ink no-underline', 'border-brand bg-raised' => $type?->is($one)]) aria-current="{{ $type?->is($one) ? 'page' : 'false' }}">
+                    <a href="{{ $with(['type' => $one->slug, 'year' => $period]) }}" @class(['card flex w-36 shrink-0 flex-col gap-2 px-4 py-4 text-ink no-underline sm:w-auto', 'border-brand bg-raised' => $type?->is($one)]) aria-current="{{ $type?->is($one) ? 'page' : 'false' }}">
                         <x-site.type-mark :type="$one" />
                         <span class="font-medium leading-tight">{{ $one->localName() }}</span>
                         <span class="font-mono text-sm text-muted">{{ number_format($counts[$one->id] ?? 0) }}</span>
