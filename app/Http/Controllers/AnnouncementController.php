@@ -111,6 +111,28 @@ class AnnouncementController extends Controller
         ]);
     }
 
+    /**
+     * /posts: the feed. What the departments have posted, newest first, as posts to read down; narrowed to one
+     * department by ?department=. Only departments that are shown, and only what is out.
+     */
+    public function posts(Request $request): View
+    {
+        $departments = Department::shown()
+            ->withCount(['announcements as posted' => fn ($query) => $query->published()])
+            ->get()->filter(fn (Department $one) => $one->posted > 0)
+            ->sortByDesc('posted')->values();
+        $department = is_string($request->query('department')) ? $departments->firstWhere('slug', $request->query('department')) : null;
+
+        return view('posts', [
+            'department' => $department,
+            'departments' => $departments,
+            'posts' => Announcement::published()->with('type', 'department')
+                ->whereIn('department_id', $department ? [$department->id] : $departments->pluck('id'))
+                ->orderByDesc('starts_at')->orderByDesc('id')
+                ->paginate(10)->withQueryString(),
+        ]);
+    }
+
     /** /calendar: what happens in a month, day by day. ?month=2026-11; anything else is this month. */
     public function calendar(Request $request): View
     {

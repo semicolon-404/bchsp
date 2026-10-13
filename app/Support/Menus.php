@@ -160,13 +160,18 @@ class Menus
                     ->map(fn (AnnouncementType $one) => $link($one->localName(), route('announcements.index', ['type' => $one->slug]), $type === $one->slug))
                     ->all();
                 // An administrator can leave these out of the list (Site settings > Menus).
+                // The feed, once a department has posted.
+                if (Announcement::published()->whereNotNull('department_id')->exists()) {
+                    $children[] = $link(__('Feed of the departments'), route('posts'), $request->routeIs('posts'));
+                }
+
                 // The calendar, once anything has been given a day.
                 if (Announcement::hasEvents()) {
                     $children[] = $link(__('Calendar'), route('calendar'), $request->routeIs('calendar'));
                 }
 
                 if (! in_array('downloads', self::newsHidden(), true)) {
-                    $children[] = $link(__('Downloads'), route('downloads'), $request->routeIs('downloads', 'calendar'));
+                    $children[] = $link(__('Downloads'), route('downloads'), $request->routeIs('downloads', 'calendar', 'posts'));
                 }
 
                 foreach (self::ownLinks('news') as $own) {

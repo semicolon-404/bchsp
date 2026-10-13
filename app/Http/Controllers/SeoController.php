@@ -8,6 +8,7 @@ use App\Models\ItaItem;
 use App\Models\SitePage;
 use App\Support\SiteSettings;
 use App\Support\Theme;
+use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -35,12 +36,16 @@ class SeoController extends Controller
      * The newest announcements as a feed (RSS 2.0), for a reader's news program or another site that wants
      * to show the hospital's news as it comes out. Titles and the start of each text; never a draft.
      */
-    public function feed(): Response
+    public function feed(Request $request): Response
     {
-        $items = Announcement::published()->with('type')->orderByDesc('starts_at')->orderByDesc('id')->limit(30)->get();
+        // ?department=...: what one department has posted, for someone who follows that one.
+        $department = is_string($request->query('department')) ? Department::shown()->where('slug', $request->query('department'))->first() : null;
+        $items = Announcement::published()->with('type')
+            ->when($department, fn ($query) => $query->where('department_id', $department->id))
+            ->orderByDesc('starts_at')->orderByDesc('id')->limit(30)->get();
 
         return response()
-            ->view('seo.feed', ['items' => $items, 'name' => SiteSettings::name()])
+            ->view('seo.feed', ['items' => $items, 'name' => SiteSettings::name().($department ? ': '.$department->localName() : '')])
             ->header('Content-Type', 'application/rss+xml; charset=UTF-8');
     }
 
@@ -156,6 +161,7 @@ class SeoController extends Controller
             ['loc' => route('faq'), 'priority' => '0.7'],
             ['loc' => route('services'), 'priority' => '0.7'],
             ['loc' => route('calendar'), 'priority' => '0.6'],
+            ['loc' => route('posts'), 'priority' => '0.7'],
         ]);
 
         foreach (ItaItem::years() as $index => $year) {

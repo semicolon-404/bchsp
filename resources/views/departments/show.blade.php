@@ -198,7 +198,10 @@
                     <div class="flex flex-wrap items-end justify-between gap-3">
                         <h2 id="board-heading" class="text-2xl">{{ __('Posts') }}</h2>
                         @if ($inAll > 0)
-                            <a href="{{ route('announcements.index', ['department' => $department->slug]) }}" class="btn btn-line">{{ __('See all :count', ['count' => number_format($inAll)]) }} &rarr;</a>
+                            <span class="flex flex-wrap gap-2">
+                                <a href="{{ route('feed', ['department' => $department->slug]) }}" class="btn btn-line" title="{{ __('Follow new posts (RSS)') }}"><x-heroicon-m-rss class="size-4" aria-hidden="true" /><span class="sr-only">{{ __('Follow new posts (RSS)') }}</span></a>
+                                <a href="{{ route('announcements.index', ['department' => $department->slug]) }}" class="btn btn-line">{{ __('See all :count', ['count' => number_format($inAll)]) }} &rarr;</a>
+                            </span>
                         @endif
                     </div>
 

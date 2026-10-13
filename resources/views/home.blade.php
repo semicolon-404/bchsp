@@ -227,7 +227,7 @@
                                     </a>
                                 </li>
                             @endforeach
-                            <li><a href="{{ route('departments.index') }}" class="chip min-h-12">{{ __('All departments') }} &rarr;</a></li>
+                            <li><a href="{{ route('posts') }}" class="chip min-h-12 gap-2 border-brand text-brand"><x-heroicon-m-newspaper class="size-4" aria-hidden="true" />{{ __('Read the feed') }} &rarr;</a></li>
                         </ul>
                     </div>
                 @endif

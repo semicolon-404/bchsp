@@ -27,6 +27,7 @@ Route::view('/phones', 'phones')->name('phones');
 Route::view('/faq', 'faq')->name('faq');
 Route::view('/services', 'services')->name('services');
 Route::get('/calendar', [AnnouncementController::class, 'calendar'])->name('calendar');
+Route::get('/posts', [AnnouncementController::class, 'posts'])->name('posts');
 Route::view('/updates', 'updates')->name('updates');
 Route::view('/schedule', 'schedule')->name('schedule');
 Route::view('/downloads', 'downloads')->name('downloads');
