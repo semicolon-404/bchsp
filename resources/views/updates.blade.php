@@ -17,14 +17,13 @@
     $opened = App\Support\Visits::totals()['month'];
 @endphp
 <x-layouts.site :title="__('Website updates')" :description="__('What is new on the website of :name, and what is being worked on.', ['name' => App\Support\SiteSettings::name()])">
-    <div class="wrap max-w-4xl py-10 sm:py-14">
-        <p class="eyebrow">{{ __('Website updates') }}</p>
-        <h1 class="mt-2 text-3xl sm:text-4xl">{{ __('What is new on this website') }}</h1>
-        <p class="mt-3 text-muted">{{ __('This website is looked after and added to all the time. Each change is written down here.') }}</p>
+    <x-site.page-header :eyebrow="__('Website updates')" :title="__('What is new on this website')" icon="sparkles" width="max-w-4xl"
+                        :lead="__('This website is looked after and added to all the time. Each change is written down here.')" />
 
+    <div class="wrap max-w-4xl py-10 sm:py-14">
         @if ($newest)
             {{-- The figures at a glance. --}}
-            <dl class="mt-8 grid gap-4 sm:grid-cols-3">
+            <dl class="grid gap-4 sm:grid-cols-3">
                 @foreach ([
                     ['Newest release', $newest->version],
                     ['Last updated', $newest->releasedOn()],
