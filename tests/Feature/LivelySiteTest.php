@@ -94,7 +94,7 @@ class LivelySiteTest extends TestCase
 
         $this->get('/phones')
             ->assertOk()
-            ->assertSeeInOrder(['Phone numbers', 'href="tel:1669"', 'href="tel:044579076"', 'data-filter="#phone-list"', route('departments.show', $dental), 'Dental', 'Building 2', '044-579076 ต่อ 120'], false)
+            ->assertSeeInOrder(['Phone numbers', 'data-filter="#phone-list"', 'href="tel:1669"', 'href="tel:044579076"', route('departments.show', $dental), 'Dental', 'Building 2', '044-579076 ต่อ 120'], false)
             ->assertDontSee('Records')
             ->assertDontSee('Hidden unit');
 
