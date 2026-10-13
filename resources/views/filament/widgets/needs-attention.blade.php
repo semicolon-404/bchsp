@@ -1,19 +1,25 @@
 <x-filament-widgets::widget>
     {{-- App\Filament\Widgets\NeedsAttention: what is waiting for someone, each line leading to where it is dealt with. --}}
-    <x-filament::section :heading="__('Needs attention')">
+    <x-filament::section :heading="__('Needs attention')" icon="heroicon-o-bell-alert">
         @php($items = $this->getItems())
 
         @if ($items === [])
-            <p style="opacity: .75">{{ __('Nothing is waiting. Everything is up to date.') }}</p>
+            <p class="panel-clear"><x-filament::icon icon="heroicon-o-check-circle" />{{ __('Nothing is waiting. Everything is up to date.') }}</p>
         @else
-            <ul style="display: grid; gap: 0.5rem">
+            <ul class="panel-waiting">
                 @foreach ($items as $item)
-                    <li style="display: flex; align-items: center; gap: 0.75rem">
-                        <x-filament::badge :color="$item['tone']">{{ __(['warning' => 'To do', 'info' => 'Note', 'danger' => 'Problem'][$item['tone']]) }}</x-filament::badge>
+                    <li>
                         @if ($item['url'])
-                            <x-filament::link :href="$item['url']">{{ $item['text'] }}</x-filament::link>
+                            <a href="{{ $item['url'] }}">
+                                <x-filament::badge :color="$item['tone']">{{ __(['warning' => 'To do', 'info' => 'Note', 'danger' => 'Problem'][$item['tone']]) }}</x-filament::badge>
+                                <span>{{ $item['text'] }}</span>
+                                <span class="panel-waiting-go" aria-hidden="true">&rarr;</span>
+                            </a>
                         @else
-                            <span>{{ $item['text'] }}</span>
+                            <div>
+                                <x-filament::badge :color="$item['tone']">{{ __(['warning' => 'To do', 'info' => 'Note', 'danger' => 'Problem'][$item['tone']]) }}</x-filament::badge>
+                                <span>{{ $item['text'] }}</span>
+                            </div>
                         @endif
                     </li>
                 @endforeach

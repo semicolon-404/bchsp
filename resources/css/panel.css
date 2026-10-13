@@ -1,0 +1,466 @@
+/*
+ * The look of the staff panel (/admin), over Filament's own.
+ *
+ * Filament's styles sit in cascade layers, so what is written here, outside any layer, wins without
+ * "!important". The colours are the panel's own (--primary-*, --gray-*), which follow the colour the
+ * site has that day (AdminPanelProvider), so nothing here names a colour of its own. The dark look is
+ * html.dark.
+ *
+ * The file also brings the site's typeface: the panel is told to load its font from here
+ * (AdminPanelProvider::panel, "font"), so nothing is fetched from another server.
+ */
+@import '@fontsource/ibm-plex-sans-thai/400.css';
+@import '@fontsource/ibm-plex-sans-thai/500.css';
+@import '@fontsource/ibm-plex-sans-thai/600.css';
+@import '@fontsource/ibm-plex-sans-thai/700.css';
+
+:root {
+    --panel-tint: color-mix(in oklab, var(--primary-500) 10%, transparent);
+    --panel-tint-strong: color-mix(in oklab, var(--primary-500) 18%, transparent);
+    --panel-edge: color-mix(in oklab, var(--primary-500) 35%, transparent);
+    --panel-accent: var(--primary-700);
+    --panel-radius: 1rem;
+}
+
+html.dark {
+    --panel-accent: var(--primary-400);
+}
+
+.fi-body {
+    font-family: 'IBM Plex Sans Thai', 'Leelawadee UI', Tahoma, ui-sans-serif, system-ui, sans-serif;
+    /* A wash of the day's colour at the top of every page, as the site's header band has. */
+    background-image: radial-gradient(60rem 22rem at 85% -6rem, var(--panel-tint), transparent 70%);
+    background-repeat: no-repeat;
+}
+
+/* ------------------------------------------------------------ the bar across the top, and the menu down the side */
+.fi-topbar {
+    background-color: color-mix(in oklab, Canvas 82%, transparent);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid color-mix(in oklab, var(--gray-500) 18%, transparent);
+    box-shadow: none;
+}
+
+.fi-sidebar-header {
+    box-shadow: none;
+    border-bottom: 1px solid color-mix(in oklab, var(--gray-500) 18%, transparent);
+}
+
+.fi-sidebar-group-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    opacity: 0.7;
+}
+
+.fi-sidebar-item-btn {
+    border-radius: 0.75rem;
+    transition: background-color 0.15s ease, transform 0.15s ease;
+}
+
+.fi-sidebar-item-btn:hover {
+    background-color: var(--panel-tint);
+}
+
+/* Where the person is: tinted, with a bar of the colour at its edge. */
+.fi-sidebar-item.fi-active > .fi-sidebar-item-btn {
+    background-color: var(--panel-tint-strong);
+    box-shadow: inset 3px 0 0 var(--primary-500);
+    font-weight: 600;
+}
+
+.fi-sidebar-item.fi-active > .fi-sidebar-item-btn .fi-sidebar-item-label,
+.fi-sidebar-item.fi-active > .fi-sidebar-item-btn .fi-icon {
+    color: var(--panel-accent);
+}
+
+/* ------------------------------------------------------------ a page's heading, and the boxes its content sits in */
+.fi-header-heading {
+    font-weight: 700;
+    letter-spacing: -0.01em;
+}
+
+/* A short bar of the colour over each page's name. */
+.fi-header-heading::before {
+    content: '';
+    display: block;
+    width: 2.5rem;
+    height: 0.25rem;
+    margin-bottom: 0.6rem;
+    border-radius: 999px;
+    background: linear-gradient(90deg, var(--primary-500), var(--primary-300));
+}
+
+.fi-simple-header-heading::before {
+    display: none;
+}
+
+.fi-section,
+.fi-ta-ctn,
+.fi-wi-stats-overview-stat,
+.fi-wi-chart .fi-section,
+.fi-fo-tabs,
+.fi-sc-tabs {
+    border-radius: var(--panel-radius);
+}
+
+.fi-section,
+.fi-ta-ctn,
+.fi-wi-stats-overview-stat {
+    box-shadow: 0 1px 2px rgb(0 0 0 / 0.04), 0 8px 24px -16px rgb(0 0 0 / 0.18);
+    --tw-ring-color: color-mix(in oklab, var(--gray-500) 16%, transparent);
+}
+
+.fi-ta-ctn {
+    overflow: hidden;
+}
+
+.fi-ta-header-cell {
+    font-size: 0.8125rem;
+    letter-spacing: 0.02em;
+}
+
+.fi-ta-row {
+    transition: background-color 0.12s ease;
+}
+
+.fi-ta-row:hover {
+    background-color: var(--panel-tint);
+}
+
+.fi-btn {
+    border-radius: 0.75rem;
+    font-weight: 600;
+}
+
+.fi-input-wrp,
+.fi-select-input,
+.fi-fo-rich-editor,
+.fi-fo-file-upload .filepond--panel-root {
+    border-radius: 0.75rem;
+}
+
+/* ------------------------------------------------------------ figures on the first page */
+.fi-wi-stats-overview-stat {
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+
+.fi-wi-stats-overview-stat::before {
+    content: '';
+    position: absolute;
+    inset: 0 0 auto 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--primary-500), transparent 80%);
+}
+
+.fi-wi-stats-overview-stat:hover {
+    transform: translateY(-2px);
+}
+
+.fi-wi-stats-overview-stat-value {
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.01em;
+}
+
+/* ------------------------------------------------------------ the welcome at the top of the first page (filament.widgets.welcome) */
+.panel-welcome {
+    position: relative;
+    overflow: hidden;
+    display: grid;
+    gap: 1.5rem;
+    padding: 1.75rem;
+    border-radius: 1.25rem;
+    border: 1px solid var(--panel-edge);
+    background:
+        radial-gradient(28rem 14rem at 100% 0%, var(--panel-tint-strong), transparent 70%),
+        linear-gradient(135deg, var(--panel-tint), transparent 60%),
+        Canvas;
+}
+
+.panel-welcome-eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    color: var(--panel-accent);
+}
+
+.panel-welcome-dot {
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 999px;
+    background: var(--primary-500);
+    box-shadow: 0 0 0 4px var(--panel-tint-strong);
+}
+
+.panel-welcome-title {
+    margin-top: 0.5rem;
+    font-size: clamp(1.5rem, 1.1rem + 1.4vw, 2.1rem);
+    font-weight: 700;
+    line-height: 1.25;
+}
+
+.panel-welcome-lead {
+    margin-top: 0.4rem;
+    opacity: 0.75;
+}
+
+.panel-welcome-who {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 0.9rem;
+}
+
+.panel-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.25rem 0.75rem;
+    border-radius: 999px;
+    border: 1px solid color-mix(in oklab, var(--gray-500) 25%, transparent);
+    font-size: 0.8125rem;
+    background: color-mix(in oklab, Canvas 70%, transparent);
+}
+
+.panel-pill svg,
+.panel-door svg {
+    width: 1.1rem;
+    height: 1.1rem;
+    flex: none;
+}
+
+.panel-doors {
+    display: grid;
+    gap: 0.75rem;
+    grid-template-columns: repeat(auto-fit, minmax(12.5rem, 1fr));
+}
+
+/* One thing to do from here: big enough for a thumb, the first of them filled. */
+.panel-door {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    min-height: 3.5rem;
+    padding: 0.75rem 1rem;
+    border-radius: 0.9rem;
+    border: 1px solid color-mix(in oklab, var(--gray-500) 22%, transparent);
+    background: color-mix(in oklab, Canvas 80%, transparent);
+    font-weight: 600;
+    transition: transform 0.15s ease, border-color 0.15s ease, background-color 0.15s ease;
+}
+
+.panel-door:hover,
+.panel-door:focus-visible {
+    transform: translateY(-2px);
+    border-color: var(--primary-500);
+    background: var(--panel-tint);
+}
+
+.panel-door:focus-visible {
+    outline: 2px solid var(--primary-500);
+    outline-offset: 2px;
+}
+
+.panel-door-mark {
+    display: grid;
+    place-items: center;
+    width: 2.25rem;
+    height: 2.25rem;
+    flex: none;
+    border-radius: 0.7rem;
+    background: var(--panel-tint-strong);
+    color: var(--panel-accent);
+}
+
+.panel-door small {
+    display: block;
+    font-weight: 400;
+    font-size: 0.8125rem;
+    opacity: 0.7;
+}
+
+.panel-door.is-first {
+    border-color: transparent;
+    background: var(--primary-600);
+    color: #fff;
+}
+
+.panel-door.is-first .panel-door-mark {
+    background: rgb(255 255 255 / 0.2);
+    color: #fff;
+}
+
+.panel-door.is-first:hover,
+.panel-door.is-first:focus-visible {
+    background: var(--primary-700);
+}
+
+.panel-door-count {
+    margin-left: auto;
+    padding: 0.1rem 0.55rem;
+    border-radius: 999px;
+    background: var(--danger-600, #dc2626);
+    color: #fff;
+    font-size: 0.8125rem;
+    font-variant-numeric: tabular-nums;
+}
+
+/* ------------------------------------------------------------ what is waiting (filament.widgets.needs-attention) */
+.panel-waiting {
+    display: grid;
+    gap: 0.5rem;
+}
+
+.panel-waiting li > * {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.6rem 0.8rem;
+    border-radius: 0.75rem;
+    border: 1px solid color-mix(in oklab, var(--gray-500) 16%, transparent);
+}
+
+.panel-waiting a:hover {
+    border-color: var(--primary-500);
+    background: var(--panel-tint);
+}
+
+.panel-waiting-go {
+    margin-left: auto;
+    opacity: 0.5;
+}
+
+.panel-clear {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    opacity: 0.8;
+}
+
+.panel-clear svg {
+    width: 1.4rem;
+    height: 1.4rem;
+    color: var(--primary-600);
+}
+
+/* ------------------------------------------------------------ the way back to the site, and the version */
+.panel-site-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    min-height: 2.25rem;
+    padding: 0 0.8rem;
+    border-radius: 999px;
+    border: 1px solid color-mix(in oklab, var(--gray-500) 25%, transparent);
+    font-size: 0.875rem;
+    font-weight: 500;
+    white-space: nowrap;
+}
+
+.panel-site-link:hover {
+    border-color: var(--primary-500);
+    color: var(--panel-accent);
+}
+
+.panel-site-link svg {
+    width: 1rem;
+    height: 1rem;
+}
+
+@media (max-width: 40rem) {
+    .panel-site-link span {
+        display: none;
+    }
+}
+
+.panel-version {
+    display: block;
+    padding: 0.75rem 1.5rem 1rem;
+    font-size: 0.75rem;
+    opacity: 0.6;
+}
+
+.panel-version a:hover {
+    text-decoration: underline;
+}
+
+/* ------------------------------------------------------------ the sign-in page */
+.fi-simple-layout {
+    background:
+        radial-gradient(42rem 26rem at 12% 0%, var(--panel-tint-strong), transparent 65%),
+        radial-gradient(36rem 24rem at 95% 100%, var(--panel-tint), transparent 65%);
+}
+
+.fi-simple-main {
+    border-radius: 1.5rem;
+    border-top: 4px solid var(--primary-500);
+    box-shadow: 0 1px 2px rgb(0 0 0 / 0.05), 0 30px 60px -30px rgb(0 0 0 / 0.3);
+}
+
+.panel-signin-note {
+    text-align: center;
+    font-size: 0.875rem;
+    opacity: 0.75;
+}
+
+.panel-signin-back {
+    display: flex;
+    justify-content: center;
+    margin-top: 0.5rem;
+    font-size: 0.875rem;
+}
+
+.panel-signin-back a {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    min-height: 2.75rem;
+    color: var(--panel-accent);
+    font-weight: 500;
+}
+
+.panel-signin-back a:hover {
+    text-decoration: underline;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .panel-door,
+    .fi-wi-stats-overview-stat,
+    .fi-sidebar-item-btn {
+        transition: none;
+    }
+
+    .panel-door:hover,
+    .fi-wi-stats-overview-stat:hover {
+        transform: none;
+    }
+}
+
+/* The word before each waiting thing is kept whole on a narrow screen; the sentence beside it wraps. */
+.panel-waiting .fi-badge {
+    flex: none;
+}
+
+/* The posts last worked on (filament.widgets.latest-posts): the title over its kind and age, the state at the end. */
+.panel-posts-text {
+    display: grid;
+    min-width: 0;
+    flex: 1;
+}
+
+.panel-posts-text strong {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-weight: 600;
+}
+
+.panel-posts-text small {
+    font-size: 0.8125rem;
+    opacity: 0.7;
+}

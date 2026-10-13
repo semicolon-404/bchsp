@@ -8,6 +8,7 @@ use App\Support\SiteSettings;
 use App\Support\Theme;
 use App\Support\TwoStep;
 use Filament\Enums\ThemeMode;
+use Filament\FontProviders\LocalFontProvider;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
@@ -18,12 +19,12 @@ use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
 use Filament\View\PanelsRenderHook;
-use Filament\Widgets\AccountWidget;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
+use Illuminate\Support\Facades\Vite;
 use Illuminate\Support\HtmlString;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 
@@ -47,6 +48,9 @@ class AdminPanelProvider extends PanelProvider
             ->brandLogo(fn () => SiteSettings::logoUrl())
             ->brandLogoHeight('2.25rem')
             ->favicon(fn () => url('/icon-192.png'))
+            // The site's typeface and the panel's own look (resources/css/panel.css), from this server and no other.
+            ->font('IBM Plex Sans Thai', url: fn () => Vite::asset('resources/css/panel.css'), provider: LocalFontProvider::class)
+            ->sidebarCollapsibleOnDesktop()
             // The site opens light unless the person chose otherwise; both share the same saved choice.
             ->defaultThemeMode(ThemeMode::Light)
             // Each group is found by its English name (what the resources carry) and shown in the reader's language.
@@ -57,15 +61,19 @@ class AdminPanelProvider extends PanelProvider
             ->colors(fn () => ['primary' => Color::hex(Theme::accent())])
             // In mourning the panel is black and white with the site.
             ->renderHook(PanelsRenderHook::HEAD_END, fn () => Theme::isMourning() ? new HtmlString('<style>html{filter:grayscale(1)}</style>') : '')
+            // The way back to the site beside the person's menu; under the menu down the side, which version this is;
+            // and on the sign-in page, whom it is for and the way out of it.
+            ->renderHook(PanelsRenderHook::USER_MENU_BEFORE, fn () => view('filament.hooks.site-link'))
+            ->renderHook(PanelsRenderHook::SIDEBAR_FOOTER, fn () => view('filament.hooks.version'))
+            ->renderHook(PanelsRenderHook::AUTH_LOGIN_FORM_BEFORE, fn () => view('filament.hooks.signin-note'))
+            ->renderHook(PanelsRenderHook::AUTH_LOGIN_FORM_AFTER, fn () => view('filament.hooks.signin-back'))
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\Filament\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\Filament\Pages')
             ->pages([
                 Dashboard::class,
             ])
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\Filament\Widgets')
-            ->widgets([
-                AccountWidget::class,
-            ])
+            ->widgets([])
             ->middleware([
                 EncryptCookies::class,
                 AddQueuedCookiesToResponse::class,

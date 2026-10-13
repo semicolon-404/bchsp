@@ -252,7 +252,10 @@ class AnnouncementResource extends Resource
                 TextColumn::make('title')
                     ->label(__('Title'))
                     ->searchable()
-                    ->wrap(),
+                    ->wrap()
+                    // Wide enough to be read as a title, not a column of single words.
+                    ->extraCellAttributes(['style' => 'min-width: 20rem'])
+                    ->weight('medium'),
                 TextColumn::make('type.name')
                     ->label(__('Type'))
                     ->badge()
