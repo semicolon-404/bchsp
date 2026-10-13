@@ -16,32 +16,49 @@
         ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_AMP) !!}</script>
     @endif
 
-    <div class="wrap max-w-3xl py-10 sm:py-14">
-        <p class="eyebrow">{{ __('Questions people ask') }}</p>
-        <h1 class="mt-2 text-3xl sm:text-4xl">{{ __('Before you call, the answer may be here') }}</h1>
+    <x-site.page-header :eyebrow="__('Questions people ask')" :title="__('Before you call, the answer may be here')" icon="question-mark-circle" width="max-w-3xl"
+                        :lead="__('Press a question to read its answer.')">
+        @if ($all->isNotEmpty())
+            <div class="flex flex-wrap items-end gap-x-10 gap-y-5">
+                <dl>
+                    <dd class="font-mono text-3xl font-semibold text-ink" data-count>{{ number_format($all->count()) }}</dd>
+                    <dt class="text-sm text-muted">{{ __('Questions') }}</dt>
+                </dl>
+                <label class="relative block min-w-0 flex-1 basis-64">
+                    <span class="sr-only">{{ __('Find a question') }}</span>
+                    <x-heroicon-m-magnifying-glass class="pointer-events-none absolute left-3 top-1/2 size-5 -translate-y-1/2 text-muted" aria-hidden="true" />
+                    <input type="search" data-filter=".faq-list" placeholder="{{ __('Find a question') }}" class="min-h-12 w-full rounded-lg border border-line bg-surface pl-10 pr-3 text-ink placeholder:text-muted" hidden>
+                </label>
+            </div>
+        @endif
+    </x-site.page-header>
 
+    <div class="wrap max-w-3xl py-10 sm:py-14">
         @if ($all->isEmpty())
-            <x-site.empty class="mt-8" icon="question-mark-circle" />
+            <x-site.empty icon="question-mark-circle" />
         @else
             @foreach ($groups as $heading => $faqs)
-                <section class="mt-8">
+                <section @class(['mt-10' => ! $loop->first])>
                     @if ($heading !== '')
-                        <h2 class="text-xl">{{ $heading }}</h2>
+                        <h2 class="flex items-center gap-2 text-xl"><x-heroicon-o-chat-bubble-left-right class="size-6 text-brand" aria-hidden="true" />{{ $heading }}</h2>
                     @endif
-                    <div class="card mt-3 p-0">
+                    <div class="faq-list card mt-3 p-0">
                         @foreach ($faqs as $faq)
-                            <details class="group border-b border-line last:border-b-0" id="q-{{ $faq->id }}">
-                                <summary class="flex cursor-pointer list-none items-start gap-3 px-5 py-4 font-medium hover:text-brand">
+                            <details class="group border-b border-line last:border-b-0" id="q-{{ $faq->id }}" data-filter-text="{{ mb_strtolower($faq->localQuestion().' '.$faq->localAnswer()) }}">
+                                <summary class="flex cursor-pointer list-none items-start gap-3 px-5 py-4 text-lg font-medium hover:text-brand">
+                                    <span class="mt-0.5 flex size-7 shrink-0 items-center justify-center rounded-full bg-raised font-mono text-sm font-bold text-brand" aria-hidden="true">?</span>
                                     <span class="min-w-0 flex-1">{{ $faq->localQuestion() }}</span>
                                     <x-heroicon-m-chevron-down class="mt-1 size-5 shrink-0 text-brand transition group-open:rotate-180" aria-hidden="true" />
                                 </summary>
-                                <p class="whitespace-pre-line px-5 pb-5 text-muted">{{ $faq->localAnswer() }}</p>
+                                <p class="whitespace-pre-line pb-5 pl-[3.75rem] pr-5 text-muted">{{ $faq->localAnswer() }}</p>
                             </details>
                         @endforeach
                     </div>
                 </section>
             @endforeach
         @endif
+
+        <p class="mt-6 hidden text-muted" data-filter-none>{{ __('No question matches.') }}</p>
 
         <p class="mt-10 text-muted">{{ __('Not here?') }}
             <a href="{{ route('contact') }}" class="font-semibold text-brand underline">{{ __('Contact us') }}</a>
