@@ -15,7 +15,8 @@ class DepartmentController extends Controller
 
     public function index(): View
     {
-        return view('departments.index', ['departments' => Department::shown()->get()]);
+        // With their lines of the clinic schedule, so that each card can say whether it is open this minute.
+        return view('departments.index', ['departments' => Department::shown()->with('sessions')->get()]);
     }
 
     public function show(Request $request, Department $department): View
