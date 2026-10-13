@@ -33,6 +33,8 @@
     @else
         {{-- One address for a page, whatever was added to it; and how a link to it looks when shared. --}}
         <link rel="canonical" href="{{ url()->current() }}">
+        {{-- The small picture in a browser's tab: the hospital's logo, or the site's own mark (SeoController::icon). --}}
+        <link rel="icon" type="image/png" sizes="192x192" href="{{ route('icon', ['size' => 192]) }}">
         {{-- For a phone that keeps the site on its home screen (SeoController::manifest). --}}
         <link rel="manifest" href="{{ route('manifest') }}">
         <link rel="apple-touch-icon" href="{{ route('icon', ['size' => 180]) }}">
@@ -175,18 +177,32 @@
                 @endif
             </div>
 
+            {{-- The parts of the site people look for most, one press from the foot of any page. --}}
+            <div>
+                <h2 class="eyebrow">{{ __('Explore') }}</h2>
+                <ul class="mt-3 space-y-2">
+                    @foreach ([
+                        ['announcements.index', 'Announcements'], ['schedule', 'Clinic schedule'], ['departments.index', 'Departments'],
+                        ['downloads', 'Downloads'], ['ita', 'ITA'], ['about', 'About us'], ['menu', 'Everything on this website'],
+                    ] as [$place, $label])
+                        <li><a href="{{ route($place) }}" class="inline-flex items-center gap-2 text-ink no-underline hover:text-brand"><x-heroicon-m-chevron-right class="size-4 text-brand" aria-hidden="true" />{{ __($label) }}</a></li>
+                    @endforeach
+                </ul>
+            </div>
+
             <div>
                 <h2 class="eyebrow">{{ __('Contact us') }}</h2>
-                <ul class="mt-3 space-y-2">
+                <ul class="mt-3 space-y-3">
                     @if ($phone)
-                        <li>{{ __('Phone') }}: <a href="{{ $dial($phone) }}" class="font-mono font-semibold text-brand underline">{{ $phone }}</a></li>
+                        <li class="flex items-start gap-3"><x-heroicon-o-phone class="mt-1 size-5 shrink-0 text-brand" aria-hidden="true" /><span>{{ __('Phone') }}: <a href="{{ $dial($phone) }}" class="font-mono font-semibold text-brand underline">{{ $phone }}</a></span></li>
                     @endif
                     @if ($emergency)
-                        <li>{{ __('Emergency') }}: <a href="{{ $dial($emergency) }}" class="font-mono font-semibold text-danger underline">{{ $emergency }}</a></li>
+                        <li class="flex items-start gap-3"><x-heroicon-o-bell-alert class="mt-1 size-5 shrink-0 text-danger" aria-hidden="true" /><span>{{ __('Emergency') }}: <a href="{{ $dial($emergency) }}" class="font-mono font-semibold text-danger underline">{{ $emergency }}</a></span></li>
                     @endif
                     @if ($email)
-                        <li>{{ __('Email') }}: <a href="mailto:{{ $email }}" class="font-semibold text-brand underline break-all">{{ $email }}</a></li>
+                        <li class="flex items-start gap-3"><x-heroicon-o-envelope class="mt-1 size-5 shrink-0 text-brand" aria-hidden="true" /><span class="min-w-0">{{ __('Email') }}: <a href="mailto:{{ $email }}" class="font-semibold text-brand underline break-all">{{ $email }}</a></span></li>
                     @endif
+                    <li class="flex items-start gap-3"><x-heroicon-o-phone-arrow-up-right class="mt-1 size-5 shrink-0 text-brand" aria-hidden="true" /><a href="{{ route('phones') }}" class="text-ink underline decoration-line underline-offset-4 hover:text-brand">{{ __('Phone numbers of every department') }}</a></li>
                 </ul>
             </div>
 

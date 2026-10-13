@@ -4,6 +4,7 @@ namespace App\Providers\Filament;
 
 use App\Filament\Auth\Login;
 use App\Http\Middleware\RequireTwoStepOfStaff;
+use App\Support\SiteSettings;
 use App\Support\Theme;
 use App\Support\TwoStep;
 use Filament\Enums\ThemeMode;
@@ -42,6 +43,10 @@ class AdminPanelProvider extends PanelProvider
             ->multiFactorAuthentication(fn () => [TwoStep::provider()], isRequired: true)
             ->multiFactorAuthenticationRequiredMiddlewareName(RequireTwoStepOfStaff::class)
             ->brandName(fn () => config('app.name'))
+            // The hospital's logo beside the name when it has one, and the same picture in the browser's tab as the site has.
+            ->brandLogo(fn () => SiteSettings::logoUrl())
+            ->brandLogoHeight('2.25rem')
+            ->favicon(fn () => url('/icon-192.png'))
             // The site opens light unless the person chose otherwise; both share the same saved choice.
             ->defaultThemeMode(ThemeMode::Light)
             // Each group is found by its English name (what the resources carry) and shown in the reader's language.

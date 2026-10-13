@@ -48,7 +48,7 @@
                 {{-- On a phone the name takes a row of its own under the picture. --}}
                 <div class="min-w-0 flex-1 basis-full sm:basis-0 sm:pt-3">
                     <p class="eyebrow">{{ __('Departments') }}</p>
-                    <h1 class="mt-1 text-2xl sm:text-3xl">{{ $department->localName() }}</h1>
+                    <h1 class="hero-name mt-1 text-2xl sm:text-4xl">{{ $department->localName() }}</h1>
                     @if (filled($department->localHeadline()))
                         <p class="mt-1 text-muted">{{ $department->localHeadline() }}</p>
                     @endif
