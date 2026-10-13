@@ -3,6 +3,7 @@
 use App\Http\Controllers\AnnouncementController;
 use App\Http\Controllers\DepartmentController;
 use App\Http\Controllers\ItaController;
+use App\Http\Controllers\QrController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\SearchController;
 use App\Http\Controllers\SeoController;
@@ -44,6 +45,8 @@ Route::view('/staff', 'staff')->name('staff');
 Route::get('/p/{page}', [SitePageController::class, 'show'])->name('pages.show');
 
 Route::get('/search', SearchController::class)->name('search');
+// A QR code leading to a page of this site, for posters and signs (App\Http\Controllers\QrController).
+Route::get('/qr.svg', QrController::class)->middleware('throttle:60,1')->name('qr');
 
 // The report for executives, to print or to open in Excel: for administrators (App\Http\Controllers\ReportController).
 Route::get('/admin/reports-print', [ReportController::class, 'print'])->name('reports.print');

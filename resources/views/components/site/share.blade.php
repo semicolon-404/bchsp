@@ -11,6 +11,10 @@
     <span class="text-sm text-muted">{{ __('Share') }}</span>
     <a href="https://social-plugins.line.me/lineit/share?url={{ urlencode($url) }}" target="_blank" rel="noopener noreferrer" class="chip min-h-9 px-3 text-sm">LINE<span class="sr-only"> {{ __('(opens in a new tab)') }}</span></a>
     <a href="https://www.facebook.com/sharer/sharer.php?u={{ urlencode($url) }}" target="_blank" rel="noopener noreferrer" class="chip min-h-9 px-3 text-sm">Facebook<span class="sr-only"> {{ __('(opens in a new tab)') }}</span></a>
+    {{-- A QR code of this page, drawn by the site itself: to print on a poster or show on a screen. --}}
+    <a href="{{ route('qr', ['to' => '/'.ltrim((string) parse_url($url, PHP_URL_PATH), '/')]) }}" target="_blank" rel="noopener" class="chip min-h-9 gap-1 px-3 text-sm">
+        <x-heroicon-m-qr-code class="size-4" aria-hidden="true" />{{ __('QR code') }}<span class="sr-only"> {{ __('(opens in a new tab)') }}</span>
+    </a>
     <button type="button" class="chip min-h-9 gap-1 px-3 text-sm" data-print hidden>
         <x-heroicon-m-printer class="size-4" aria-hidden="true" />{{ __('Print') }}
     </button>

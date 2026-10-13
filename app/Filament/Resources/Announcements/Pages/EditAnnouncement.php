@@ -57,6 +57,16 @@ class EditAnnouncement extends EditRecord
                 ->color('gray')
                 ->url(fn () => route('announcements.show', $this->getRecord()))
                 ->openUrlInNewTab(),
+            // A QR code that leads to the post, to put on the printed poster.
+            Action::make('qr')
+                ->label(__('QR code'))
+                ->icon(Heroicon::OutlinedQrCode)
+                ->color('gray')
+                ->modalHeading(__('QR code for a poster'))
+                ->modalDescription(__('Scanning it opens this post on the website. It prints sharp at any size.'))
+                ->modalContent(fn () => view('filament.qr', ['url' => route('qr', ['to' => '/'.ltrim((string) parse_url(route('announcements.show', $this->getRecord()), PHP_URL_PATH), '/')])]))
+                ->modalSubmitAction(false)
+                ->modalCancelActionLabel(__('Close')),
             DeleteAction::make(),
         ];
     }

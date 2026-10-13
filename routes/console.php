@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\AccessLog;
+use App\Support\Searches;
 use App\Support\SystemHealth;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
@@ -12,6 +13,9 @@ Artisan::command('inspire', function () {
 
 // Drops access-log lines older than the retention period (config/bchsp.php).
 Schedule::command('model:prune', ['--model' => [AccessLog::class]])->daily();
+
+// What readers searched for is kept a little over a year (App\Support\Searches).
+Schedule::call(fn () => Searches::prune())->daily()->name('searches:prune');
 
 // A copy of the database and of the uploaded files every night, kept two weeks (App\Support\Backups).
 // On this disk only: send it elsewhere too.

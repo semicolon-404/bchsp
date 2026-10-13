@@ -90,6 +90,19 @@
     @endforelse
 </table>
 
+<h3 style="{{ $heading }}">{{ __('What readers searched for') }}</h3>
+<p style="margin: 0 0 0.5rem; opacity: .75;">{{ __('Words that found nothing are what the site should say more about.') }}</p>
+@foreach (['top' => 'Searched for most', 'empty' => 'Searched for and not found'] as $which => $name)
+    <table style="{{ $table }} margin-bottom: 0.75rem;">
+        <tr><th style="{{ $cell }}">{{ __($name) }}</th><th style="{{ $number }}">{{ __('Times') }}</th></tr>
+        @forelse ($summary['searches'][$which] as $row)
+            <tr><td style="{{ $cell }}">{{ $row['term'] }}</td><td style="{{ $number }}">{{ number_format($row['searches']) }}</td></tr>
+        @empty
+            <tr><td style="{{ $cell }}" colspan="2">{{ $which === 'top' ? __('Nobody searched in this period.') : __('Every search in this period found something.') }}</td></tr>
+        @endforelse
+    </table>
+@endforeach
+
 <h3 style="{{ $heading }}">{{ __('ITA, fiscal year :year', ['year' => $summary['ita']['year']]) }}</h3>
 <p style="margin: 0;">
     @if ($summary['ita']['items'])

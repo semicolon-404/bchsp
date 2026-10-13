@@ -88,6 +88,8 @@ class Reports
                     'helpful' => (int) (clone $announcements)->where('department_id', $department->id)->sum('helpful'),
                 ])
                 ->filter(fn (array $row) => $row['posts'] > 0)->sortByDesc('posts')->values()->all(),
+            // What readers typed into the search: the most often, and what found nothing.
+            'searches' => Searches::between($from, $until),
             'ita' => self::ita(Announcement::fiscalYearOf($until->copy()->min(now()))),
             'staff' => self::staff($from, $until),
         ];
@@ -173,6 +175,18 @@ class Reports
         $rows[] = [__('Most read'), __('Type'), __('Times opened')];
         foreach ($summary['announcements']['top'] as $one) {
             $rows[] = [$one->title, (string) $one->type?->name, (int) $one->views];
+        }
+        $rows[] = [];
+
+        $rows[] = [__('Searched for most'), __('Times')];
+        foreach ($summary['searches']['top'] as $row) {
+            $rows[] = [$row['term'], $row['searches']];
+        }
+        $rows[] = [];
+
+        $rows[] = [__('Searched for and not found'), __('Times')];
+        foreach ($summary['searches']['empty'] as $row) {
+            $rows[] = [$row['term'], $row['searches']];
         }
         $rows[] = [];
 

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Announcement;
 use App\Models\Department;
 use App\Models\SitePage;
+use App\Support\Searches;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
@@ -46,6 +47,13 @@ class SearchController extends Controller
             ]);
         }
 
-        return view('search', ['term' => $term, 'results' => $results, 'count' => array_sum(array_map('count', $results))]);
+        $count = array_sum(array_map('count', $results));
+
+        // The words and how much they found, for the report; nothing about who asked (App\Support\Searches).
+        if (mb_strlen($term) >= self::MIN) {
+            Searches::record($request, $term, $count);
+        }
+
+        return view('search', ['term' => $term, 'results' => $results, 'count' => $count]);
     }
 }
