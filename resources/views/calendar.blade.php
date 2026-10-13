@@ -8,22 +8,28 @@
     $weekday = fn ($day) => $day->locale(app()->getLocale())->translatedFormat(app()->getLocale() === 'th' ? 'D' : 'D');
 @endphp
 <x-layouts.site :title="__('Calendar').' '.$title" :description="__('What is happening at :name, day by day.', ['name' => App\Support\SiteSettings::name()])">
-    <div class="wrap max-w-3xl py-10 sm:py-14">
-        <p class="eyebrow">{{ __('Calendar') }}</p>
-        <h1 class="mt-2 text-3xl sm:text-4xl">{{ $title }}</h1>
-
-        <nav class="mt-6 flex flex-wrap items-center gap-2" aria-label="{{ __('Months') }}">
+    <x-site.page-header :eyebrow="__('Calendar')" :title="$title" icon="calendar-days" width="max-w-3xl"
+                        :lead="__('What happens on which day: mobile units, blood drives, clinics that will be closed.')">
+        <div class="flex flex-wrap items-end gap-x-10 gap-y-5">
+            <dl>
+                <dd class="font-mono text-3xl font-semibold text-ink" data-count>{{ number_format($days->flatten()->count()) }}</dd>
+                <dt class="text-sm text-muted">{{ __('On the calendar this month') }}</dt>
+            </dl>
+        <nav class="flex flex-wrap items-center gap-2" aria-label="{{ __('Months') }}">
             <a href="{{ route('calendar', ['month' => $month->copy()->subMonthNoOverflow()->format('Y-m')]) }}" class="chip gap-1" rel="prev"><x-heroicon-m-chevron-left class="size-4" aria-hidden="true" />{{ __('Month before') }}</a>
             @unless ($month->isSameMonth(now()))
                 <a href="{{ route('calendar') }}" class="chip">{{ __('This month') }}</a>
             @endunless
             <a href="{{ route('calendar', ['month' => $month->copy()->addMonthNoOverflow()->format('Y-m')]) }}" class="chip gap-1" rel="next">{{ __('Month after') }}<x-heroicon-m-chevron-right class="size-4" aria-hidden="true" /></a>
         </nav>
+        </div>
+    </x-site.page-header>
 
+    <div class="wrap max-w-3xl py-10 sm:py-14">
         @if ($days->isEmpty())
-            <x-site.empty class="mt-8" icon="calendar-days">{{ __('Nothing is on the calendar for this month.') }}</x-site.empty>
+            <x-site.empty icon="calendar-days">{{ __('Nothing is on the calendar for this month.') }}</x-site.empty>
         @else
-            <ol class="mt-8 space-y-3">
+            <ol class="space-y-3">
                 @foreach ($days as $date => $events)
                     @php($day = \Illuminate\Support\Carbon::parse($date))
                     <li @class(['card flex gap-4 p-0', 'border-brand' => $day->isToday(), 'opacity-70' => $day->isPast() && ! $day->isToday()])>
