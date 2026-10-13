@@ -5,6 +5,7 @@ namespace App\Support;
 use App\Models\AccessLog;
 use App\Models\Announcement;
 use App\Models\AnnouncementType;
+use App\Models\Department;
 use App\Models\ItaItem;
 use App\Models\User;
 use Illuminate\Support\Carbon;
@@ -78,6 +79,15 @@ class Reports
                 'monthly' => self::perMonth((clone $announcements)->pluck('starts_at'), $from, $until),
                 'top' => (clone $announcements)->with('type')->where('views', '>', 0)->orderByDesc('views')->limit(10)->get(),
             ],
+            // The departments that posted in the period, the busiest first.
+            'departments' => Department::orderBy('sort_order')->orderBy('name')->get()
+                ->map(fn (Department $department) => [
+                    'name' => $department->name,
+                    'posts' => (clone $announcements)->where('department_id', $department->id)->count(),
+                    'views' => (int) (clone $announcements)->where('department_id', $department->id)->sum('views'),
+                    'helpful' => (int) (clone $announcements)->where('department_id', $department->id)->sum('helpful'),
+                ])
+                ->filter(fn (array $row) => $row['posts'] > 0)->sortByDesc('posts')->values()->all(),
             'ita' => self::ita(Announcement::fiscalYearOf($until->copy()->min(now()))),
             'staff' => self::staff($from, $until),
         ];
@@ -163,6 +173,12 @@ class Reports
         $rows[] = [__('Most read'), __('Type'), __('Times opened')];
         foreach ($summary['announcements']['top'] as $one) {
             $rows[] = [$one->title, (string) $one->type?->name, (int) $one->views];
+        }
+        $rows[] = [];
+
+        $rows[] = [__('Posts of the departments'), __('Posts'), __('Times opened'), __('Found useful')];
+        foreach ($summary['departments'] as $row) {
+            $rows[] = [$row['name'], $row['posts'], $row['views'], $row['helpful']];
         }
         $rows[] = [];
 

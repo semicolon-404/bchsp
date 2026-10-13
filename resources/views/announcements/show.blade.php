@@ -118,6 +118,10 @@
         @if (! $announcement->imageUrl() && ! $announcement->hasBody() && ! $announcement->photos() && ! $files && ! $links)
             <p class="text-muted">{{ __('This announcement has no further details.') }}</p>
         @endif
+
+        @if ($announcement->isPublished())
+            <x-site.helpful :announcement="$announcement" />
+        @endif
     </article>
 
     {{-- Somewhere to go next: the newest others of the same kind. Words only: the page above may be one large picture already. --}}

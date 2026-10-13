@@ -4,8 +4,10 @@ namespace App\Filament\Resources\Announcements\Pages;
 
 use App\Filament\Resources\Announcements\AnnouncementResource;
 use App\Models\Announcement;
+use Filament\Actions\Action;
 use Filament\Actions\DeleteAction;
 use Filament\Resources\Pages\EditRecord;
+use Filament\Support\Icons\Heroicon;
 
 class EditAnnouncement extends EditRecord
 {
@@ -48,6 +50,13 @@ class EditAnnouncement extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
+            // What is saved, as a visitor would see it; staff who are signed in can open one that is not out yet.
+            Action::make('preview')
+                ->label(__('Preview'))
+                ->icon(Heroicon::OutlinedEye)
+                ->color('gray')
+                ->url(fn () => route('announcements.show', $this->getRecord()))
+                ->openUrlInNewTab(),
             DeleteAction::make(),
         ];
     }

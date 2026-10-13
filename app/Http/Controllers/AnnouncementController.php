@@ -8,6 +8,7 @@ use App\Models\Department;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 
 /**
@@ -109,6 +110,25 @@ class AnnouncementController extends Controller
                 ->when($announcement->announcement_type_id, fn ($query, $type) => $query->where('announcement_type_id', $type))
                 ->orderByDesc('starts_at')->orderByDesc('id')->limit(4)->get(),
         ]);
+    }
+
+    /**
+     * "This was useful", pressed under an announcement: one more on its count. The reader's session remembers
+     * which ones were pressed, so pressing again adds nothing; nothing about the reader is written down.
+     */
+    public function helpful(Request $request, Announcement $announcement): RedirectResponse
+    {
+        abort_unless($announcement->isPublished(), 404);
+
+        $pressed = (array) $request->session()->get('helpful', []);
+
+        if (! in_array($announcement->id, $pressed, true)) {
+            // Straight on the table: a reader's press is not a change to the announcement.
+            DB::table('announcements')->where('id', $announcement->id)->increment('helpful');
+            $request->session()->put('helpful', [...$pressed, $announcement->id]);
+        }
+
+        return redirect()->to(route('announcements.show', $announcement).'#helpful');
     }
 
     /**

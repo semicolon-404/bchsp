@@ -14,6 +14,7 @@ Route::view('/', 'home')->name('home');
 
 Route::get('/announcements', [AnnouncementController::class, 'index'])->name('announcements.index');
 Route::get('/announcements/{announcement}', [AnnouncementController::class, 'show'])->name('announcements.show');
+Route::post('/announcements/{announcement}/helpful', [AnnouncementController::class, 'helpful'])->middleware('throttle:12,1')->name('announcements.helpful');
 
 // Articles are announcements now: an address shared before still leads somewhere.
 Route::get('/blog/{slug?}', [AnnouncementController::class, 'fromBlog']);

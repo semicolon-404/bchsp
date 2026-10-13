@@ -51,6 +51,9 @@ class AdminPanelProvider extends PanelProvider
             // The site's typeface and the panel's own look (resources/css/panel.css), from this server and no other.
             ->font('IBM Plex Sans Thai', url: fn () => Vite::asset('resources/css/panel.css'), provider: LocalFontProvider::class)
             ->sidebarCollapsibleOnDesktop()
+            // The bell: a post waiting for approval, approved, or sent back (App\Support\PostNotices).
+            ->databaseNotifications()
+            ->databaseNotificationsPolling('60s')
             // The site opens light unless the person chose otherwise; both share the same saved choice.
             ->defaultThemeMode(ThemeMode::Light)
             // Each group is found by its English name (what the resources carry) and shown in the reader's language.

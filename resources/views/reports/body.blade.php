@@ -75,6 +75,21 @@
     @endforelse
 </table>
 
+<h3 style="{{ $heading }}">{{ __('Posts of the departments') }}</h3>
+<table style="{{ $table }}">
+    <tr><th style="{{ $cell }}">{{ __('Department') }}</th><th style="{{ $number }}">{{ __('Posts') }}</th><th style="{{ $number }}">{{ __('Times opened') }}</th><th style="{{ $number }}">{{ __('Found useful') }}</th></tr>
+    @forelse ($summary['departments'] as $row)
+        <tr>
+            <td style="{{ $cell }}">{{ $row['name'] }}</td>
+            <td style="{{ $number }}">{{ number_format($row['posts']) }}</td>
+            <td style="{{ $number }}">{{ number_format($row['views']) }}</td>
+            <td style="{{ $number }}">{{ number_format($row['helpful']) }}</td>
+        </tr>
+    @empty
+        <tr><td style="{{ $cell }}" colspan="4">{{ __('No department posted in this period.') }}</td></tr>
+    @endforelse
+</table>
+
 <h3 style="{{ $heading }}">{{ __('ITA, fiscal year :year', ['year' => $summary['ita']['year']]) }}</h3>
 <p style="margin: 0;">
     @if ($summary['ita']['items'])

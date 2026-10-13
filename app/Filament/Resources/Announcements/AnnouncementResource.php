@@ -12,6 +12,7 @@ use BackedEnum;
 use Filament\Actions\Action;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\EditAction;
+use Filament\Actions\ReplicateAction;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\FileUpload;
@@ -32,6 +33,7 @@ use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Str;
 use UnitEnum;
 
 /**
@@ -280,6 +282,11 @@ class AnnouncementResource extends Resource
                     ->numeric()
                     ->sortable()
                     ->toggleable(),
+                TextColumn::make('helpful')
+                    ->label(__('Found useful'))
+                    ->numeric()
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('fiscal_year')
                     ->label(__('Fiscal year'))
                     ->state(fn (Announcement $record) => Announcement::fiscalYearOf($record->starts_at ?? $record->created_at)),
@@ -345,6 +352,26 @@ class AnnouncementResource extends Resource
                     ->url(fn (Announcement $record) => route('announcements.show', $record))
                     ->openUrlInNewTab(),
                 EditAction::make(),
+                // For what comes round again (the month's procurement notice): a draft with the same words, to change
+                // and put out. Its files are not copied: they belong to the first one, and go when that one goes.
+                ReplicateAction::make()
+                    ->label(__('Make a copy'))
+                    ->excludeAttributes(['slug', 'views', 'helpful', 'image_path', 'gallery', 'attachments', 'attachment_names', 'review_note'])
+                    ->beforeReplicaSaved(function (Announcement $replica) {
+                        $replica->fill([
+                            'title' => Str::limit($replica->title, 235, '').' '.__('(copy)'),
+                            'status' => Announcement::STATUS_DRAFT,
+                            'author_id' => auth()->id(),
+                            'is_pinned' => false,
+                            'pinned_in_department' => false,
+                            'in_slider' => false,
+                            'is_popup' => false,
+                            'starts_at' => now(),
+                            'ends_at' => null,
+                        ]);
+                    })
+                    ->successNotificationTitle(__('Copied as a draft. Pictures and files are not copied.'))
+                    ->successRedirectUrl(fn (Announcement $replica) => self::getUrl('edit', ['record' => $replica])),
                 DeleteAction::make(),
             ]);
     }

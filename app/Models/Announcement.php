@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Models\Concerns\InTwoLanguages;
+use App\Support\PostNotices;
 use App\Support\Slug;
 use Database\Factories\AnnouncementFactory;
 use Filament\Forms\Components\RichEditor\RichContentRenderer;
@@ -96,8 +97,15 @@ class Announcement extends Model
             }
         });
 
-        // The files belong to the announcement alone: one taken off it, or the whole announcement deleted, removes them.
+        // The bell in the panel rings for whoever should know where a post of a department now stands.
+        static::created(fn (Announcement $announcement) => PostNotices::tell($announcement, null));
+
         static::updated(function (Announcement $announcement) {
+            if ($announcement->wasChanged('status')) {
+                PostNotices::tell($announcement, $announcement->getRawOriginal('status'));
+            }
+
+            // The files belong to the announcement alone: one taken off it, or the whole announcement deleted, removes them.
             if ($announcement->wasChanged('attachments')) {
                 $before = json_decode((string) $announcement->getRawOriginal('attachments'), true) ?: [];
 
