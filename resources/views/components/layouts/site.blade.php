@@ -145,7 +145,7 @@
     </main>
 
     {{-- The home page and the hospital's profile are made of sections that fill the width: the last one meets the footer, with no gap between. --}}
-    <footer @class(['border-t border-line bg-surface', 'mt-16' => ! request()->routeIs('home', 'about')])>
+    <footer @class(['border-t border-line bg-surface', 'mt-16' => ! request()->routeIs('home', 'about', 'announcements.show')])>
         {{-- As many columns as there is something for: the hospital, contact, social links, and the administrator's own groups of links (App\Support\Footer). --}}
         <div class="wrap grid gap-10 py-12 sm:grid-cols-2 lg:grid-cols-[repeat(auto-fit,minmax(13rem,1fr))]">
             <div>

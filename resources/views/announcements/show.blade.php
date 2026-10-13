@@ -1,8 +1,13 @@
-{{-- /announcements/{slug}: one announcement: its picture, its text, its album, and its files to open or download. --}}
+{{--
+    /announcements/{slug}: one announcement. In the band at the top: what kind it is, its title, when it came out,
+    the day it happens, who put it out and the ways to pass it on. Under it, in a column to read: its picture, its
+    text, its album and its files. Then a few more of the same kind, so the reader has somewhere to go next.
+--}}
 @php($files = $announcement->files())
 @php($links = $announcement->documentLinks())
 <x-layouts.site :title="$announcement->localTitle()" :image="$announcement->imageUrl()">
-    <article class="wrap max-w-3xl py-10 sm:py-14">
+    <section class="home-screen !min-h-0 border-b border-line">
+    <div class="wrap max-w-3xl py-10 sm:py-12">
         <p class="text-sm"><a href="{{ route('announcements.index') }}" class="font-semibold text-brand underline">&larr; {{ __('All announcements') }}</a></p>
 
         @if (! $announcement->isPublished())
@@ -16,7 +21,7 @@
         @if ($announcement->type)
             <p class="eyebrow mt-6"><a href="{{ route('announcements.index', ['type' => $announcement->type->slug]) }}" class="inline-flex items-center gap-2 no-underline" style="color: {{ $announcement->type->colour() }}"><x-site.type-mark :type="$announcement->type" bare />{{ $announcement->type->localName() }}</a></p>
         @endif
-        <h1 class="mt-2 text-2xl sm:text-3xl">{{ $announcement->localTitle() }}</h1>
+        <h1 class="hero-name mt-2 text-3xl leading-tight sm:text-4xl">{{ $announcement->localTitle() }}</h1>
         <p class="mt-3 font-mono text-sm text-muted">
             <time datetime="{{ ($announcement->starts_at ?? $announcement->created_at)->toDateString() }}">{{ $announcement->shownOn() }}</time>
             · <a href="{{ route('announcements.index', array_filter(['type' => $announcement->type?->slug, 'year' => App\Models\Announcement::fiscalYearOf($announcement->starts_at ?? $announcement->created_at)])) }}" class="underline">{{ __('Fiscal year :year', ['year' => App\Models\Announcement::fiscalYearOf($announcement->starts_at ?? $announcement->created_at)]) }}</a>
@@ -41,9 +46,13 @@
             <p class="mt-2 text-sm text-muted">{{ __('Put out by') }} <a href="{{ route('departments.show', $announcement->department) }}" class="font-semibold text-brand underline">{{ $announcement->department->localName() }}</a></p>
         @endif
 
+    </div>
+    </section>
+
+    <article class="wrap max-w-3xl py-10 sm:py-14">
         @if ($image = $announcement->imageUrl())
             {{-- The announcement as one picture, shown whole whatever its shape; a press opens it at full size. --}}
-            <a href="{{ $image }}" target="_blank" rel="noopener" class="mt-8 block">
+            <a href="{{ $image }}" target="_blank" rel="noopener" class="block">
                 <img src="{{ $image }}" alt="{{ $announcement->localTitle() }}" class="mx-auto max-h-[85vh] w-auto max-w-full rounded-xl border border-line">
                 <span class="sr-only">{{ __('Open the picture at full size') }}</span>
             </a>
@@ -104,5 +113,35 @@
                 </ul>
             </section>
         @endif
+        {{-- An announcement with nothing but its title says so, so the page does not look broken. --}}
+        @if (! $announcement->imageUrl() && ! $announcement->hasBody() && ! $announcement->photos() && ! $files && ! $links)
+            <p class="text-muted">{{ __('This announcement has no further details.') }}</p>
+        @endif
     </article>
+
+    {{-- Somewhere to go next: the newest others of the same kind. Words only: the page above may be one large picture already. --}}
+    @if ($more->isNotEmpty())
+        <section class="border-t border-line bg-surface">
+            <div class="wrap max-w-3xl py-10 sm:py-14">
+                <div class="flex flex-wrap items-end justify-between gap-3">
+                    <h2 class="text-2xl">{{ $announcement->type ? __('More: :type', ['type' => $announcement->type->localName()]) : __('More announcements') }}</h2>
+                    <a href="{{ route('announcements.index', array_filter(['type' => $announcement->type?->slug])) }}" class="btn btn-line">{{ __('See all') }} &rarr;</a>
+                </div>
+                <ul class="card mt-5 bg-page p-0">
+                    @foreach ($more as $one)
+                        <li class="border-b border-line last:border-b-0">
+                            <a href="{{ route('announcements.show', $one) }}" class="group flex items-center gap-4 px-4 py-4 no-underline hover:bg-raised">
+                                <x-site.type-mark :type="$one->type" />
+                                <span class="min-w-0 flex-1">
+                                    <span class="block font-medium text-ink group-hover:text-brand">{{ $one->localTitle() }}</span>
+                                    <span class="mt-0.5 block font-mono text-xs text-muted">{{ $one->shownOn() }}</span>
+                                </span>
+                                <x-heroicon-m-chevron-right class="size-5 shrink-0 text-brand" aria-hidden="true" />
+                            </a>
+                        </li>
+                    @endforeach
+                </ul>
+            </div>
+        </section>
+    @endif
 </x-layouts.site>

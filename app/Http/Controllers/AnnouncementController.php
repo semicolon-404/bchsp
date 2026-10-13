@@ -102,7 +102,13 @@ class AnnouncementController extends Controller
         // Staff who are signed in can read one before its time, to check it.
         abort_unless($announcement->isPublished() || auth()->check(), 404);
 
-        return view('announcements.show', ['announcement' => $announcement->load('type')]);
+        return view('announcements.show', [
+            'announcement' => $announcement->load('type', 'department'),
+            // Somewhere to go next: the newest others of the same kind that are showing now.
+            'more' => Announcement::current()->with('type')->whereKeyNot($announcement->id)
+                ->when($announcement->announcement_type_id, fn ($query, $type) => $query->where('announcement_type_id', $type))
+                ->orderByDesc('starts_at')->orderByDesc('id')->limit(4)->get(),
+        ]);
     }
 
     /** /calendar: what happens in a month, day by day. ?month=2026-11; anything else is this month. */
