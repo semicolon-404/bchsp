@@ -93,11 +93,11 @@ class InstallAndDailyWorkTest extends TestCase
         // The same minute, another visitor: nothing twice.
         $this->assertSame([], WebCron::tick());
 
-        // A visit at 09:00 the same day: the two that have come due since, and not the first again.
+        // A visit at 09:00 the same day: what has come due since, and not the first again.
         $this->travelTo('2026-11-10 09:00');
         Cache::forget('webcron:tick');
         config(['bchsp.backup.connection' => 'nowhere']);   // the backup itself fails on the tests' database: it is still marked as tried
-        $this->assertSame(['backup', 'notify'], WebCron::tick());
+        $this->assertSame(['backup', 'daily', 'notify', 'report'], WebCron::tick());
 
         // The next day at one in the morning: nothing is due yet; at four, the night's work again.
         $this->travelTo('2026-11-11 00:10');

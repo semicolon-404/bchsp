@@ -33,7 +33,7 @@ class Slug
         $slug = $base;
         $suffix = 2;
 
-        while (in_array($slug, $taken, true) || $record->newQuery()->where('slug', $slug)->when($record->exists, fn ($query) => $query->whereKeyNot($record->getKey()))->exists()) {
+        while (in_array($slug, $taken, true) || $record->newQueryWithoutScopes()->where('slug', $slug)->when($record->exists, fn ($query) => $query->whereKeyNot($record->getKey()))->exists()) {
             $slug = $base.'-'.$suffix++;
         }
 

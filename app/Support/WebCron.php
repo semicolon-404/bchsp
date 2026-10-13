@@ -22,7 +22,10 @@ class WebCron
     public const JOBS = [
         'prune' => ['00:30', 'model:prune', ['--model' => [AccessLog::class]]],
         'backup' => ['03:10', 'backup:database', []],
+        'daily' => ['04:20', 'site:daily', ['--links' => 20]],
         'notify' => ['07:30', 'health:notify', []],
+        // Asked every day, sent on the first of the month only.
+        'report' => ['08:00', 'report:monthly', ['--if-first' => true]],
     ];
 
     public static function isOn(): bool

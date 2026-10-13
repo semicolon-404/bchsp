@@ -106,7 +106,8 @@ class DemoData
 
             // One at a time, through the model: that is what removes its pictures and files with it.
             foreach ($class::whereIn('id', $ids)->get() as $record) {
-                $record->delete();
+                // For good: a sample is not kept in the bin.
+                method_exists($record, 'forceDelete') ? $record->forceDelete() : $record->delete();
                 $removed++;
             }
         }

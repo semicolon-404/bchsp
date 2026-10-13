@@ -6,6 +6,7 @@ use App\Filament\Pages\SystemStatus;
 use App\Filament\Resources\Announcements\AnnouncementResource;
 use App\Filament\Resources\ItaItems\ItaItemResource;
 use App\Models\Announcement;
+use App\Support\LinkChecks;
 use App\Support\Reports;
 use App\Support\SiteSettings;
 use App\Support\SystemHealth;
@@ -48,6 +49,8 @@ class NeedsAttention extends Widget
 
         $add(Announcement::current()->whereNotNull('ends_at')->where('ends_at', '<=', now()->addDays(7))->count(), '{1} :count announcement ends within a week|[2,*] :count announcements end within a week', AnnouncementResource::getUrl('index'), 'info');
         $add(Announcement::where('status', Announcement::STATUS_PUBLISHED)->where('starts_at', '>', now())->count(), '{1} :count announcement is waiting for its date|[2,*] :count announcements are waiting for their dates', AnnouncementResource::getUrl('index'), 'info');
+
+        $add(LinkChecks::broken(), '{1} :count announcement has a link to a file that does not open|[2,*] :count announcements have links to files that do not open', AnnouncementResource::getUrl('index', ['filters' => ['broken_links' => ['isActive' => true]]]), 'danger');
 
         $ita = Reports::ita(Announcement::fiscalYearOf(now()));
         $add($ita['items'] - $ita['with_evidence'], '{1} :count ITA item of this year has no documents yet|[2,*] :count ITA items of this year have no documents yet', ItaItemResource::getUrl('index'));

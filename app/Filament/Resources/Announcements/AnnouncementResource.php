@@ -7,12 +7,16 @@ use App\Filament\Resources\Announcements\Pages\CreateAnnouncement;
 use App\Filament\Resources\Announcements\Pages\EditAnnouncement;
 use App\Filament\Resources\Announcements\Pages\ListAnnouncements;
 use App\Models\Announcement;
+use App\Models\LinkCheck;
 use App\Support\OptimizedUpload;
 use BackedEnum;
 use Filament\Actions\Action;
+use Filament\Actions\BulkAction;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\EditAction;
+use Filament\Actions\ForceDeleteAction;
 use Filament\Actions\ReplicateAction;
+use Filament\Actions\RestoreAction;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\FileUpload;
@@ -22,6 +26,7 @@ use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
+use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Utilities\Get;
@@ -29,10 +34,14 @@ use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\Filter;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\TernaryFilter;
+use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Illuminate\Support\Str;
 use UnitEnum;
 
@@ -67,7 +76,8 @@ class AnnouncementResource extends Resource
     {
         $user = auth()->user();
 
-        return parent::getEloquentQuery()->when($user?->postsForOneDepartment(), fn (Builder $query) => $query->where('department_id', $user->department_id));
+        // The bin is part of the table (the "Deleted" filter), so one deleted by mistake can be found and brought back.
+        return parent::getEloquentQuery()->withoutGlobalScopes([SoftDeletingScope::class])->with('linkChecks')->when($user?->postsForOneDepartment(), fn (Builder $query) => $query->where('department_id', $user->department_id));
     }
 
     /** Whether whoever is signed in posts for the whole hospital: an administrator, or an author with no department. */
@@ -277,6 +287,17 @@ class AnnouncementResource extends Resource
                         'Waiting for approval', 'Sent back' => 'danger',
                         default => 'gray',
                     }),
+                // Shown only on the rows that have one: a link whose file is gone, or is not shared with everyone.
+                TextColumn::make('broken_links')
+                    ->label(__('Links'))
+                    ->state(fn (Announcement $record) => $record->brokenLinks() ?: null)
+                    ->formatStateUsing(fn (int $state) => trans_choice('{1} :count link does not open|[2,*] :count links do not open', $state, ['count' => $state]))
+                    ->badge()
+                    ->color('danger')
+                    ->icon(Heroicon::OutlinedLinkSlash)
+                    ->tooltip(fn (Announcement $record) => $record->linkChecks->whereIn('state', [LinkCheck::DEAD, LinkCheck::PRIVATE])
+                        ->map(fn (LinkCheck $check) => __($check->state === LinkCheck::DEAD ? 'The file is gone' : 'Not shared with everyone').': '.Str::limit($check->url, 60))->implode("\n"))
+                    ->placeholder(''),
                 TextColumn::make('views')
                     ->label(__('Times opened'))
                     ->numeric()
@@ -304,6 +325,16 @@ class AnnouncementResource extends Resource
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
+                TrashedFilter::make()
+                    ->label(__('Bin'))
+                    ->placeholder(__('Without the bin'))
+                    ->trueLabel(__('With the bin'))
+                    ->falseLabel(__('The bin only')),
+                // What the nightly look at links to files kept elsewhere found (App\Support\LinkChecks).
+                Filter::make('broken_links')
+                    ->label(__('With a link that does not open'))
+                    ->toggle()
+                    ->query(fn (Builder $query) => $query->whereHas('linkChecks', fn (Builder $query) => $query->whereIn('state', [LinkCheck::DEAD, LinkCheck::PRIVATE]))),
                 SelectFilter::make('announcement_type_id')
                     ->label(__('Type'))
                     ->relationship('type', 'name'),
@@ -372,7 +403,28 @@ class AnnouncementResource extends Resource
                     })
                     ->successNotificationTitle(__('Copied as a draft. Pictures and files are not copied.'))
                     ->successRedirectUrl(fn (Announcement $replica) => self::getUrl('edit', ['record' => $replica])),
-                DeleteAction::make(),
+                DeleteAction::make()
+                    ->modalDescription(__('It goes to the bin and can be brought back within 30 days.')),
+                RestoreAction::make(),
+                ForceDeleteAction::make()
+                    ->modalDescription(__('It will be gone for good, with its pictures and files.')),
+            ])
+            ->toolbarActions([
+                // Several posts of the departments let out at once; each department is told as when one is approved.
+                BulkAction::make('approveMany')
+                    ->label(__('Approve the selected'))
+                    ->icon(Heroicon::OutlinedCheckCircle)
+                    ->color('success')
+                    ->visible(fn () => self::forTheWholeHospital())
+                    ->requiresConfirmation()
+                    ->modalDescription(__('Only those waiting for approval are let out; the others are left as they are.'))
+                    ->deselectRecordsAfterCompletion()
+                    ->action(function (Collection $records) {
+                        $waiting = $records->where('status', Announcement::STATUS_PENDING)->whereNull('deleted_at');
+                        $waiting->each->update(['status' => Announcement::STATUS_PUBLISHED, 'review_note' => null]);
+
+                        Notification::make()->success()->title(trans_choice('{0} None of them was waiting for approval|{1} :count post approved|[2,*] :count posts approved', $waiting->count(), ['count' => $waiting->count()]))->send();
+                    }),
             ]);
     }
 

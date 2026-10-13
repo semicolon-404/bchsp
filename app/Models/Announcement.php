@@ -12,6 +12,8 @@ use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Number;
@@ -29,7 +31,8 @@ use Illuminate\Support\Number;
 class Announcement extends Model
 {
     /** @use HasFactory<AnnouncementFactory> */
-    use HasFactory, InTwoLanguages;
+    // Deleted goes to the bin first (deleted_at): brought back within thirty days, then gone for good (emptyBin).
+    use HasFactory, InTwoLanguages, SoftDeletes;
 
     /** Out for the public to read, once its first date has come. */
     public const STATUS_PUBLISHED = 'published';
@@ -101,6 +104,12 @@ class Announcement extends Model
         static::created(fn (Announcement $announcement) => PostNotices::tell($announcement, null));
 
         static::updated(function (Announcement $announcement) {
+            // Given another day to end on, its author may be told again when that day is near. Straight on the
+            // table: the copy in hand may not know it was told.
+            if ($announcement->wasChanged('ends_at')) {
+                static::withTrashed()->whereKey($announcement->id)->toBase()->update(['ending_told_at' => null]);
+            }
+
             if ($announcement->wasChanged('status')) {
                 PostNotices::tell($announcement, $announcement->getRawOriginal('status'));
             }
@@ -127,9 +136,31 @@ class Announcement extends Model
 
         // Not an arrow function: delete() answers false for a file already gone, and a listener that answers false
         // stops the ones after it (the access log's among them).
-        static::deleted(function (Announcement $announcement) {
+        // In the bin its files are kept, so that it comes back whole; they go when it goes for good.
+        static::forceDeleted(function (Announcement $announcement) {
             Storage::disk('public')->delete(array_filter([...($announcement->attachments ?? []), ...($announcement->gallery ?? []), $announcement->image_path]));
         });
+    }
+
+    /** Takes out of the bin, for good and with their files, the announcements deleted more than thirty days ago. */
+    public static function emptyBin(int $days = 30): int
+    {
+        $old = static::onlyTrashed()->where('deleted_at', '<', now()->subDays($days))->get();
+        $old->each->forceDelete();
+
+        return $old->count();
+    }
+
+    /** What the look at its links to files kept elsewhere found (App\Support\LinkChecks). */
+    public function linkChecks(): HasMany
+    {
+        return $this->hasMany(LinkCheck::class);
+    }
+
+    /** Whether one of its links was found not to open: the file is gone, or is not shared with everyone. */
+    public function brokenLinks(): int
+    {
+        return $this->linkChecks->whereIn('state', [LinkCheck::DEAD, LinkCheck::PRIVATE])->count();
     }
 
     public function getRouteKeyName(): string

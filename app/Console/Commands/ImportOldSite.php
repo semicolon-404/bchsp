@@ -246,7 +246,7 @@ class ImportOldSite extends Command
         $removed = 0;
 
         foreach (Announcement::whereKey(array_values($done))->get() as $announcement) {
-            $announcement->delete();
+            $announcement->forceDelete();
             $removed++;
         }
 

@@ -460,7 +460,11 @@ class AnnouncementsTest extends TestCase
         Storage::disk('public')->assertMissing('announcements/files/one.pdf');
         Storage::disk('public')->assertExists('announcements/files/two.pdf');
 
+        // In the bin it keeps its file, to come back whole; gone for good, the file goes with it.
         $announcement->delete();
+        Storage::disk('public')->assertExists('announcements/files/two.pdf');
+
+        $announcement->forceDelete();
         Storage::disk('public')->assertMissing('announcements/files/two.pdf');
     }
 

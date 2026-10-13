@@ -6,6 +6,8 @@ use App\Filament\Resources\Announcements\AnnouncementResource;
 use App\Models\Announcement;
 use Filament\Actions\Action;
 use Filament\Actions\DeleteAction;
+use Filament\Actions\ForceDeleteAction;
+use Filament\Actions\RestoreAction;
 use Filament\Resources\Pages\EditRecord;
 use Filament\Support\Icons\Heroicon;
 
@@ -67,7 +69,11 @@ class EditAnnouncement extends EditRecord
                 ->modalContent(fn () => view('filament.qr', ['url' => route('qr', ['to' => '/'.ltrim((string) parse_url(route('announcements.show', $this->getRecord()), PHP_URL_PATH), '/')])]))
                 ->modalSubmitAction(false)
                 ->modalCancelActionLabel(__('Close')),
-            DeleteAction::make(),
+            DeleteAction::make()
+                ->modalDescription(__('It goes to the bin and can be brought back within 30 days.')),
+            RestoreAction::make(),
+            ForceDeleteAction::make()
+                ->modalDescription(__('It will be gone for good, with its pictures and files.')),
         ];
     }
 }

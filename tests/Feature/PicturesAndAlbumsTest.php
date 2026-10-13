@@ -84,7 +84,7 @@ class PicturesAndAlbumsTest extends TestCase
         $announcement->update(['image_path' => 'announcements/pictures/new.webp']);
         Storage::disk('public')->assertMissing($old);
 
-        $announcement->delete();
+        $announcement->forceDelete();
         Storage::disk('public')->assertMissing('announcements/pictures/new.webp');
     }
 
@@ -147,7 +147,7 @@ class PicturesAndAlbumsTest extends TestCase
         $post->update(['gallery' => [$kept]]);
         Storage::disk('public')->assertMissing($dropped);
 
-        $post->delete();
+        $post->forceDelete();
         Storage::disk('public')->assertMissing($kept);
     }
 
