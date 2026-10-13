@@ -65,6 +65,9 @@
             {{-- The hospital itself, faded behind the words (Site settings > The hospital). Decoration: it says nothing a reader needs. --}}
             <img src="{{ $photo }}" alt="" aria-hidden="true" class="hero-photo" fetchpriority="high">
             <div class="hero-veil" aria-hidden="true"></div>
+        @else
+            {{-- No photograph yet: a drawing in the site's colour stands in, so the first screen is not bare. --}}
+            <div class="hero-art" aria-hidden="true"><span></span><span></span><span></span></div>
         @endif
         <div @class(['wrap grid items-center gap-12 py-14 sm:py-20', 'lg:grid-cols-2' => $sessions->isNotEmpty()])>
             <div @class(['text-center', 'lg:text-left' => $sessions->isNotEmpty()])>

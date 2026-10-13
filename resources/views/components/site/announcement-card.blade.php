@@ -1,6 +1,6 @@
 {{--
     One announcement as a card: its cover (the picture staff gave it), then its type, title and date.
-    Without a cover the mark of its type stands in, so that cards in a row stay the same height.
+    Without a cover one is drawn from its kind and its day (x-site.cover), so that cards in a row stay the same height.
 --}}
 @props(['announcement'])
 
@@ -9,7 +9,7 @@
         {{-- From the top: a "one page" announcement has its heading there. --}}
         <img src="{{ $image }}" alt="" loading="lazy" class="aspect-[4/3] w-full object-cover object-top">
     @else
-        <div class="flex aspect-[4/3] w-full items-center justify-center bg-raised" aria-hidden="true"><x-site.type-mark :type="$announcement->type" class="size-16 [&>svg]:size-8" /></div>
+        <x-site.cover :announcement="$announcement" class="aspect-[4/3] w-full" />
     @endif
 
     <div class="flex flex-1 flex-col p-4">

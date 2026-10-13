@@ -819,6 +819,140 @@ html.is-mourning {
  * On paper: the page's own content and nothing of the site around it. Black on white whatever look the
  * reader has chosen, links written out as they are, and what only makes sense on a screen left off.
  */
+
+/*
+ * The cover drawn for an announcement that has no picture (components/site/cover): a wash of the colour of
+ * its kind (--tone), a fine pattern of dots, the kind's symbol large and faint, and the day it came out in a corner.
+ */
+@layer components {
+    .cover {
+        position: relative;
+        display: flex;
+        overflow: hidden;
+        align-items: center;
+        justify-content: center;
+        color: var(--tone);
+        background:
+            radial-gradient(circle at 1px 1px, color-mix(in srgb, var(--tone) 28%, transparent) 1px, transparent 1.5px) 0 0 / 14px 14px,
+            radial-gradient(120% 90% at 100% 0%, color-mix(in srgb, var(--tone) 30%, transparent), transparent 60%),
+            linear-gradient(135deg, color-mix(in srgb, var(--tone) 16%, var(--color-surface)), var(--color-raised));
+    }
+
+    /* A ring behind the symbol, off to one side, so the cover is not a flat field. */
+    .cover::before {
+        content: '';
+        position: absolute;
+        right: -18%;
+        bottom: -35%;
+        width: 70%;
+        aspect-ratio: 1;
+        border: 1.5rem solid color-mix(in srgb, var(--tone) 12%, transparent);
+        border-radius: 9999px;
+    }
+
+    .cover-mark {
+        position: relative;
+        opacity: 0.85;
+        stroke-width: 1.1;
+        transition: transform 0.4s ease;
+    }
+
+    /* On the large cover the title is written over the foot: the symbol keeps to the upper corner, clear of it. */
+    .cover-large .cover-mark {
+        position: absolute;
+        top: 1.5rem;
+        right: 1.75rem;
+    }
+
+    .group:hover .cover-mark {
+        transform: scale(1.08) rotate(-3deg);
+    }
+
+    .cover-day {
+        position: absolute;
+        top: 0.75rem;
+        left: 0.9rem;
+        font-family: var(--font-mono);
+        font-weight: 700;
+        line-height: 1;
+        color: var(--color-ink);
+    }
+
+    .cover-day small {
+        display: block;
+        margin-top: 0.3rem;
+        font-family: var(--font-sans);
+        font-size: 0.75rem;
+        font-weight: 500;
+        color: var(--color-muted);
+    }
+
+    /*
+     * The first screen of the home page and of "About us" before the hospital has given a photograph
+     * (hero-art in home.blade.php): a field of fine lines fading towards the edges, and three soft rings
+     * in the site's colour, drifting slowly. Behind the words, and nothing a reader needs.
+     */
+    .hero-art {
+        position: absolute;
+        inset: 0;
+        z-index: -2;
+        overflow: hidden;
+        pointer-events: none;
+        background:
+            linear-gradient(color-mix(in srgb, var(--color-brand) 9%, transparent) 1px, transparent 1px) 0 0 / 3rem 3rem,
+            linear-gradient(90deg, color-mix(in srgb, var(--color-brand) 9%, transparent) 1px, transparent 1px) 0 0 / 3rem 3rem;
+        mask-image: radial-gradient(90% 80% at 50% 40%, #000 25%, transparent 78%);
+    }
+
+    .hero-art span {
+        position: absolute;
+        aspect-ratio: 1;
+        border: 2px solid color-mix(in srgb, var(--color-brand) 30%, transparent);
+        border-radius: 9999px;
+        animation: hero-drift 18s ease-in-out infinite alternate;
+    }
+
+    .hero-art span:nth-child(1) {
+        top: -12%;
+        right: 6%;
+        width: 26rem;
+    }
+
+    .hero-art span:nth-child(2) {
+        top: 4%;
+        right: 14%;
+        width: 15rem;
+        border-style: dashed;
+        animation-duration: 24s;
+        animation-direction: alternate-reverse;
+    }
+
+    .hero-art span:nth-child(3) {
+        bottom: -30%;
+        left: -6%;
+        width: 30rem;
+        border-width: 2.5rem;
+        border-color: color-mix(in srgb, var(--color-brand) 7%, transparent);
+        animation-duration: 30s;
+    }
+
+    @keyframes hero-drift {
+        to {
+            transform: translate3d(1.5rem, 1rem, 0) rotate(12deg);
+        }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .hero-art span {
+            animation: none;
+        }
+
+        .group:hover .cover-mark {
+            transform: none;
+        }
+    }
+}
+
 @media print {
     :root, :root[data-theme='light'] {
         --color-page: #ffffff;

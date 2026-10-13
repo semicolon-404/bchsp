@@ -26,10 +26,39 @@ class Department extends Model
 
     protected $fillable = [
         'name', 'name_en', 'headline', 'headline_en', 'slug', 'description', 'description_en', 'services',
-        'location', 'phone', 'email', 'hours', 'facebook_url', 'line_url', 'image_path', 'avatar_path', 'people', 'is_active', 'sort_order',
+        'location', 'phone', 'email', 'hours', 'facebook_url', 'line_url', 'image_path', 'avatar_path', 'icon', 'people', 'is_active', 'sort_order',
     ];
 
     protected $attributes = ['is_active' => true, 'sort_order' => 0];
+
+    /**
+     * The symbols a department can stand under when it has no picture of its own (heroicons, outline).
+     * English names; the panel shows them in the reader's language.
+     */
+    public const ICONS = [
+        'heart' => 'Heart (medicine, wards)',
+        'bolt' => 'Bolt (emergency)',
+        'beaker' => 'Beaker (laboratory, pharmacy)',
+        'face-smile' => 'Smile (dental)',
+        'eye' => 'Eye',
+        'hand-raised' => 'Hand (physical therapy, Thai medicine)',
+        'user-group' => 'People (outpatients, family care)',
+        'home-modern' => 'Building (administration)',
+        'banknotes' => 'Banknotes (finance)',
+        'clipboard-document-check' => 'Clipboard (quality, insurance)',
+        'computer-desktop' => 'Computer (IT)',
+        'shield-check' => 'Shield (prevention, public health)',
+        'chat-bubble-left-right' => 'Speech (counselling)',
+        'truck' => 'Vehicle (referral, transport)',
+        'sparkles' => 'Sparkles (nutrition, cleaning)',
+        'academic-cap' => 'Cap (training)',
+    ];
+
+    /** Its symbol, when one was chosen and still exists. */
+    public function icon(): ?string
+    {
+        return isset(self::ICONS[$this->icon]) ? $this->icon : null;
+    }
 
     /** How many people a department can list. */
     public const MAX_PEOPLE = 40;

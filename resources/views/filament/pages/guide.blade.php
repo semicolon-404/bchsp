@@ -17,7 +17,7 @@
             @endif
         </x-filament::section>
 
-        <x-filament::section heading="1. ลงประกาศ โปสเตอร์ หรือข่าวกิจกรรม" collapsible>
+        <x-filament::section icon="heroicon-o-pencil-square" heading="1. ลงประกาศ โปสเตอร์ หรือข่าวกิจกรรม" collapsible>
             <p>ทุกอย่างลงที่เมนูเดียวกัน: <strong>ประชาสัมพันธ์</strong> แล้วกดปุ่ม "สร้าง"</p>
             <ol style="{{ $step }}">
                 <li>ใส่<strong>หัวข้อ</strong> ให้คนอ่านรู้ทันทีว่าเรื่องอะไร เช่น "งดให้บริการทันตกรรม วันศุกร์ที่ 16 ต.ค. 2569"</li>
@@ -35,7 +35,7 @@
             <p style="{{ $note }}">รูปที่อัปโหลดระบบจะย่อให้เอง ไม่ต้องย่อก่อน</p>
         </x-filament::section>
 
-        <x-filament::section heading="2. สถานะของเรื่อง" collapsible collapsed>
+        <x-filament::section icon="heroicon-o-arrow-path" heading="2. สถานะของเรื่อง" collapsible collapsed>
             <ul style="display: grid; gap: 0.35rem; padding-left: 1.25rem; list-style: disc;">
                 <li><strong>ฉบับร่าง</strong>: เก็บไว้เขียนต่อ ยังไม่มีใครเห็นนอกจากเจ้าหน้าที่</li>
                 @if ($approval)
@@ -51,7 +51,7 @@
         </x-filament::section>
 
         @if ($forDepartment)
-            <x-filament::section heading="3. หน้าโปรไฟล์ของหน่วยงาน" collapsible collapsed>
+            <x-filament::section icon="heroicon-o-identification" heading="3. หน้าโปรไฟล์ของหน่วยงาน" collapsible collapsed>
                 <p>แก้ได้ที่เมนู <strong>หน้าของหน่วยงานเรา</strong> แล้วกดแก้ไขที่ชื่อหน่วยงาน</p>
                 <ul style="margin-top: 0.5rem; display: grid; gap: 0.35rem; padding-left: 1.25rem; list-style: disc;">
                     <li><strong>ภาพปก</strong>: ภาพแนวนอน กว้างประมาณ 3 เท่าของความสูง</li>
@@ -65,7 +65,7 @@
                 <p>ชื่อหน่วยงาน การซ่อนหน่วยงาน และตารางคลินิก แก้โดยผู้ดูแลระบบหรืองานประชาสัมพันธ์</p>
             </x-filament::section>
         @else
-            <x-filament::section heading="3. ตรวจเรื่องจากหน่วยงาน" collapsible collapsed>
+            <x-filament::section icon="heroicon-o-check-badge" heading="3. ตรวจเรื่องจากหน่วยงาน" collapsible collapsed>
                 <p>เมื่อหน่วยงานส่งเรื่องมา หน้าแรกของหลังบ้านจะขึ้นแจ้งเตือนสีแดงว่า "มี … เรื่องจากหน่วยงานรอตรวจ"</p>
                 <ol style="{{ $step }}">
                     <li>เปิดเมนู <strong>ประชาสัมพันธ์</strong> เรื่องที่รอตรวจมีป้ายสถานะ "รอตรวจ" (กรองตามสถานะได้)</li>
@@ -79,7 +79,18 @@
             </x-filament::section>
         @endif
 
-        <x-filament::section heading="4. ข้อห้ามและข้อควรระวัง" collapsible collapsed>
+        <x-filament::section icon="heroicon-o-wrench-screwdriver" heading="เครื่องมือช่วยลงเรื่อง" collapsible collapsed>
+            <ul style="padding-left: 1.25rem; display: grid; gap: 0.5rem; list-style: disc;">
+                <li><strong>ดูตัวอย่าง</strong>: ในหน้าแก้ไข กดปุ่ม "ดูตัวอย่าง" เพื่อดูเรื่องแบบที่ผู้เข้าชมจะเห็น ใช้ได้ตั้งแต่ยังเป็นฉบับร่าง (ต้องกดบันทึกก่อน)</li>
+                <li><strong>ทำสำเนา</strong>: เรื่องที่ลงซ้ำทุกเดือน กด "ทำสำเนา" ในตาราง จะได้ฉบับร่างที่มีข้อความเหมือนเดิม รูปและไฟล์แนบต้องใส่ใหม่</li>
+                <li><strong>คิวอาร์โค้ด</strong>: ในหน้าแก้ไข กด "คิวอาร์โค้ด" แล้วดาวน์โหลดไปวางบนโปสเตอร์ที่พิมพ์ สแกนแล้วเปิดเรื่องนี้บนเว็บไซต์</li>
+                <li><strong>ถังขยะ</strong>: เรื่องที่ลบจะอยู่ในถังขยะ 30 วัน เปิดตัวกรอง "ถังขยะ" ในตารางเพื่อกู้คืน พ้น 30 วันระบบลบถาวรเอง</li>
+                <li><strong>กระดิ่งแจ้งเตือน</strong> (มุมขวาบน): บอกเมื่อเรื่องได้รับอนุมัติ ถูกส่งกลับ หรือใกล้สิ้นสุดการแสดงภายใน 3 วัน</li>
+                <li><strong>ลิงก์ที่เปิดไม่ได้</strong>: ระบบตรวจลิงก์ Google Drive ให้ทุกคืน เรื่องที่ไฟล์ถูกลบหรือไม่ได้แชร์ให้ทุกคนจะมีป้ายแดงในตาราง ให้เปิดเรื่องนั้นแล้วแก้ลิงก์</li>
+            </ul>
+        </x-filament::section>
+
+        <x-filament::section icon="heroicon-o-exclamation-triangle" heading="4. ข้อห้ามและข้อควรระวัง" collapsible collapsed>
             <ul style="display: grid; gap: 0.35rem; padding-left: 1.25rem; list-style: disc;">
                 <li><strong>ห้ามลงรูปที่เห็นหน้าผู้ป่วยหรือญาติ</strong> หรือรูปที่มีเอกสารผู้ป่วย จอคอมพิวเตอร์ ป้ายชื่อเตียง ติดอยู่ในภาพ เว้นแต่เจ้าตัวยินยอมเป็นลายลักษณ์อักษร</li>
                 <li>ห้ามลงชื่อ เลขบัตรประชาชน เบอร์โทร หรือข้อมูลการรักษาของผู้ป่วย</li>
@@ -89,7 +100,7 @@
             </ul>
         </x-filament::section>
 
-        <x-filament::section heading="5. เข้าระบบและความปลอดภัย" collapsible collapsed>
+        <x-filament::section icon="heroicon-o-lock-closed" heading="5. เข้าระบบและความปลอดภัย" collapsible collapsed>
             <ul style="display: grid; gap: 0.35rem; padding-left: 1.25rem; list-style: disc;">
                 <li>เปลี่ยนรหัสผ่านหลังเข้าระบบครั้งแรก ที่ชื่อของคุณมุมขวาบน</li>
                 <li>ถ้าระบบให้ตั้ง<strong>ยืนยันตัวตนสองขั้น</strong> ให้ติดตั้งแอป Google Authenticator หรือ Microsoft Authenticator ในโทรศัพท์ แล้วสแกน QR ที่ขึ้นบนจอ และเก็บรหัสกู้คืนไว้ในที่ปลอดภัย</li>
@@ -98,7 +109,7 @@
             </ul>
         </x-filament::section>
 
-        <x-filament::section heading="6. เมื่อมีปัญหา" collapsible collapsed>
+        <x-filament::section icon="heroicon-o-lifebuoy" heading="6. เมื่อมีปัญหา" collapsible collapsed>
             <ul style="display: grid; gap: 0.35rem; padding-left: 1.25rem; list-style: disc;">
                 <li><strong>อัปโหลดรูปไม่ขึ้น</strong>: ไฟล์ต้องเป็น JPG, PNG หรือ WebP และไม่เกิน 8 MB</li>
                 <li><strong>ลงแล้วไม่เห็นบนเว็บไซต์</strong>: ดูสถานะของเรื่อง และวันที่ในช่อง "แสดงตั้งแต่"</li>

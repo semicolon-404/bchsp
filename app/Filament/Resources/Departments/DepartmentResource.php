@@ -11,6 +11,7 @@ use Filament\Actions\DeleteAction;
 use Filament\Actions\EditAction;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Repeater;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
@@ -96,6 +97,11 @@ class DepartmentResource extends Resource
                     ->label(__('Name in English (optional)'))
                     ->maxLength(150)
                     ->disabled(fn () => ! auth()->user()->isAdmin()),
+                Select::make('icon')
+                    ->label(__('Symbol (optional)'))
+                    ->helperText(__('Shown in the round picture when the department has no picture of its own.'))
+                    ->options(fn () => collect(Department::ICONS)->map(fn (string $name) => __($name))->all())
+                    ->native(false),
                 TextInput::make('headline')
                     ->label(__('Line under the name (optional)'))
                     ->maxLength(200)

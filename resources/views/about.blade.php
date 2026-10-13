@@ -85,6 +85,9 @@
             {{-- The hospital itself, faded behind the words. Decoration: it says nothing a reader needs. --}}
             <img src="{{ $photo }}" alt="" aria-hidden="true" class="hero-photo" fetchpriority="high">
             <div class="hero-veil" aria-hidden="true"></div>
+        @else
+            {{-- No photograph yet: a drawing in the site's colour stands in, so the first screen is not bare. --}}
+            <div class="hero-art" aria-hidden="true"><span></span><span></span><span></span></div>
         @endif
         <div class="wrap max-w-5xl py-14 text-center sm:py-20">
             @if ($logo)

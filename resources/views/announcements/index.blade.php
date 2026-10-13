@@ -61,7 +61,7 @@
                                     <img src="{{ $image }}" alt="" class="absolute inset-0 size-full object-cover transition duration-500 group-hover:scale-105">
                                     <span class="absolute inset-0 bg-gradient-to-t from-black/85 via-black/40 to-transparent" aria-hidden="true"></span>
                                 @else
-                                    <span class="absolute inset-0 flex items-center justify-center bg-raised" aria-hidden="true"><x-site.type-mark :type="$one->type" class="size-24 [&>svg]:size-12" /></span>
+                                    <x-site.cover :announcement="$one" class="absolute inset-0" large />
                                 @endif
                                 <span class="relative block p-5 sm:p-6 {{ $image ? 'text-white' : '' }}">
                                     @if ($one->type)
@@ -76,7 +76,7 @@
                                 @if ($image = $one->imageUrl())
                                     <img src="{{ $image }}" alt="" loading="lazy" class="w-28 shrink-0 object-cover sm:w-36">
                                 @else
-                                    <span class="flex w-28 shrink-0 items-center justify-center bg-raised sm:w-36" aria-hidden="true"><x-site.type-mark :type="$one->type" class="size-14 [&>svg]:size-7" /></span>
+                                    <x-site.cover :announcement="$one" class="w-28 shrink-0 sm:w-36" plain />
                                 @endif
                                 <span class="min-w-0 flex-1 py-4 pr-4">
                                     @if ($one->type)
