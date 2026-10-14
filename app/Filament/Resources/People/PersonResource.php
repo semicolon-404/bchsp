@@ -14,6 +14,7 @@ use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
+use Filament\Forms\Components\ViewField;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
@@ -66,14 +67,18 @@ class PersonResource extends Resource
                 ->label(__('Photograph (optional)'))
                 ->image()
                 ->imageEditor()
-                ->imageCropAspectRatio('1:1')
                 // No SVG: it can carry a script.
                 ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp'])
                 ->disk('public')
                 ->directory('people')
                 ->visibility('public')
                 ->maxSize(4096)
-                ->helperText(__('Square, the face in the middle. Ask the person first. Without one, the first letter of the name stands in.'))
+                ->helperText(__('Any shape: the part that shows in the round picture is chosen below. Ask the person first. Without one, the first letter of the name stands in.'))
+                ->columnSpanFull(),
+            // Which part of it shows in the round picture: dragged into place (resources/views/filament/photo-focus.blade.php).
+            ViewField::make('photo_focus')
+                ->label(__('Part of the photograph shown'))
+                ->view('filament.photo-focus')
                 ->columnSpanFull(),
         ];
     }
@@ -108,7 +113,8 @@ class PersonResource extends Resource
                     ->label('')
                     ->disk('public')
                     ->circular()
-                    ->imageSize(40),
+                    ->imageSize(40)
+                    ->extraImgAttributes(fn (Person $record) => ['style' => 'object-position: '.$record->photoPosition()]),
                 TextColumn::make('name')
                     ->label(__('Name'))
                     ->description(fn (Person $record) => $record->position)

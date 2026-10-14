@@ -20,7 +20,7 @@ class Person extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['name', 'position', 'photo_path', 'work_group_id', 'is_active', 'sort_order'];
+    protected $fillable = ['name', 'position', 'photo_path', 'photo_focus', 'work_group_id', 'is_active', 'sort_order'];
 
     protected $attributes = ['is_active' => true, 'sort_order' => 0];
 
@@ -56,6 +56,20 @@ class Person extends Model
     public function scopeShown(Builder $query): void
     {
         $query->where('is_active', true)->orderBy('sort_order')->orderBy('id');
+    }
+
+    /** Where a face usually is in a photograph of a person: the middle across, near the top. */
+    public const FOCUS = '50% 18%';
+
+    /**
+     * The part of the photograph that shows in the round picture, as CSS for "object-position": what was
+     * chosen by dragging in the panel, or near the top. Anything else that got into the column is not used.
+     */
+    public function photoPosition(): string
+    {
+        return preg_match('/^(\d{1,3}) (\d{1,3})$/', (string) $this->photo_focus, $found) && $found[1] <= 100 && $found[2] <= 100
+            ? $found[1].'% '.$found[2].'%'
+            : self::FOCUS;
     }
 
     public function photoUrl(): ?string

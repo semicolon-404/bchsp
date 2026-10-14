@@ -232,7 +232,7 @@
                 <div @class(['mt-8 grid items-stretch gap-5', 'lg:grid-cols-5' => $director])>
                     @if ($director)
                         <div class="card flex items-center gap-5 lg:col-span-3">
-                            <x-site.person :name="$director['name']" :photo="$director['photo']" class="size-24 text-4xl sm:size-28" />
+                            <x-site.person :name="$director['name']" :photo="$director['photo']" :focus="$director['focus']" class="size-24 text-4xl sm:size-28" />
                             <div class="min-w-0">
                                 <p class="eyebrow">{{ __('Head of the hospital') }}</p>
                                 <p class="mt-1 text-2xl font-semibold leading-snug">{{ $director['name'] }}</p>

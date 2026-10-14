@@ -11,6 +11,7 @@ use App\Models\User;
 use App\Models\WorkGroup;
 use App\Support\Organisation;
 use App\Support\SiteSettings;
+use Filament\Actions\Testing\TestAction;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Livewire;
@@ -83,7 +84,36 @@ class PeopleAndComplaintsTest extends TestCase
             ->call('save')
             ->assertHasNoFormErrors();
 
-        $this->assertSame(['name' => 'Mrs. Malee Rakdee', 'title' => 'Acting director', 'photo' => null], Organisation::director());
+        $this->assertSame(['name' => 'Mrs. Malee Rakdee', 'title' => 'Acting director', 'photo' => null, 'focus' => '50% 18%'], Organisation::director());
+    }
+
+    public function test_the_part_of_a_photograph_that_shows_is_chosen_and_is_near_the_top_until_then(): void
+    {
+        $this->actingAs(User::factory()->create(['role' => Role::Admin]));
+        // The photograph is really there: the form would drop one that is not.
+        Storage::fake('public');
+        Storage::disk('public')->put('people/boon.webp', 'x');
+        $boon = Person::factory()->create(['name' => 'Mr. Boon Kra', 'photo_path' => 'people/boon.webp']);
+        WorkGroup::factory()->create(['name' => 'Pharmacy', 'head_id' => $boon->id]);
+
+        // A portrait shows its face near the top, not its middle.
+        $this->assertSame('50% 18%', $boon->photoPosition());
+        $this->get('/p/executives')->assertSee('style="object-position: 50% 18%"', false);
+
+        // Dragged into place in the panel, it shows there on every page.
+        Livewire::test(ManagePeople::class)
+            ->callAction(TestAction::make('edit')->table($boon), ['photo_focus' => '40 62'])
+            ->assertHasNoFormErrors();
+
+        $this->assertSame('40% 62%', $boon->fresh()->photoPosition());
+        $this->get('/p/executives')->assertSee('style="object-position: 40% 62%"', false);
+        $this->get('/p/structure')->assertSee('style="object-position: 40% 62%"', false);
+
+        // Nothing but two figures up to a hundred is ever written into a page.
+        foreach (['50 180', 'red; x', '', '10'] as $odd) {
+            $boon->update(['photo_focus' => $odd]);
+            $this->assertSame('50% 18%', $boon->fresh()->photoPosition());
+        }
     }
 
     public function test_the_complaints_page_shows_the_way_and_keeps_nothing_itself(): void

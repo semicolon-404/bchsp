@@ -84,6 +84,12 @@ class WorkGroup extends Model
         return array_values(array_filter(array_map(fn ($unit) => trim((string) $unit), $this->units ?? []), fn (string $unit) => $unit !== ''));
     }
 
+    /** The part of the head's photograph that shows (Person::photoPosition). */
+    public function headPhotoPosition(): string
+    {
+        return $this->head?->photoPosition() ?? Person::FOCUS;
+    }
+
     public function headPhotoUrl(): ?string
     {
         if ($this->head) {

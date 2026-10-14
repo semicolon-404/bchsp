@@ -53,7 +53,7 @@
                 {{-- The top of the chart: whoever runs the hospital. --}}
                 @if ($director)
                     <a href="{{ route('pages.show', 'executives') }}" class="org-top card text-ink no-underline">
-                        <x-site.person :name="$director['name']" :photo="$director['photo']" class="size-20 text-3xl" />
+                        <x-site.person :name="$director['name']" :photo="$director['photo']" :focus="$director['focus']" class="size-20 text-3xl" />
                         <span class="min-w-0">
                             <span class="eyebrow block">{{ __('Head of the hospital') }}</span>
                             <span class="mt-1 block text-xl font-semibold sm:text-2xl">{{ $director['name'] }}</span>
@@ -95,7 +95,7 @@
 
                                 @if ($group->headName())
                                     <p class="mt-4 flex items-center gap-3 rounded-xl border border-line bg-page px-3 py-2">
-                                        <x-site.person :name="$group->headName()" :photo="$group->headPhotoUrl()" class="size-11 text-lg" />
+                                        <x-site.person :name="$group->headName()" :photo="$group->headPhotoUrl()" :focus="$group->headPhotoPosition()" class="size-11 text-lg" />
                                         <span class="min-w-0">
                                             <span class="block text-xs text-muted">{{ __('Head of the group') }}</span>
                                             <span class="block font-medium">{{ $group->headName() }}</span>

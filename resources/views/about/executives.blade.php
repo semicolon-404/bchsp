@@ -40,7 +40,7 @@
             <section aria-labelledby="director-heading">
                 <h2 id="director-heading" class="eyebrow text-center">{{ __('Head of the hospital') }}</h2>
                 <div class="exec-top card mt-4">
-                    <x-site.person :name="$director['name']" :photo="$director['photo']" class="exec-top-photo" />
+                    <x-site.person :name="$director['name']" :photo="$director['photo']" :focus="$director['focus']" class="exec-top-photo" />
                     <div class="min-w-0">
                         <p class="hero-name text-3xl leading-tight sm:text-4xl">{{ $director['name'] }}</p>
                         <p class="mt-2 text-lg text-muted">{{ $director['title'] }}</p>
@@ -67,7 +67,7 @@
                 <ul class="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                     @foreach ($heads as $head)
                         <li class="exec card">
-                            <x-site.person :name="$head['name']" :photo="$head['photo']" class="exec-photo" />
+                            <x-site.person :name="$head['name']" :photo="$head['photo']" :focus="$head['focus']" class="exec-photo" />
                             {{-- A name breaks between its parts and never inside one. --}}
                             <p class="mt-4 text-lg font-semibold leading-snug">@foreach (preg_split('/\s+/u', $head['name']) as $part)<span class="inline-block">{{ $part }}</span> @endforeach</p>
                             @if ($head['position'])

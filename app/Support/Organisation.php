@@ -20,7 +20,7 @@ class Organisation
     /**
      * The director, or null while no name has been given.
      *
-     * @return array{name: string, title: string, photo: ?string}|null
+     * @return array{name: string, title: string, photo: ?string, focus: string}|null
      */
     public static function director(): ?array
     {
@@ -31,7 +31,7 @@ class Organisation
         $person = filled($chosen) ? Person::find((int) $chosen) : null;
 
         if ($person) {
-            return ['name' => $person->name, 'title' => $title, 'photo' => $person->photoUrl()];
+            return ['name' => $person->name, 'title' => $title, 'photo' => $person->photoUrl(), 'focus' => $person->photoPosition()];
         }
 
         // As it was written before there was a register.
@@ -43,7 +43,7 @@ class Organisation
 
         $photo = SiteSettings::get('org.director_photo');
 
-        return ['name' => $name, 'title' => $title, 'photo' => is_string($photo) && $photo !== '' ? Storage::disk('public')->url($photo) : null];
+        return ['name' => $name, 'title' => $title, 'photo' => is_string($photo) && $photo !== '' ? Storage::disk('public')->url($photo) : null, 'focus' => Person::FOCUS];
     }
 
     /** The name of the mission group every group of work stands under, when the hospital has one. */
@@ -103,7 +103,7 @@ class Organisation
      * The heads of the groups of work, one entry to a person: someone who heads two groups is listed once,
      * with both. In the order of the groups.
      *
-     * @return list<array{name: string, position: ?string, photo: ?string, groups: list<WorkGroup>}>
+     * @return list<array{name: string, position: ?string, photo: ?string, focus: string, groups: list<WorkGroup>}>
      */
     public static function heads(): array
     {
@@ -118,7 +118,7 @@ class Organisation
 
             // One of the register is one person whatever the name; a name written on the group is told apart by the name.
             $key = $group->head_id ? 'person-'.$group->head_id : self::bareName($name);
-            $people[$key] ??= ['name' => $name, 'position' => $group->headPosition(), 'photo' => null, 'groups' => []];
+            $people[$key] ??= ['name' => $name, 'position' => $group->headPosition(), 'photo' => null, 'focus' => $group->headPhotoPosition(), 'groups' => []];
             $people[$key]['photo'] ??= $group->headPhotoUrl();
             $people[$key]['position'] ??= $group->headPosition();
             $people[$key]['groups'][] = $group;
