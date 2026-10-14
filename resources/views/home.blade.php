@@ -60,17 +60,17 @@
         The first screen answers what people come for before they scroll: whose site this is, how to call,
         and what is open today (drawn as an editor's window, read as a list).
     --}}
-    <section class="home-screen">
-        @if ($photo = SiteSettings::heroUrl())
-            {{-- The hospital itself, faded behind the words (Site settings > The hospital). Decoration: it says nothing a reader needs. --}}
-            <img src="{{ $photo }}" alt="" aria-hidden="true" class="hero-photo" fetchpriority="high">
-            <div class="hero-veil" aria-hidden="true"></div>
+    @php($photos = SiteSettings::heroSlides())
+    <section @class(['home-screen', 'has-photo' => $photos]) @if (count($photos) > 1) data-hero @endif>
+        @if ($photos)
+            {{-- The hospital itself, clear behind the words, one photograph after another (Site settings > The hospital). --}}
+            <x-site.hero-photos :slides="$photos" />
         @else
             {{-- No photograph yet: a drawing in the site's colour stands in, so the first screen is not bare. --}}
             <div class="hero-art" aria-hidden="true"><span></span><span></span><span></span></div>
         @endif
         <div @class(['wrap grid items-center gap-12 py-14 sm:py-20', 'lg:grid-cols-2' => $sessions->isNotEmpty()])>
-            <div @class(['text-center', 'lg:text-left' => $sessions->isNotEmpty()])>
+            <div @class(['text-center', 'lg:text-left' => $sessions->isNotEmpty(), 'hero-glass' => $photos])>
                 @if ($logo = SiteSettings::logoUrl())
                     <img src="{{ $logo }}" alt="" @class(['mx-auto mb-6 h-20 w-auto', 'lg:mx-0' => $sessions->isNotEmpty()])>
                 @endif

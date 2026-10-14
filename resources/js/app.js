@@ -1,5 +1,6 @@
 import './bootstrap';
 import { startFilter } from './filter';
+import { startHero } from './hero';
 import { startLightbox } from './lightbox';
 import { startMenu } from './menu';
 import { startMotion } from './motion';
@@ -22,6 +23,7 @@ startMotion();
 startFilter();
 startTop();
 startLightbox();
+startHero();
 
 // The small program that answers with the phone numbers when there is no connection (SeoController::worker).
 // Where a browser has none of that, or the page is not served securely, the site is simply as it was.

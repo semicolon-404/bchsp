@@ -84,6 +84,10 @@ class SiteSettings extends Page
         unset($values['wording']);
         $values['wording_rows'] = Wording::rows();
 
+        // The photographs of the first screen, as rows; the one photograph of before is the first of them.
+        unset($values[self::field('site.hero_slides')], $values[self::field('site.hero_image')]);
+        $values['hero_slides'] = Settings::heroRows();
+
         $this->form->fill($values);
     }
 
@@ -101,6 +105,8 @@ class SiteSettings extends Page
         $values['menu.news_hidden'] = array_values(array_diff(array_keys(Menus::NEWS_OPTIONAL), (array) ($values['menu_news_shown'] ?? [])));
         $values['footer.links'] = Footer::links((array) ($values['footer_links'] ?? []));
         $values['wording'] = Wording::clean((array) ($values['wording_rows'] ?? []));
+        $values['site.hero_slides'] = Settings::heroRows((array) ($values['hero_slides'] ?? []));
+        $values['site.hero_image'] = $values['site.hero_slides'][0]['image'] ?? null;
         $values['home.layout'] = HomeLayout::toStore((array) ($values['home_layout'] ?? []));
         $values['menu.top'] = Menus::toStore('top', (array) ($values['menu_top'] ?? []));
         $values['menu.tabs'] = Menus::toStore('tabs', (array) ($values['menu_tabs'] ?? []));

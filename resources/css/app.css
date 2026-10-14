@@ -581,6 +581,11 @@ html.is-mourning {
         pointer-events: none;
     }
 
+    /*
+     * The photographs behind the first screen (components/site/hero-photos): each fills it, clear; the one
+     * showing is ".is-on" and the others wait unseen, so one fades into the next. The one showing drifts
+     * slowly larger, so the screen is never quite still.
+     */
     .hero-photo {
         position: absolute;
         inset: 0;
@@ -588,15 +593,165 @@ html.is-mourning {
         width: 100%;
         height: 100%;
         object-fit: cover;
-        opacity: 0.28;
+        opacity: 0;
+        transition: opacity 1.4s ease;
     }
 
+    .hero-photo.is-on {
+        opacity: 1;
+        animation: hero-zoom 14s ease-out both;
+    }
+
+    @keyframes hero-zoom {
+        from {
+            transform: scale(1);
+        }
+
+        to {
+            transform: scale(1.07);
+        }
+    }
+
+    /*
+     * Over the photograph: almost nothing at the top, so the picture is seen, and at the foot it melts into
+     * the page, so the next section begins without a hard edge. The words are kept readable by the pane
+     * they sit on (.hero-glass), not by fading the whole picture.
+     */
     .hero-veil {
         position: absolute;
         inset: 0;
         z-index: -1;
-        background: linear-gradient(to bottom, color-mix(in srgb, var(--color-page) 55%, transparent), var(--color-page) 96%);
+        background: linear-gradient(to bottom, color-mix(in srgb, var(--color-page) 12%, transparent) 0%, color-mix(in srgb, var(--color-page) 8%, transparent) 55%, var(--color-page) 100%);
         pointer-events: none;
+    }
+
+    /* Where the words lie straight on the picture, with no pane ("About us"): the whole of it is quietened. */
+    .hero-veil-full {
+        background: linear-gradient(to bottom, color-mix(in srgb, var(--color-page) 72%, transparent), var(--color-page) 97%);
+    }
+
+    /* The wash of the site's colour belongs to a first screen without a photograph; over one it would only cloud it. */
+    .home-screen.has-photo::before {
+        display: none;
+    }
+
+    /* The pane the welcome sits on: the photograph shows through it, blurred, and the words read on any picture. */
+    .hero-glass {
+        padding: 1.75rem 1.5rem;
+        border: 1px solid color-mix(in srgb, var(--color-line) 70%, transparent);
+        border-radius: 1.25rem;
+        background: color-mix(in srgb, var(--color-page) 74%, transparent);
+        box-shadow: 0 20px 60px -30px rgb(0 0 0 / 0.55);
+        backdrop-filter: blur(14px) saturate(1.2);
+    }
+
+    @media (min-width: 40rem) {
+        .hero-glass {
+            padding: 2.5rem;
+        }
+    }
+
+    /* A browser that cannot blur what is behind gets a pane that is nearly solid, so the words still read. */
+    @supports not (backdrop-filter: blur(1px)) {
+        .hero-glass {
+            background: color-mix(in srgb, var(--color-page) 92%, transparent);
+        }
+    }
+
+    /* Along the foot of the first screen: what the photograph shows, and the dots that turn to another. */
+    .hero-bar {
+        position: absolute;
+        inset: auto 0 1.25rem 0;
+        width: 100%;
+    }
+
+    .home-screen:has(.hero-bar) > .wrap {
+        padding-bottom: 5.5rem;
+    }
+
+    .hero-caption {
+        display: inline-flex;
+        max-width: 100%;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.45rem 0.95rem;
+        border: 1px solid color-mix(in srgb, var(--color-line) 70%, transparent);
+        border-radius: 9999px;
+        background: color-mix(in srgb, var(--color-page) 80%, transparent);
+        color: var(--color-ink);
+        font-weight: 500;
+        text-decoration: none;
+        backdrop-filter: blur(10px);
+    }
+
+    a.hero-caption:hover {
+        border-color: var(--color-brand);
+        color: var(--color-brand);
+    }
+
+    .hero-dots {
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+        margin-left: auto;
+        padding: 0.25rem 0.5rem;
+        border-radius: 9999px;
+        background: color-mix(in srgb, var(--color-page) 80%, transparent);
+        backdrop-filter: blur(10px);
+    }
+
+    /* A dot is small to the eye and large to the thumb: the button around it is what is pressed. */
+    .hero-dots [data-hero-dot] {
+        display: grid;
+        width: 1.75rem;
+        height: 2.25rem;
+        place-items: center;
+    }
+
+    .hero-dots [data-hero-dot]::before {
+        content: '';
+        width: 0.55rem;
+        height: 0.55rem;
+        border-radius: 9999px;
+        background: color-mix(in srgb, var(--color-ink) 35%, transparent);
+        transition: width 0.3s ease, background-color 0.3s ease;
+    }
+
+    .hero-dots [data-hero-dot][aria-current='true']::before {
+        width: 1.4rem;
+        background: var(--color-brand);
+    }
+
+    .hero-pause {
+        display: grid;
+        width: 2.25rem;
+        height: 2.25rem;
+        place-items: center;
+        border-radius: 9999px;
+        color: var(--color-ink);
+    }
+
+    .hero-pause:hover {
+        color: var(--color-brand);
+    }
+
+    .hero-pause [data-when='paused'],
+    .is-paused .hero-pause [data-when='playing'] {
+        display: none;
+    }
+
+    .is-paused .hero-pause [data-when='paused'] {
+        display: block;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .hero-photo {
+            transition: none;
+        }
+
+        .hero-photo.is-on {
+            animation: none;
+        }
     }
 
     /* The mark at the head of a line in a list of places: a symbol in the colour of the site. */
@@ -1000,7 +1155,7 @@ html.is-mourning {
         background: #ffffff;
     }
 
-    body > header, body > footer, .dock, .to-top, dialog, [role='group'][aria-label], nav, details, iframe {
+    body > header, body > footer, .dock, .to-top, .hero-bar, dialog, [role='group'][aria-label], nav, details, iframe {
         display: none !important;
     }
 

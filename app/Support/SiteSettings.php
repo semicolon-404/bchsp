@@ -53,7 +53,9 @@ class SiteSettings
         // The hospital's name for a reader in English, and its logo: a path on the public disk, or nothing.
         // The logo can be left out of the bar at the top of every page.
         // A photograph of the hospital behind the first screen of the home page: a path on the public disk, or nothing.
-        'site.name_en', 'site.logo', 'site.show_logo', 'site.hero_image',
+        // Since several can be given, "site.hero_slides" holds them (rows of image, caption, caption_en, url) and
+        // "site.hero_image" is kept as the first of them, for what wants one picture of the hospital.
+        'site.name_en', 'site.logo', 'site.show_logo', 'site.hero_image', 'site.hero_slides',
         // What the home page says under the name, and of the hospital itself: plain text, one item to a line.
         'site.motto', 'identity.vision', 'identity.mission', 'identity.values',
         'contact.address', 'contact.phone', 'contact.emergency_phone', 'contact.email',
@@ -144,12 +146,63 @@ class SiteSettings
         return is_string($path) ? Storage::disk('public')->url($path) : null;
     }
 
-    /** The address of the photograph behind the first screen of the home page, or null when there is none. */
+    /** How many photographs the first screen of the home page can turn through. */
+    public const MAX_HERO_SLIDES = 8;
+
+    /**
+     * The photographs behind the first screen of the home page, as saved: each a path on the public disk, with
+     * the line that says what it shows (in both languages) and where it leads, when it has them. Only a page of
+     * this site or a web address is ever kept as a link. A site set up before there could be several has its
+     * one photograph as the only row.
+     *
+     * @return list<array{image: string, caption: string, caption_en: string, url: string}>
+     */
+    public static function heroRows(mixed $rows = null): array
+    {
+        $rows ??= self::get('site.hero_slides');
+        $clean = [];
+
+        foreach (is_array($rows) ? $rows : [] as $row) {
+            // A file field hands its one file over as a list.
+            $image = is_array($row) ? ($row['image'] ?? null) : null;
+            $image = is_array($image) ? (array_values($image)[0] ?? null) : $image;
+            $url = is_array($row) ? trim((string) ($row['url'] ?? '')) : '';
+
+            if (is_string($image) && $image !== '') {
+                $clean[] = [
+                    'image' => $image,
+                    'caption' => trim((string) ($row['caption'] ?? '')),
+                    'caption_en' => trim((string) ($row['caption_en'] ?? '')),
+                    'url' => preg_match('~^(/(?!/)[^\s"\'<>\\\\]*|https?://[^\s"\'<>]+)$~i', $url) ? $url : '',
+                ];
+            }
+        }
+
+        if ($clean === [] && func_num_args() === 0 && is_string($one = self::get('site.hero_image')) && $one !== '') {
+            $clean[] = ['image' => $one, 'caption' => '', 'caption_en' => '', 'url' => ''];
+        }
+
+        return array_slice($clean, 0, self::MAX_HERO_SLIDES);
+    }
+
+    /**
+     * The same, ready for a page: the picture's address, its line in the reader's language, and its link.
+     *
+     * @return list<array{url: string, caption: ?string, link: ?string}>
+     */
+    public static function heroSlides(): array
+    {
+        return array_map(fn (array $row) => [
+            'url' => Storage::disk('public')->url($row['image']),
+            'caption' => (app()->getLocale() === 'en' && $row['caption_en'] !== '' ? $row['caption_en'] : $row['caption']) ?: null,
+            'link' => $row['url'] ?: null,
+        ], self::heroRows());
+    }
+
+    /** The address of the first photograph of the hospital, or null when there is none. */
     public static function heroUrl(): ?string
     {
-        $path = self::get('site.hero_image');
-
-        return is_string($path) ? Storage::disk('public')->url($path) : null;
+        return self::heroSlides()[0]['url'] ?? null;
     }
 
     /** The address of the map to embed on the contact page, or null when there is none or it is not a Google Maps embed. */

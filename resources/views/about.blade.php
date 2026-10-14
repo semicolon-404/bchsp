@@ -83,8 +83,8 @@
     <section class="home-screen !min-h-0 border-b border-line">
         @if ($photo = SiteSettings::heroUrl())
             {{-- The hospital itself, faded behind the words. Decoration: it says nothing a reader needs. --}}
-            <img src="{{ $photo }}" alt="" aria-hidden="true" class="hero-photo" fetchpriority="high">
-            <div class="hero-veil" aria-hidden="true"></div>
+            <img src="{{ $photo }}" alt="" aria-hidden="true" class="hero-photo is-on" fetchpriority="high">
+            <div class="hero-veil hero-veil-full" aria-hidden="true"></div>
         @else
             {{-- No photograph yet: a drawing in the site's colour stands in, so the first screen is not bare. --}}
             <div class="hero-art" aria-hidden="true"><span></span><span></span><span></span></div>

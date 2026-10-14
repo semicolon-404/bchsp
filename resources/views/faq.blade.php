@@ -10,7 +10,7 @@
 <x-layouts.site :title="__('Questions people ask')" :description="__('Answers to what people most often ask :name.', ['name' => App\Support\SiteSettings::name()])">
     @if ($all->isNotEmpty())
         <script type="application/ld+json">{!! json_encode([
-            '@context' => 'https://schema.org',
+            '@'.'context' => 'https://schema.org',
             '@type' => 'FAQPage',
             'mainEntity' => $all->map(fn ($faq) => ['@type' => 'Question', 'name' => $faq->localQuestion(), 'acceptedAnswer' => ['@type' => 'Answer', 'text' => $faq->localAnswer()]])->all(),
         ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_AMP) !!}</script>

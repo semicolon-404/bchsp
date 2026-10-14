@@ -35,12 +35,12 @@ class DrawnWithoutPicturesTest extends TestCase
 
     public function test_the_first_screen_has_a_drawing_until_the_hospital_gives_a_photograph(): void
     {
-        $this->get('/')->assertSee('class="hero-art"', false)->assertDontSee('class="hero-photo"', false);
+        $this->get('/')->assertSee('class="hero-art"', false)->assertDontSee('class="hero-photo', false);
         $this->get('/about')->assertSee('class="hero-art"', false);
 
         SiteSettings::save(['site.hero_image' => 'site/hospital.webp']);
 
-        $this->get('/')->assertSee('class="hero-photo"', false)->assertDontSee('class="hero-art"', false);
+        $this->get('/')->assertSee('class="hero-photo is-on"', false)->assertDontSee('class="hero-art"', false);
     }
 
     public function test_a_department_without_a_picture_stands_under_its_symbol_or_its_first_letter(): void

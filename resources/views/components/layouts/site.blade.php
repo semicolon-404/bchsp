@@ -55,7 +55,7 @@
         @if (request()->routeIs('home'))
             {{-- What the hospital is, for search engines: its name, address and numbers, from the site settings. --}}
             <script type="application/ld+json">{!! json_encode(array_filter([
-                '@context' => 'https://schema.org',
+                '@'.'context' => 'https://schema.org',
                 '@type' => 'Hospital',
                 'name' => $name,
                 'url' => route('home'),
