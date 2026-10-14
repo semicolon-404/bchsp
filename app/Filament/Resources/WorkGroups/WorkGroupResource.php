@@ -4,13 +4,12 @@ namespace App\Filament\Resources\WorkGroups;
 
 use App\Filament\Concerns\AdminOnly;
 use App\Filament\Concerns\TranslatesNames;
+use App\Filament\Resources\People\PersonResource;
 use App\Filament\Resources\WorkGroups\Pages\ManageWorkGroups;
 use App\Models\WorkGroup;
-use App\Support\OptimizedUpload;
 use BackedEnum;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\EditAction;
-use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TagsInput;
 use Filament\Forms\Components\TextInput;
@@ -27,7 +26,8 @@ use UnitEnum;
 /**
  * The groups of work of the hospital as its organisation chart has them, each with its head, how many work
  * in it and the units of work inside it. They make the pages "Organisation structure" and "Executives" under
- * About us. Drag the rows to put them in order. The director is in Site settings > Organisation.
+ * About us. Drag the rows to put them in order. A head is chosen from the register of people (Hospital >
+ * Personnel); the director is chosen in Site settings > Organisation.
  */
 class WorkGroupResource extends Resource
 {
@@ -62,26 +62,15 @@ class WorkGroupResource extends Resource
                 TextInput::make('name_en')
                     ->label(__('Name in English (optional)'))
                     ->maxLength(150),
-                TextInput::make('head_name')
+                Select::make('head_id')
                     ->label(__('Head of the group'))
-                    ->maxLength(150)
-                    ->helperText(__('With the title, as it should be read. Someone who heads two groups is shown once on "Executives", with both.')),
-                TextInput::make('head_position')
-                    ->label(__('Profession or position of the head (optional)'))
-                    ->maxLength(150)
-                    ->placeholder(__('Registered nurse')),
-                OptimizedUpload::on(FileUpload::make('head_photo_path'))
-                    ->label(__('Photograph of the head (optional)'))
-                    ->image()
-                    ->imageEditor()
-                    ->imageCropAspectRatio('1:1')
-                    // No SVG: it can carry a script.
-                    ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp'])
-                    ->disk('public')
-                    ->directory('people')
-                    ->visibility('public')
-                    ->maxSize(4096)
-                    ->helperText(__('Square, the face in the middle. Ask the person first. Without one, the first letter of the name stands in.'))
+                    ->relationship('head', 'name', fn ($query) => $query->where('is_active', true)->orderBy('sort_order')->orderBy('name'))
+                    ->searchable()
+                    ->preload()
+                    // Someone not in the register yet is added to it from here, and is then there for every other place.
+                    ->createOptionForm(PersonResource::fields())
+                    ->createOptionModalHeading(__('Add a person to the register'))
+                    ->helperText(__('Chosen from Personnel, where the name, position and photograph are kept once. Someone who heads two groups is shown once on "Executives", with both.'))
                     ->columnSpanFull(),
                 TextInput::make('staff_count')
                     ->label(__('People working in it (optional)'))
@@ -112,8 +101,9 @@ class WorkGroupResource extends Resource
         return $table
             ->defaultSort('sort_order')
             ->reorderable('sort_order')
+            ->modifyQueryUsing(fn ($query) => $query->with('head'))
             ->columns([
-                ImageColumn::make('head_photo_path')
+                ImageColumn::make('head.photo_path')
                     ->label('')
                     ->disk('public')
                     ->circular()
@@ -123,10 +113,10 @@ class WorkGroupResource extends Resource
                     ->searchable()
                     ->weight('medium')
                     ->wrap(),
-                TextColumn::make('head_name')
+                TextColumn::make('head')
                     ->label(__('Head of the group'))
-                    ->description(fn (WorkGroup $record) => $record->head_position)
-                    ->searchable()
+                    ->state(fn (WorkGroup $record) => $record->headName())
+                    ->description(fn (WorkGroup $record) => $record->headPosition())
                     ->placeholder('—'),
                 TextColumn::make('staff_count')
                     ->label(__('People working here'))

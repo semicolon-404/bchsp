@@ -19,7 +19,7 @@ class WorkGroup extends Model
 {
     use HasFactory, InTwoLanguages;
 
-    protected $fillable = ['name', 'name_en', 'head_name', 'head_position', 'head_photo_path', 'staff_count', 'units', 'department_id', 'is_active', 'sort_order'];
+    protected $fillable = ['name', 'name_en', 'head_id', 'head_name', 'head_position', 'head_photo_path', 'staff_count', 'units', 'department_id', 'is_active', 'sort_order'];
 
     protected $attributes = ['is_active' => true, 'sort_order' => 0];
 
@@ -38,6 +38,25 @@ class WorkGroup extends Model
         });
 
         static::deleted(fn (WorkGroup $group) => $group->head_photo_path && Storage::disk('public')->delete($group->head_photo_path));
+    }
+
+    /**
+     * Who heads it, from the register of people (App\Models\Person). A group written before there was a
+     * register may have only a name of its own (head_name): the three methods below read whichever there is.
+     */
+    public function head(): BelongsTo
+    {
+        return $this->belongsTo(Person::class, 'head_id');
+    }
+
+    public function headName(): ?string
+    {
+        return trim((string) ($this->head?->name ?? $this->head_name)) ?: null;
+    }
+
+    public function headPosition(): ?string
+    {
+        return trim((string) ($this->head ? $this->head->position : $this->head_position)) ?: null;
     }
 
     public function department(): BelongsTo
@@ -67,6 +86,10 @@ class WorkGroup extends Model
 
     public function headPhotoUrl(): ?string
     {
+        if ($this->head) {
+            return $this->head->photoUrl();
+        }
+
         return $this->head_photo_path ? Storage::disk('public')->url($this->head_photo_path) : null;
     }
 }

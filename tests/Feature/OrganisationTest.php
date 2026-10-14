@@ -121,20 +121,21 @@ class OrganisationTest extends TestCase
         $this->get('/admin/work-groups')->assertOk();
 
         Livewire::test(ManageWorkGroups::class)
-            ->callAction('create', ['name' => 'Radiology', 'head_name' => 'Mrs. Pim Prasat', 'head_position' => 'Radiographer', 'staff_count' => 2, 'units' => ['X-ray']])
+            ->callAction('create', ['name' => 'Radiology', 'staff_count' => 2, 'units' => ['X-ray']])
             ->assertHasNoFormErrors();
 
         $group = WorkGroup::sole();
         $this->assertSame(['X-ray'], $group->unitList());
         $this->assertSame(1, $group->sort_order);
 
+        // Who heads it and who the director is are chosen from the register of people (PeopleAndComplaintsTest).
         Livewire::test(SiteSettingsPage::class)
-            ->fillForm(['org__director_name' => 'Dr. Somchai Jaidee', 'org__founded_on' => '1985-02-02', 'org__doctors' => 9])
+            ->fillForm(['org__founded_on' => '1985-02-02', 'org__doctors' => 9, 'org__mission_group' => 'Mission group'])
             ->call('save')
             ->assertHasNoFormErrors();
 
-        $this->assertSame('Dr. Somchai Jaidee', Organisation::director()['name']);
         $this->assertSame('1985-02-02', Organisation::foundedOn()->toDateString());
-        $this->get('/p/executives')->assertSee('Somchai')->assertSee('Head of Radiology');
+        $this->assertSame('Mission group', Organisation::missionGroup());
+        $this->get('/p/structure')->assertSee('Radiology')->assertSee('Mission group');
     }
 }

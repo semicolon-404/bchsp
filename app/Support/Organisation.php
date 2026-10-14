@@ -2,6 +2,7 @@
 
 namespace App\Support;
 
+use App\Models\Person;
 use App\Models\WorkGroup;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
@@ -23,6 +24,17 @@ class Organisation
      */
     public static function director(): ?array
     {
+        $title = trim((string) SiteSettings::get('org.director_title')) ?: __('Director of :name', ['name' => SiteSettings::name()]);
+
+        // From the register of people, where the director is one of them.
+        $chosen = SiteSettings::get('org.director_person');
+        $person = filled($chosen) ? Person::find((int) $chosen) : null;
+
+        if ($person) {
+            return ['name' => $person->name, 'title' => $title, 'photo' => $person->photoUrl()];
+        }
+
+        // As it was written before there was a register.
         $name = trim((string) SiteSettings::get('org.director_name'));
 
         if ($name === '') {
@@ -31,11 +43,7 @@ class Organisation
 
         $photo = SiteSettings::get('org.director_photo');
 
-        return [
-            'name' => $name,
-            'title' => trim((string) SiteSettings::get('org.director_title')) ?: __('Director of :name', ['name' => SiteSettings::name()]),
-            'photo' => is_string($photo) && $photo !== '' ? Storage::disk('public')->url($photo) : null,
-        ];
+        return ['name' => $name, 'title' => $title, 'photo' => is_string($photo) && $photo !== '' ? Storage::disk('public')->url($photo) : null];
     }
 
     /** The name of the mission group every group of work stands under, when the hospital has one. */
@@ -67,7 +75,7 @@ class Organisation
     /** @return Collection<int, WorkGroup> */
     public static function groups(): Collection
     {
-        return WorkGroup::shown()->with('department')->get();
+        return WorkGroup::shown()->with('department', 'head')->get();
     }
 
     /**
@@ -102,16 +110,17 @@ class Organisation
         $people = [];
 
         foreach (self::groups() as $group) {
-            $name = trim((string) $group->head_name);
+            $name = (string) $group->headName();
 
             if ($name === '') {
                 continue;
             }
 
-            $key = self::bareName($name);
-            $people[$key] ??= ['name' => $name, 'position' => $group->head_position ?: null, 'photo' => null, 'groups' => []];
+            // One of the register is one person whatever the name; a name written on the group is told apart by the name.
+            $key = $group->head_id ? 'person-'.$group->head_id : self::bareName($name);
+            $people[$key] ??= ['name' => $name, 'position' => $group->headPosition(), 'photo' => null, 'groups' => []];
             $people[$key]['photo'] ??= $group->headPhotoUrl();
-            $people[$key]['position'] ??= $group->head_position ?: null;
+            $people[$key]['position'] ??= $group->headPosition();
             $people[$key]['groups'][] = $group;
         }
 

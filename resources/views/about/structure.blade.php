@@ -77,7 +77,7 @@
                     <ul id="groups" class="org-groups">
                         @foreach ($groups as $group)
                             @php($list = $group->unitList())
-                            <li class="org-group card" data-filter-text="{{ $group->localName().' '.$group->head_name.' '.implode(' ', $list) }}">
+                            <li class="org-group card" data-filter-text="{{ $group->localName().' '.$group->headName().' '.implode(' ', $list) }}">
                                 <p class="flex items-start gap-3">
                                     <span class="door-mark font-mono text-sm font-semibold" aria-hidden="true">{{ str_pad((string) $loop->iteration, 2, '0', STR_PAD_LEFT) }}</span>
                                     <span class="min-w-0 flex-1">
@@ -93,12 +93,12 @@
                                     <span class="org-share" aria-hidden="true"><span style="width: {{ max(4, round($group->staff_count / $largest * 100)) }}%"></span></span>
                                 @endif
 
-                                @if (filled($group->head_name))
+                                @if ($group->headName())
                                     <p class="mt-4 flex items-center gap-3 rounded-xl border border-line bg-page px-3 py-2">
-                                        <x-site.person :name="$group->head_name" :photo="$group->headPhotoUrl()" class="size-11 text-lg" />
+                                        <x-site.person :name="$group->headName()" :photo="$group->headPhotoUrl()" class="size-11 text-lg" />
                                         <span class="min-w-0">
                                             <span class="block text-xs text-muted">{{ __('Head of the group') }}</span>
-                                            <span class="block font-medium">{{ $group->head_name }}</span>
+                                            <span class="block font-medium">{{ $group->headName() }}</span>
                                         </span>
                                     </p>
                                 @endif
