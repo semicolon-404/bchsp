@@ -68,9 +68,17 @@
         ['Announcements published', App\Models\Announcement::published()->count(), 'megaphone'],
     ], fn (array $figure) => $figure[1] > 0);
 
+    // Who leads it and how it is organised (App\Support\Organisation), when the panel holds any of it.
+    $director = App\Support\Organisation::director();
+    $founded = App\Support\Organisation::foundedOn();
+    $years = App\Support\Organisation::years();
+    $org = App\Support\Organisation::figures();
+    $drawn = SitePage::published()->whereIn('slug', ['structure', 'executives'])->get()->keyBy('slug');
+
     // The parts that are on the page, for the row of links under the top.
     $parts = array_filter([
         'identity' => $vision || $mission || $values ? 'What we stand for' : null,
+        'people' => $director || $org['groups'] ? 'Who leads it' : null,
         'story' => $story ? 'Our story' : null,
         'hours' => $hours || $sessions->isNotEmpty() ? 'When we are open' : null,
         'departments' => $departments->isNotEmpty() ? 'Departments' : null,
@@ -205,6 +213,53 @@
                         </div>
                     @endif
                 </div>
+            </div>
+        </section>
+    @endif
+
+    {{-- Who leads it: the director, the organisation in three figures, and the way to the chart and the executives. --}}
+    @if ($director || $org['groups'])
+        <section id="people" class="scroll-mt-32">
+            <div class="wrap max-w-5xl py-16 sm:py-20">
+                <p class="eyebrow">{{ __('Who leads it') }}</p>
+                <h2 class="mt-2 text-3xl sm:text-4xl">{{ __('The people behind the hospital') }}</h2>
+                @if ($founded)
+                    <p class="mt-3 text-lg text-muted">
+                        {{ __('Founded on :date', ['date' => $founded->locale(app()->getLocale())->translatedFormat('j F ').($founded->year + (app()->getLocale() === 'th' ? 543 : 0))]) }}@if ($years) · {{ trans_choice('{1} at work for :count year|[2,*] at work for :count years', $years, ['count' => $years]) }}@endif
+                    </p>
+                @endif
+
+                <div @class(['mt-8 grid items-stretch gap-5', 'lg:grid-cols-5' => $director])>
+                    @if ($director)
+                        <div class="card flex items-center gap-5 lg:col-span-3">
+                            <x-site.person :name="$director['name']" :photo="$director['photo']" class="size-24 text-4xl sm:size-28" />
+                            <div class="min-w-0">
+                                <p class="eyebrow">{{ __('Head of the hospital') }}</p>
+                                <p class="mt-1 text-2xl font-semibold leading-snug">{{ $director['name'] }}</p>
+                                <p class="text-muted">{{ $director['title'] }}</p>
+                            </div>
+                        </div>
+                    @endif
+                    <dl @class(['grid grid-cols-3 gap-3', 'lg:col-span-2' => $director])>
+                        @foreach (array_filter([[$org['groups'], 'Groups of work'], [$org['people'], 'People working here'], [$org['doctors'], 'Doctors and dentists']], fn ($one) => $one[0]) as [$figure, $label])
+                            <div class="card flex flex-col justify-center px-3 py-4 text-center">
+                                <dd class="font-mono text-3xl font-semibold text-ink" data-count>{{ number_format($figure) }}</dd>
+                                <dt class="mt-1 text-sm text-muted">{{ __($label) }}</dt>
+                            </div>
+                        @endforeach
+                    </dl>
+                </div>
+
+                @if ($drawn->isNotEmpty())
+                    <p class="mt-6 flex flex-wrap gap-3">
+                        @if ($drawn->has('executives'))
+                            <a href="{{ route('pages.show', $drawn['executives']) }}" class="btn btn-brand"><x-heroicon-m-user-group class="size-5" aria-hidden="true" />{{ $drawn['executives']->localTitle() }}</a>
+                        @endif
+                        @if ($drawn->has('structure'))
+                            <a href="{{ route('pages.show', $drawn['structure']) }}" class="btn btn-line"><x-heroicon-m-rectangle-group class="size-5" aria-hidden="true" />{{ $drawn['structure']->localTitle() }}</a>
+                        @endif
+                    </p>
+                @endif
             </div>
         </section>
     @endif

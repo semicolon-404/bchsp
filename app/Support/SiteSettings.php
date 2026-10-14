@@ -58,6 +58,10 @@ class SiteSettings
         'site.name_en', 'site.logo', 'site.show_logo', 'site.hero_image', 'site.hero_slides', 'site.hero_welcome',
         // What the home page says under the name, and of the hospital itself: plain text, one item to a line.
         'site.motto', 'identity.vision', 'identity.mission', 'identity.values',
+        // Who runs the hospital and since when (App\Support\Organisation): the director's name, title and
+        // photograph, the day it was founded, the mission group its groups of work stand under, and two figures
+        // the site cannot count for itself: everyone who works there, and the doctors and dentists among them.
+        'org.director_name', 'org.director_title', 'org.director_photo', 'org.founded_on', 'org.mission_group', 'org.staff_total', 'org.doctors',
         'contact.address', 'contact.phone', 'contact.emergency_phone', 'contact.email',
         // For the contact page: when the hospital is open, and the address of an embedded Google map.
         'contact.hours', 'contact.map',

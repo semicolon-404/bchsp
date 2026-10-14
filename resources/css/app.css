@@ -1161,6 +1161,211 @@ html.is-mourning {
 }
 
 /*
+ * People and the organisation chart (components/site/person, about/structure, about/executives).
+ */
+@layer components {
+    /* A person: the photograph, or the first letter of the name on a wash of the site's colour, ringed. */
+    .person {
+        border: 2px solid color-mix(in srgb, var(--color-brand) 55%, transparent);
+        background: color-mix(in srgb, var(--color-brand) 14%, var(--color-surface));
+        color: var(--color-brand);
+        box-shadow: 0 0 0 4px color-mix(in srgb, var(--color-brand) 10%, transparent);
+    }
+
+    /* The chart reads from the top down: the director, the mission group, then the groups of work, joined by a stem. */
+    .org {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .org-top {
+        display: flex;
+        width: 100%;
+        max-width: 34rem;
+        align-items: center;
+        gap: 1.25rem;
+        border-color: color-mix(in srgb, var(--color-brand) 55%, var(--color-line));
+        background:
+            radial-gradient(22rem 10rem at 100% 0%, color-mix(in srgb, var(--color-brand) 14%, transparent), transparent 70%),
+            var(--color-surface);
+    }
+
+    .org-stem {
+        width: 2px;
+        height: 2.25rem;
+        background: linear-gradient(var(--color-brand), color-mix(in srgb, var(--color-brand) 35%, transparent));
+    }
+
+    .org-mission {
+        display: inline-flex;
+        max-width: 100%;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem 0.85rem;
+        padding: 0.7rem 1.4rem;
+        border-radius: 9999px;
+        background: var(--color-brand);
+        color: var(--color-on-brand);
+        text-align: center;
+        box-shadow: 0 14px 34px -18px var(--color-brand);
+    }
+
+    /* The groups stand under a rail that the stem comes down to; each hangs from it by a short drop. */
+    .org-groups {
+        position: relative;
+        display: grid;
+        width: 100%;
+        gap: 1.25rem;
+        padding-top: 1.5rem;
+        border-top: 2px solid color-mix(in srgb, var(--color-brand) 35%, transparent);
+    }
+
+    @media (min-width: 40rem) {
+        .org-groups {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+    }
+
+    @media (min-width: 64rem) {
+        .org-groups {
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+        }
+    }
+
+    .org-group {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        overflow: visible;
+    }
+
+    .org-group::before {
+        content: '';
+        position: absolute;
+        top: calc(-1.5rem - 1px);
+        left: 2.25rem;
+        width: 2px;
+        height: 1.5rem;
+        background: color-mix(in srgb, var(--color-brand) 35%, transparent);
+    }
+
+    /* Only the first row hangs from the rail: the rows under it, and the single column of a phone, have no drop. */
+    .org-group::before {
+        display: none;
+    }
+
+    @media (min-width: 40rem) and (max-width: 63.99rem) {
+        .org-group:nth-child(-n + 2)::before {
+            display: block;
+        }
+    }
+
+    @media (min-width: 64rem) {
+        .org-group:nth-child(-n + 3)::before {
+            display: block;
+        }
+    }
+
+    /* How large a group is beside the largest. */
+    .org-share {
+        display: block;
+        height: 0.35rem;
+        margin-top: 0.85rem;
+        overflow: hidden;
+        border-radius: 9999px;
+        background: color-mix(in srgb, var(--color-brand) 12%, transparent);
+    }
+
+    .org-share span {
+        display: block;
+        height: 100%;
+        border-radius: inherit;
+        background: linear-gradient(90deg, var(--color-brand), color-mix(in srgb, var(--color-brand) 55%, transparent));
+    }
+
+    /* A unit of work inside a group: a line with a short stroke before it, as a branch of the chart. */
+    .org-unit {
+        position: relative;
+        padding-left: 1.1rem;
+        line-height: 1.45;
+    }
+
+    .org-unit::before {
+        content: '';
+        position: absolute;
+        top: 0.7em;
+        left: 0;
+        width: 0.6rem;
+        height: 2px;
+        background: color-mix(in srgb, var(--color-brand) 60%, transparent);
+    }
+
+    /* The director on "Executives": set large, the photograph beside the name, on the light of the site's colour. */
+    .exec-top {
+        display: flex;
+        max-width: 46rem;
+        flex-direction: column;
+        align-items: center;
+        gap: 1.5rem;
+        margin-inline: auto;
+        padding: 2rem;
+        border-color: color-mix(in srgb, var(--color-brand) 55%, var(--color-line));
+        background:
+            radial-gradient(26rem 14rem at 0% 0%, color-mix(in srgb, var(--color-brand) 16%, transparent), transparent 70%),
+            var(--color-surface);
+        text-align: center;
+    }
+
+    .exec-top-photo {
+        width: 9rem;
+        height: 9rem;
+        font-size: 3.5rem;
+    }
+
+    @media (min-width: 40rem) {
+        .exec-top {
+            flex-direction: row;
+            gap: 2rem;
+            padding: 2.5rem;
+            text-align: left;
+        }
+
+        .exec-top-photo {
+            width: 11rem;
+            height: 11rem;
+            font-size: 4.25rem;
+        }
+    }
+
+    /* A head of a group: the picture over the name, the groups headed under a line. */
+    .exec {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+    }
+
+    .exec-photo {
+        width: 6.5rem;
+        height: 6.5rem;
+        font-size: 2.5rem;
+        transition: transform 0.3s ease;
+    }
+
+    .exec:hover .exec-photo {
+        transform: scale(1.05);
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .exec:hover .exec-photo {
+            transform: none;
+        }
+    }
+}
+
+/*
  * The colour of the day as a touch (App\Support\Theme::touchOfTheDay, --color-day): the site keeps its own
  * colour, and the day shows in three small places. None of them carries words in that colour: a yellow or
  * a pale blue would not read.

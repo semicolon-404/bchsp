@@ -28,6 +28,8 @@ class SitePagesTest extends TestCase
 
     public function test_a_page_of_a_group_leads_on_to_the_one_before_and_the_one_after(): void
     {
+        // The pages every site begins with (the organisation chart, the executives) are set aside: this is about three of its own.
+        SitePage::where('section', 'about')->delete();
         $history = SitePage::factory()->create(['title' => 'History', 'section' => 'about', 'position' => 1]);
         $vision = SitePage::factory()->create(['title' => 'Vision', 'section' => 'about', 'position' => 2]);
         $structure = SitePage::factory()->create(['title' => 'Structure', 'section' => 'about', 'position' => 3]);

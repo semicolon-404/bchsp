@@ -331,6 +331,50 @@ trait SiteSettingsForm
                             ->columnSpanFull(),
                     ]),
 
+                Section::make(__('Organisation'))
+                    ->description(__('Who runs the hospital and since when: shown on "About us", "Organisation structure" and "Executives". The groups of work and their heads are kept under Hospital > Organisation structure.'))
+                    ->columns(2)
+                    ->components([
+                        TextInput::make(self::field('org.director_name'))
+                            ->label(__('Director'))
+                            ->maxLength(150)
+                            ->helperText(__('With the title, as it should be read.')),
+                        TextInput::make(self::field('org.director_title'))
+                            ->label(__('Position (optional)'))
+                            ->maxLength(200)
+                            ->helperText(__('Left blank: "Director of" and the name of the hospital.')),
+                        OptimizedUpload::on(FileUpload::make(self::field('org.director_photo')))
+                            ->label(__('Photograph of the director (optional)'))
+                            ->image()
+                            ->imageEditor()
+                            ->imageCropAspectRatio('1:1')
+                            // No SVG: it can carry a script.
+                            ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp'])
+                            ->disk('public')
+                            ->directory('people')
+                            ->visibility('public')
+                            ->maxSize(4096)
+                            ->helperText(__('Square, the face in the middle. Without one, the first letter of the name stands in.'))
+                            ->columnSpanFull(),
+                        TextInput::make(self::field('org.founded_on'))
+                            ->label(__('Founded on (optional)'))
+                            ->type('date')
+                            ->helperText(__('The site works out how many years the hospital has been at work.')),
+                        TextInput::make(self::field('org.mission_group'))
+                            ->label(__('Mission group (optional)'))
+                            ->maxLength(150)
+                            ->helperText(__('The one the groups of work stand under on the organisation chart.')),
+                        TextInput::make(self::field('org.staff_total'))
+                            ->label(__('Everyone who works at the hospital (optional)'))
+                            ->numeric()
+                            ->minValue(0)
+                            ->helperText(__('Left blank: the people of the groups of work, added up.')),
+                        TextInput::make(self::field('org.doctors'))
+                            ->label(__('Doctors and dentists among them (optional)'))
+                            ->numeric()
+                            ->minValue(0),
+                    ]),
+
                 Section::make(__('Identity of the organisation'))
                     ->description(__('Shown on the home page, one tab each. One item on each line. Leave all three blank to hide the section.'))
                     ->components([
