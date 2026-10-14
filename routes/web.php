@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AnnouncementController;
+use App\Http\Controllers\ComplaintController;
 use App\Http\Controllers\DepartmentController;
 use App\Http\Controllers\ItaController;
 use App\Http\Controllers\QrController;
@@ -45,9 +46,17 @@ Route::view('/staff', 'staff')->name('staff');
 Route::get('/p/{page}', [SitePageController::class, 'show'])->name('pages.show');
 
 Route::get('/search', SearchController::class)->name('search');
-// How to make a complaint and how to follow one: both lead to the hospital's own system, and nothing is typed here.
+// Complaints, suggestions and praise: how it works, the form, the page that gives the tracking number, and
+// the page a matter is followed on (App\Http\Controllers\ComplaintController). Sending and looking up are
+// limited for one address, so the form is not flooded and codes are not guessed at.
 Route::view('/complaint', 'complaint.index')->name('complaint');
-Route::view('/complaint/track', 'complaint.track')->name('complaint.track');
+Route::get('/complaint/send', [ComplaintController::class, 'create'])->name('complaint.create');
+Route::post('/complaint/send', [ComplaintController::class, 'store'])->middleware('throttle:8,10')->name('complaint.store');
+Route::get('/complaint/sent', [ComplaintController::class, 'sent'])->name('complaint.sent');
+Route::get('/complaint/track', [ComplaintController::class, 'track'])->name('complaint.track');
+Route::post('/complaint/track', [ComplaintController::class, 'lookup'])->middleware('throttle:20,10')->name('complaint.lookup');
+// What a sender attached, for an administrator who is signed in (checked in the controller).
+Route::get('/admin/complaint-files/{complaint}/{index}', [ComplaintController::class, 'file'])->whereNumber('index')->name('complaint.file');
 // A QR code leading to a page of this site, for posters and signs (App\Http\Controllers\QrController).
 Route::get('/qr.svg', QrController::class)->middleware('throttle:60,1')->name('qr');
 

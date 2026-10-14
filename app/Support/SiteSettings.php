@@ -67,22 +67,10 @@ class SiteSettings
         'contact.hours', 'contact.map',
         // Forms the hospital runs elsewhere (Google Forms) for complaints, suggestions and its satisfaction survey.
         'feedback.complaint', 'feedback.suggestion', 'feedback.survey',
-        // The hospital's own system for complaints: where a matter is sent, where one already sent is followed,
-        // and within how many days one is dealt with. The pages /complaint and /complaint/track lead to them.
-        'complaint.form_url', 'complaint.track_url', 'complaint.days',
+        // Within how many days a complaint sent through the site is dealt with (App\Models\Complaint).
+        'complaint.days',
         'social.facebook', 'social.line', 'social.youtube',
     ];
-
-    /**
-     * Where the hospital's own system takes a complaint ("form") or shows how one stands ("track"): a secure
-     * web address, or null while none has been given.
-     */
-    public static function complaintUrl(string $which): ?string
-    {
-        $url = trim((string) self::get($which === 'track' ? 'complaint.track_url' : 'complaint.form_url'));
-
-        return preg_match('~^https://[^\s"\'<>]+$~i', $url) ? $url : null;
-    }
 
     /** Within how many days a complaint is dealt with: what the hospital set, or fifteen. */
     public static function complaintDays(): int

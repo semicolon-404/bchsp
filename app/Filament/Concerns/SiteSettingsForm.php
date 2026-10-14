@@ -426,10 +426,7 @@ trait SiteSettingsForm
                         self::link('feedback.complaint', __('Make a complaint'), 'https://docs.google.com/forms/…')->startsWith('https://'),
                         self::link('feedback.suggestion', __('Make a suggestion'), 'https://forms.gle/…')->startsWith('https://'),
                         self::link('feedback.survey', __('Satisfaction survey'), 'https://docs.google.com/forms/…')->startsWith('https://'),
-                        // The hospital's own complaint system: the pages "Complaints and suggestions" and "Follow a matter" lead to it.
-                        self::link('complaint.form_url', __('Complaint system: where a matter is sent'), 'https://…/complaint')->startsWith('https://')
-                            ->helperText(__('The button "Send a matter online" on the complaints page opens this. Left blank, the page shows only the other ways.')),
-                        self::link('complaint.track_url', __('Complaint system: where a matter is followed'), 'https://…/complaint/track')->startsWith('https://'),
+                        // Complaints sent through the site itself (Hospital > Complaints): how long the hospital gives itself.
                         TextInput::make(self::field('complaint.days'))
                             ->label(__('Days within which a matter is dealt with'))
                             ->numeric()

@@ -1161,6 +1161,212 @@ html.is-mourning {
 }
 
 /*
+ * A form a visitor fills in (complaint/send, complaint/track): fields large enough for a thumb and for old
+ * eyes, each under its name, with what is wrong said in words beside it and not by colour alone.
+ */
+@layer components {
+    .field {
+        display: block;
+        width: 100%;
+        min-height: 3rem;
+        padding: 0.65rem 0.85rem;
+        border: 1px solid var(--color-line);
+        border-radius: 0.6rem;
+        background: var(--color-surface);
+        color: var(--color-ink);
+        font-size: 1rem;
+        line-height: 1.5;
+    }
+
+    .field::placeholder {
+        color: var(--color-muted);
+        opacity: 0.8;
+    }
+
+    .field:focus-visible {
+        border-color: var(--color-brand);
+        outline: 2px solid color-mix(in srgb, var(--color-brand) 45%, transparent);
+        outline-offset: 1px;
+    }
+
+    .field[aria-invalid='true'] {
+        border-color: var(--color-danger);
+    }
+
+    textarea.field {
+        resize: vertical;
+    }
+
+    .field-file {
+        padding: 0.5rem;
+        cursor: pointer;
+    }
+
+    .field-file::file-selector-button {
+        margin-right: 0.85rem;
+        padding: 0.45rem 0.9rem;
+        border: 1px solid var(--color-line);
+        border-radius: 0.45rem;
+        background: var(--color-page);
+        color: var(--color-ink);
+        font: inherit;
+        font-weight: 600;
+        cursor: pointer;
+    }
+
+    .field-label {
+        display: block;
+        margin-bottom: 0.4rem;
+        font-weight: 500;
+    }
+
+    .field-hint {
+        margin-top: 0.35rem;
+        font-size: 0.875rem;
+        color: var(--color-muted);
+    }
+
+    .field-error {
+        margin-top: 0.4rem;
+        font-size: 0.9375rem;
+        font-weight: 500;
+        color: var(--color-danger);
+    }
+
+    /* The heading of a part of a form, with its number in a tile. */
+    .form-part {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        font-size: 1.25rem;
+        font-weight: 600;
+    }
+
+    .form-part > span {
+        display: grid;
+        width: 2rem;
+        height: 2rem;
+        flex: none;
+        place-items: center;
+        border-radius: 0.6rem;
+        background: var(--color-brand);
+        color: var(--color-on-brand);
+        font-family: var(--font-mono);
+        font-size: 1rem;
+    }
+
+    /* A choice among a few, drawn as a card: the radio button is still there for the keyboard and for a reader's ear. */
+    .choice {
+        position: relative;
+        display: flex;
+        min-height: 3.75rem;
+        align-items: center;
+        gap: 0.85rem;
+        padding: 0.75rem 1rem;
+        border: 1px solid var(--color-line);
+        border-radius: 0.9rem;
+        background: var(--color-surface);
+        cursor: pointer;
+        transition: border-color 0.15s ease, background-color 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .choice input {
+        position: absolute;
+        opacity: 0;
+    }
+
+    .choice:hover {
+        border-color: color-mix(in srgb, var(--color-brand) 55%, var(--color-line));
+    }
+
+    .choice:has(input:checked) {
+        border-color: var(--color-brand);
+        background: color-mix(in srgb, var(--color-brand) 9%, var(--color-surface));
+        box-shadow: 0 0 0 1px var(--color-brand);
+    }
+
+    .choice:has(input:focus-visible) {
+        outline: 2px solid var(--color-brand);
+        outline-offset: 2px;
+    }
+
+    .choice-tall {
+        align-items: flex-start;
+    }
+
+    /* Whoever chooses to stay unnamed is not asked for a name: the fields for one step aside. */
+    .who:has(input[value='anonymous']:checked) .who-named {
+        display: none;
+    }
+
+    /* How far a matter has come: dots on a line, those reached filled, the one it stands at ringed. */
+    .progress {
+        display: grid;
+        grid-auto-columns: minmax(0, 1fr);
+        grid-auto-flow: column;
+        font-size: 0.8125rem;
+        color: var(--color-muted);
+        text-align: center;
+    }
+
+    .progress li {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.5rem;
+        padding-inline: 0.25rem;
+    }
+
+    .progress li::before {
+        content: '';
+        position: absolute;
+        top: 0.55rem;
+        right: 50%;
+        left: -50%;
+        height: 2px;
+        background: var(--color-line);
+    }
+
+    .progress li:first-child::before {
+        display: none;
+    }
+
+    .progress-dot {
+        z-index: 1;
+        width: 1.2rem;
+        height: 1.2rem;
+        border: 2px solid var(--color-line);
+        border-radius: 9999px;
+        background: var(--color-page);
+    }
+
+    .progress .is-reached {
+        color: var(--color-ink);
+    }
+
+    .progress .is-reached::before,
+    .progress .is-reached .progress-dot {
+        border-color: var(--color-brand);
+        background: var(--color-brand);
+    }
+
+    .progress .is-now {
+        font-weight: 600;
+    }
+
+    .progress .is-now .progress-dot {
+        box-shadow: 0 0 0 4px color-mix(in srgb, var(--color-brand) 28%, transparent);
+    }
+
+    .progress .is-danger.is-reached::before,
+    .progress .is-danger.is-reached .progress-dot {
+        border-color: var(--color-danger);
+        background: var(--color-danger);
+    }
+}
+
+/*
  * The pages for complaints (complaint/index, complaint/track).
  */
 @layer components {

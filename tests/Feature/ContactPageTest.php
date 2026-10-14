@@ -70,7 +70,7 @@ class ContactPageTest extends TestCase
         }
     }
 
-    public function test_the_hospitals_own_forms_are_linked_and_the_site_has_no_form_of_its_own(): void
+    public function test_the_hospitals_forms_elsewhere_are_linked_and_this_page_has_no_form_of_its_own(): void
     {
         SiteSettings::save([
             'feedback.complaint' => 'https://docs.google.com/forms/d/e/abc/viewform',
@@ -86,8 +86,10 @@ class ContactPageTest extends TestCase
             ->assertDontSee('Make a suggestion')
             ->assertDontSee('javascript:alert', false)
             ->assertSee('rel="noopener noreferrer"', false)
-            ->assertSee('does not collect or keep personal data')
-            // Nothing a visitor types is sent to this site.
+            ->assertSee('These forms are run on Google Forms and open in a new tab.')
+            // The site keeps what is sent through its own complaints form (ComplaintsTest), so it no longer says it keeps nothing.
+            ->assertDontSee('does not collect or keep personal data')
+            // On this page itself nothing is typed: the complaints form has a page of its own.
             ->assertDontSee('<form', false)
             ->assertDontSee('<input', false);
     }

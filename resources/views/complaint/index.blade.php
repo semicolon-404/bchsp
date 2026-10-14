@@ -1,18 +1,13 @@
 {{--
     /complaint: how to make a complaint, give a suggestion or report wrongdoing. The page explains the way in
-    three steps, says what is taken and how long it takes, and sends the reader to the form itself, which the
-    hospital runs on its own system (Site settings > Complaints and suggestions: "complaint.form_url"), and to
-    the page where a matter already sent is followed (/complaint/track).
-
-    Nothing is typed into this site: no name, no story, no file. It only shows the way, and the other ways
-    (a call, a letter, in person) for someone who would rather not use a form.
+    three steps, says what is taken and how long it takes, and leads to the form (/complaint/send) and to the
+    page where a matter already sent is followed (/complaint/track); and gives the other ways (a call, a
+    letter, in person) for someone who would rather not use a form.
 --}}
 @php
     use App\Support\SiteSettings;
 
     $name = SiteSettings::name();
-    $form = SiteSettings::complaintUrl('form');
-    $track = SiteSettings::complaintUrl('track');
     $days = SiteSettings::complaintDays();
     $phone = SiteSettings::get('contact.phone');
     $emergency = SiteSettings::get('contact.emergency_phone');
@@ -38,11 +33,7 @@
     <x-site.page-header :eyebrow="__('Contact us')" :title="__('Complaints and suggestions')" icon="chat-bubble-left-right" width="max-w-5xl"
                         :lead="__('Tell the hospital what went wrong, what could be better, or what deserves praise. Every matter is read and answered.')">
         <p class="flex flex-wrap gap-3">
-            @if ($form)
-                <a href="{{ $form }}" target="_blank" rel="noopener noreferrer" class="btn btn-brand min-h-12 px-6 text-base">
-                    <x-heroicon-m-pencil-square class="size-5" aria-hidden="true" />{{ __('Send a matter online') }}<span class="sr-only"> {{ __('(opens in a new tab)') }}</span>
-                </a>
-            @endif
+            <a href="{{ route('complaint.create') }}" class="btn btn-brand min-h-12 px-6 text-base"><x-heroicon-m-pencil-square class="size-5" aria-hidden="true" />{{ __('Send a matter online') }}</a>
             <a href="{{ route('complaint.track') }}" class="btn btn-line min-h-12 px-6 text-base"><x-heroicon-m-magnifying-glass class="size-5" aria-hidden="true" />{{ __('Follow a matter already sent') }}</a>
         </p>
         <p class="mt-4 flex flex-wrap gap-x-6 gap-y-2 text-sm text-muted">
@@ -154,17 +145,13 @@
             </aside>
         </div>
 
-        @if ($form)
-            {{-- The way in again, for a reader who has read to the foot. --}}
-            <section class="card mt-14 flex flex-wrap items-center justify-between gap-5 border-brand">
-                <div class="min-w-0">
-                    <h2 class="text-xl sm:text-2xl">{{ __('Ready to tell us?') }}</h2>
-                    <p class="mt-1 text-muted">{{ __('The form opens on the hospital\'s own system, in a new tab. This website keeps nothing of what you write there.') }}</p>
-                </div>
-                <a href="{{ $form }}" target="_blank" rel="noopener noreferrer" class="btn btn-brand min-h-12 px-6 text-base">
-                    <x-heroicon-m-pencil-square class="size-5" aria-hidden="true" />{{ __('Send a matter online') }}<span class="sr-only"> {{ __('(opens in a new tab)') }}</span>
-                </a>
-            </section>
-        @endif
+        {{-- The way in again, for a reader who has read to the foot. --}}
+        <section class="card mt-14 flex flex-wrap items-center justify-between gap-5 border-brand">
+            <div class="min-w-0">
+                <h2 class="text-xl sm:text-2xl">{{ __('Ready to tell us?') }}</h2>
+                <p class="mt-1 text-muted">{{ __('What you write is kept by the hospital in confidence, and used only to deal with your matter.') }}</p>
+            </div>
+            <a href="{{ route('complaint.create') }}" class="btn btn-brand min-h-12 px-6 text-base"><x-heroicon-m-pencil-square class="size-5" aria-hidden="true" />{{ __('Send a matter online') }}</a>
+        </section>
     </div>
 </x-layouts.site>

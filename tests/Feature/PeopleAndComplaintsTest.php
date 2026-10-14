@@ -17,7 +17,7 @@ use Illuminate\Support\Facades\Storage;
 use Livewire\Livewire;
 use Tests\TestCase;
 
-/** The register of the people the site names, and the pages that show the way to complain and to follow a complaint. */
+/** The register of the people the site names. (Complaints: ComplaintsTest.) */
 class PeopleAndComplaintsTest extends TestCase
 {
     use RefreshDatabase;
@@ -114,57 +114,5 @@ class PeopleAndComplaintsTest extends TestCase
             $boon->update(['photo_focus' => $odd]);
             $this->assertSame('50% 18%', $boon->fresh()->photoPosition());
         }
-    }
-
-    public function test_the_complaints_page_shows_the_way_and_keeps_nothing_itself(): void
-    {
-        SiteSettings::save(['contact.phone' => '044-579076', 'contact.emergency_phone' => '1669']);
-
-        // Before the hospital's system is named: the other ways, and no button to a form.
-        $page = $this->get('/complaint')->assertOk();
-        $page->assertSeeInOrder(['Complaints and suggestions', 'Three steps', 'Send it online', 'Get a tracking number', 'Follow what is done', 'Matters taken through this way', 'Report of corruption or misconduct', 'Good to know'])
-            ->assertSee('15')
-            ->assertSee('href="tel:1669"', false)
-            ->assertSee('href="tel:044579076"', false)
-            ->assertSee('href="'.route('complaint.track').'"', false)
-            ->assertDontSee('Send a matter online');
-        // Nothing is typed into this site.
-        $this->assertStringNotContainsString('<form', $page->getContent());
-        $this->assertStringNotContainsString('<textarea', $page->getContent());
-
-        SiteSettings::save(['complaint.form_url' => 'https://erp.example.org/complaint', 'complaint.track_url' => 'https://erp.example.org/complaint/track', 'complaint.days' => 30]);
-
-        $this->get('/complaint')
-            ->assertSee('Send a matter online')
-            ->assertSee('href="https://erp.example.org/complaint" target="_blank" rel="noopener noreferrer"', false)
-            ->assertSee('30');
-
-        // Only a secure web address is ever made a button.
-        SiteSettings::save(['complaint.form_url' => 'javascript:alert(1)']);
-        $this->assertNull(SiteSettings::complaintUrl('form'));
-        $this->get('/complaint')->assertDontSee('Send a matter online');
-    }
-
-    public function test_the_tracking_page_says_what_to_have_and_what_each_state_means(): void
-    {
-        $this->get('/complaint/track')
-            ->assertOk()
-            ->assertSee('Looking up online is not open yet.')
-            ->assertDontSee('Look up my matter');
-
-        SiteSettings::save(['complaint.track_url' => 'https://erp.example.org/complaint/track']);
-
-        $page = $this->get('/complaint/track')->assertOk();
-        $page->assertSeeInOrder(['Follow a matter already sent', 'Tracking number', 'Code', 'Look up my matter', 'What each state means', 'Received', 'Being checked', 'Being dealt with', 'Finished', 'Not taken up', 'within 15 days'])
-            ->assertSee('href="https://erp.example.org/complaint/track" target="_blank" rel="noopener noreferrer"', false)
-            ->assertSee('href="'.route('complaint').'"', false);
-        $this->assertStringNotContainsString('<input', $page->getContent());
-    }
-
-    public function test_the_complaints_page_is_reached_from_the_contact_page_the_foot_and_the_map_of_the_site(): void
-    {
-        $this->get('/contact')->assertSee('href="'.route('complaint').'"', false);
-        $this->get('/')->assertSee('href="'.route('complaint').'"', false);
-        $this->get('/sitemap.xml')->assertSee(route('complaint'))->assertSee(route('complaint.track'));
     }
 }

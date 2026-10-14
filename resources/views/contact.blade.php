@@ -135,7 +135,7 @@
                         </a>
                     @endforeach
                 </div>
-                <p class="mt-3 text-sm text-muted">{{ __('These forms are run on Google Forms and open in a new tab. This website itself does not collect or keep personal data about its visitors.') }}</p>
+                <p class="mt-3 text-sm text-muted">{{ __('These forms are run on Google Forms and open in a new tab.') }}</p>
             </section>
         @endif
 

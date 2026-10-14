@@ -4,8 +4,10 @@ namespace App\Filament\Widgets;
 
 use App\Filament\Pages\SystemStatus;
 use App\Filament\Resources\Announcements\AnnouncementResource;
+use App\Filament\Resources\Complaints\ComplaintResource;
 use App\Filament\Resources\ItaItems\ItaItemResource;
 use App\Models\Announcement;
+use App\Models\Complaint;
 use App\Support\LinkChecks;
 use App\Support\Reports;
 use App\Support\SiteSettings;
@@ -60,6 +62,8 @@ class NeedsAttention extends Widget
         }
 
         if (auth()->user()?->isAdmin()) {
+            $add(Complaint::where('status', 'received')->count(), '{1} :count matter sent in has not been looked at|[2,*] :count matters sent in have not been looked at', ComplaintResource::getUrl('index'), 'danger');
+            $add(Complaint::whereNotIn('status', Complaint::CLOSED)->where('created_at', '<', now()->subDays(SiteSettings::complaintDays()))->count(), '{1} :count matter is past the days it should be dealt with in|[2,*] :count matters are past the days they should be dealt with in', ComplaintResource::getUrl('index'), 'danger');
             $add(SystemHealth::problems(), '{1} :count thing is wrong on System status|[2,*] :count things are wrong on System status', SystemStatus::getUrl(), 'danger');
         }
 
