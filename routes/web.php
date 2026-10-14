@@ -45,6 +45,9 @@ Route::view('/staff', 'staff')->name('staff');
 Route::get('/p/{page}', [SitePageController::class, 'show'])->name('pages.show');
 
 Route::get('/search', SearchController::class)->name('search');
+// How to make a complaint and how to follow one: both lead to the hospital's own system, and nothing is typed here.
+Route::view('/complaint', 'complaint.index')->name('complaint');
+Route::view('/complaint/track', 'complaint.track')->name('complaint.track');
 // A QR code leading to a page of this site, for posters and signs (App\Http\Controllers\QrController).
 Route::get('/qr.svg', QrController::class)->middleware('throttle:60,1')->name('qr');
 

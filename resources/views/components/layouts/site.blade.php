@@ -190,7 +190,7 @@
                 <ul class="mt-3 space-y-2">
                     @foreach ([
                         ['announcements.index', 'Announcements'], ['schedule', 'Clinic schedule'], ['departments.index', 'Departments'],
-                        ['downloads', 'Downloads'], ['ita', 'ITA'], ['about', 'About us'], ['menu', 'Everything on this website'],
+                        ['downloads', 'Downloads'], ['ita', 'ITA'], ['about', 'About us'], ['complaint', 'Complaints and suggestions'], ['menu', 'Everything on this website'],
                     ] as [$place, $label])
                         <li><a href="{{ route($place) }}" class="inline-flex items-center gap-2 text-ink no-underline hover:text-brand"><x-heroicon-m-chevron-right class="size-4 text-brand" aria-hidden="true" />{{ __($label) }}</a></li>
                     @endforeach

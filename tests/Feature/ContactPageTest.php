@@ -42,7 +42,9 @@ class ContactPageTest extends TestCase
             ->assertOk()
             ->assertDontSee('tel:', false)
             ->assertDontSee('Show the map')
-            ->assertDontSee('Complaints and suggestions')
+            // The way to the page about complaints is always there; the forms run elsewhere are shown only when given.
+            ->assertSee('href="'.route('complaint').'"', false)
+            ->assertDontSee('These forms are run on Google Forms')
             ->assertDontSee('<iframe', false);
     }
 

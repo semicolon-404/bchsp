@@ -110,9 +110,21 @@
             </div>
         @endif
 
+        {{-- The way to complain, suggest or praise, and to follow what was sent: a page of its own (/complaint). --}}
+        <section class="mt-12">
+            <a href="{{ route('complaint') }}" class="card flex flex-wrap items-center gap-4 border-brand text-ink no-underline">
+                <span class="door-mark" aria-hidden="true"><x-heroicon-o-chat-bubble-left-right class="size-5" /></span>
+                <span class="min-w-0 flex-1">
+                    <span class="block text-lg font-semibold">{{ __('Complaints and suggestions') }}</span>
+                    <span class="block text-muted">{{ __('How to send a matter, what is taken, and how to follow what is done about it.') }}</span>
+                </span>
+                <x-heroicon-m-arrow-right class="size-5 shrink-0 text-brand" aria-hidden="true" />
+            </a>
+        </section>
+
         @if ($forms)
-            <section class="mt-12">
-                <h2 class="text-2xl">{{ __('Complaints and suggestions') }}</h2>
+            <section class="mt-8">
+                <h2 class="text-2xl">{{ __('Forms') }}</h2>
                 <div class="mt-4 grid gap-4 sm:grid-cols-3">
                     @foreach ($forms as $label => $url)
                         <a href="{{ $url }}" target="_blank" rel="noopener noreferrer" class="card flex items-center gap-4 text-ink no-underline">

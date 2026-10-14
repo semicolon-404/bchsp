@@ -58,17 +58,39 @@ class SiteSettings
         'site.name_en', 'site.logo', 'site.show_logo', 'site.hero_image', 'site.hero_slides', 'site.hero_welcome',
         // What the home page says under the name, and of the hospital itself: plain text, one item to a line.
         'site.motto', 'identity.vision', 'identity.mission', 'identity.values',
-        // Who runs the hospital and since when (App\Support\Organisation): the director's name, title and
-        // photograph, the day it was founded, the mission group its groups of work stand under, and two figures
+        // Who runs the hospital and since when (App\Support\Organisation): the director, as one of the register
+        // of people (org.director_person; a name and photograph written before there was a register are still read), the day it was founded, the mission group its groups of work stand under, and two figures
         // the site cannot count for itself: everyone who works there, and the doctors and dentists among them.
-        'org.director_name', 'org.director_title', 'org.director_photo', 'org.founded_on', 'org.mission_group', 'org.staff_total', 'org.doctors',
+        'org.director_person', 'org.director_name', 'org.director_title', 'org.director_photo', 'org.founded_on', 'org.mission_group', 'org.staff_total', 'org.doctors',
         'contact.address', 'contact.phone', 'contact.emergency_phone', 'contact.email',
         // For the contact page: when the hospital is open, and the address of an embedded Google map.
         'contact.hours', 'contact.map',
         // Forms the hospital runs elsewhere (Google Forms) for complaints, suggestions and its satisfaction survey.
         'feedback.complaint', 'feedback.suggestion', 'feedback.survey',
+        // The hospital's own system for complaints: where a matter is sent, where one already sent is followed,
+        // and within how many days one is dealt with. The pages /complaint and /complaint/track lead to them.
+        'complaint.form_url', 'complaint.track_url', 'complaint.days',
         'social.facebook', 'social.line', 'social.youtube',
     ];
+
+    /**
+     * Where the hospital's own system takes a complaint ("form") or shows how one stands ("track"): a secure
+     * web address, or null while none has been given.
+     */
+    public static function complaintUrl(string $which): ?string
+    {
+        $url = trim((string) self::get($which === 'track' ? 'complaint.track_url' : 'complaint.form_url'));
+
+        return preg_match('~^https://[^\s"\'<>]+$~i', $url) ? $url : null;
+    }
+
+    /** Within how many days a complaint is dealt with: what the hospital set, or fifteen. */
+    public static function complaintDays(): int
+    {
+        $days = (int) self::get('complaint.days');
+
+        return $days >= 1 && $days <= 365 ? $days : 15;
+    }
 
     /** The forms linked from the contact page, in order, with the name shown for each. */
     public const FEEDBACK = [

@@ -2,6 +2,7 @@
 
 namespace App\Filament\Concerns;
 
+use App\Models\Person;
 use App\Support\Footer;
 use App\Support\HomeLayout;
 use App\Support\Menus;
@@ -335,27 +336,15 @@ trait SiteSettingsForm
                     ->description(__('Who runs the hospital and since when: shown on "About us", "Organisation structure" and "Executives". The groups of work and their heads are kept under Hospital > Organisation structure.'))
                     ->columns(2)
                     ->components([
-                        TextInput::make(self::field('org.director_name'))
+                        Select::make(self::field('org.director_person'))
                             ->label(__('Director'))
-                            ->maxLength(150)
-                            ->helperText(__('With the title, as it should be read.')),
+                            ->options(fn () => Person::query()->where('is_active', true)->orderBy('sort_order')->orderBy('name')->pluck('name', 'id')->all())
+                            ->searchable()
+                            ->helperText(__('Chosen from Hospital > Personnel, where the name and photograph are kept. Add the director there first.')),
                         TextInput::make(self::field('org.director_title'))
                             ->label(__('Position (optional)'))
                             ->maxLength(200)
                             ->helperText(__('Left blank: "Director of" and the name of the hospital.')),
-                        OptimizedUpload::on(FileUpload::make(self::field('org.director_photo')))
-                            ->label(__('Photograph of the director (optional)'))
-                            ->image()
-                            ->imageEditor()
-                            ->imageCropAspectRatio('1:1')
-                            // No SVG: it can carry a script.
-                            ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp'])
-                            ->disk('public')
-                            ->directory('people')
-                            ->visibility('public')
-                            ->maxSize(4096)
-                            ->helperText(__('Square, the face in the middle. Without one, the first letter of the name stands in.'))
-                            ->columnSpanFull(),
                         TextInput::make(self::field('org.founded_on'))
                             ->label(__('Founded on (optional)'))
                             ->type('date')
@@ -437,6 +426,16 @@ trait SiteSettingsForm
                         self::link('feedback.complaint', __('Make a complaint'), 'https://docs.google.com/forms/…')->startsWith('https://'),
                         self::link('feedback.suggestion', __('Make a suggestion'), 'https://forms.gle/…')->startsWith('https://'),
                         self::link('feedback.survey', __('Satisfaction survey'), 'https://docs.google.com/forms/…')->startsWith('https://'),
+                        // The hospital's own complaint system: the pages "Complaints and suggestions" and "Follow a matter" lead to it.
+                        self::link('complaint.form_url', __('Complaint system: where a matter is sent'), 'https://…/complaint')->startsWith('https://')
+                            ->helperText(__('The button "Send a matter online" on the complaints page opens this. Left blank, the page shows only the other ways.')),
+                        self::link('complaint.track_url', __('Complaint system: where a matter is followed'), 'https://…/complaint/track')->startsWith('https://'),
+                        TextInput::make(self::field('complaint.days'))
+                            ->label(__('Days within which a matter is dealt with'))
+                            ->numeric()
+                            ->minValue(1)
+                            ->maxValue(365)
+                            ->placeholder('15'),
                     ]),
 
                 Section::make(__('Social media'))

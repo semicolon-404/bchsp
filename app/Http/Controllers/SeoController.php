@@ -158,6 +158,8 @@ class SeoController extends Controller
             ['loc' => route('downloads'), 'priority' => '0.5'],
             ['loc' => route('updates'), 'priority' => '0.4'],
             ['loc' => route('phones'), 'priority' => '0.6'],
+            ['loc' => route('complaint'), 'priority' => '0.6'],
+            ['loc' => route('complaint.track'), 'priority' => '0.4'],
             ['loc' => route('faq'), 'priority' => '0.7'],
             ['loc' => route('services'), 'priority' => '0.7'],
             ['loc' => route('calendar'), 'priority' => '0.6'],
