@@ -66,16 +66,20 @@
         {{-- The site's own drawing with the welcome, then the hospital's photographs, one after another (Site settings > The hospital). --}}
         <x-site.hero-photos :slides="$photos" />
         <div @class(['hero-front wrap grid items-center gap-12 py-14 sm:py-20', 'lg:grid-cols-2' => $sessions->isNotEmpty()])>
-            <div @class(['text-center', 'lg:text-left' => $sessions->isNotEmpty(), 'hero-glass' => collect($photos)->contains('kind', 'photo')])>
-                @if ($logo = SiteSettings::logoUrl())
-                    <img src="{{ $logo }}" alt="" @class(['mx-auto mb-6 h-20 w-auto', 'lg:mx-0' => $sessions->isNotEmpty()])>
+            {{-- Beside today's clinics the words keep to the left; under the hospital's emblem they are centred, the emblem over their middle. --}}
+            @php($logo = SiteSettings::logoUrl())
+            @php($aside = $sessions->isNotEmpty() && ! $logo)
+            <div @class(['text-center', 'lg:text-left' => $aside, 'hero-glass' => collect($photos)->contains('kind', 'photo')])>
+                @if ($logo)
+                    {{-- The hospital's emblem, large, over the middle of the words it belongs to. --}}
+                    <img src="{{ $logo }}" alt="" class="hero-logo">
                 @endif
                 <p class="eyebrow">{{ __('Welcome to') }}</p>
                 <h1 class="hero-name mt-4 text-4xl leading-tight sm:text-5xl md:text-6xl">{{ $name }}</h1>
-                <p @class(['mx-auto mt-6 max-w-xl text-lg text-muted sm:text-xl', 'lg:mx-0' => $sessions->isNotEmpty()])>{{ $motto ? '“'.$motto.'”' : __('News, announcements and services of the hospital, in one place.') }}</p>
+                <p @class(['mx-auto mt-6 max-w-xl text-lg text-muted sm:text-xl', 'lg:mx-0' => $aside])>{{ $motto ? '“'.$motto.'”' : __('News, announcements and services of the hospital, in one place.') }}</p>
 
                 @if ($phone || $emergency)
-                    <div @class(['mt-8 flex flex-wrap justify-center gap-3', 'lg:justify-start' => $sessions->isNotEmpty()])>
+                    <div @class(['mt-8 flex flex-wrap justify-center gap-3', 'lg:justify-start' => $aside])>
                         @if ($phone)
                             <a href="{{ $dial($phone) }}" class="btn btn-brand"><x-heroicon-s-phone class="size-5" aria-hidden="true" />{{ __('Call :number', ['number' => $phone]) }}</a>
                         @endif

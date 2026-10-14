@@ -249,7 +249,9 @@ trait SiteSettingsForm
                             ->label(__('Name in English (optional)'))
                             ->maxLength(120)
                             ->helperText(__('Shown to visitors who switch the website to English. Left blank, they see the name above.')),
-                        FileUpload::make(self::field('site.logo'))
+                        // Made smaller like every other picture: an emblem as a designer hands it over can be thousands of
+                        // dots wide, and it is fetched with every page.
+                        OptimizedUpload::on(FileUpload::make(self::field('site.logo')))
                             ->label(__('Logo (optional)'))
                             ->image()
                             // No SVG: it can carry a script.
