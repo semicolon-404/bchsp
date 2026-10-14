@@ -87,6 +87,7 @@ class SiteSettings extends Page
         // The photographs of the first screen, as rows; the one photograph of before is the first of them.
         unset($values[self::field('site.hero_slides')], $values[self::field('site.hero_image')]);
         $values['hero_slides'] = Settings::heroRows();
+        $values[self::field('site.hero_welcome')] = (bool) Settings::get('site.hero_welcome', true);
 
         $this->form->fill($values);
     }

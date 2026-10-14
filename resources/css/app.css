@@ -630,16 +630,45 @@ html.is-mourning {
         background: linear-gradient(to bottom, color-mix(in srgb, var(--color-page) 72%, transparent), var(--color-page) 97%);
     }
 
-    /* The wash of the site's colour belongs to a first screen without a photograph; over one it would only cloud it. */
-    .home-screen.has-photo::before {
-        display: none;
+    /*
+     * The first screen says what is showing: data-kind is "art" (the site's own drawing) or "photo", and
+     * data-show is what lies over it, "welcome", "caption" or "none" (hero.js keeps both up to date).
+     * Everything below follows those two, each change fading like the pictures do.
+     */
+    .home-screen::before,
+    .hero-veil,
+    .hero-art,
+    .hero-glass,
+    .hero-front {
+        transition: opacity 0.9s ease, visibility 0.9s ease, background-color 0.9s ease, border-color 0.9s ease, box-shadow 0.9s ease;
     }
 
-    /* The pane the welcome sits on: the photograph shows through it, blurred, and the words read on any picture. */
+    /* The wash of the site's colour and the drawing belong together; over a photograph they would only cloud it. */
+    .home-screen[data-kind='photo']::before,
+    .home-screen[data-kind='art'] .hero-veil,
+    .hero-art[data-hero-slide]:not(.is-on) {
+        opacity: 0;
+    }
+
+    /* The welcome and today's clinics step aside for a photograph that is shown with its own line, or alone. */
+    .home-screen[data-show='caption'] .hero-front,
+    .home-screen[data-show='none'] .hero-front {
+        visibility: hidden;
+        opacity: 0;
+    }
+
+    /*
+     * The pane the welcome sits on. Over the drawing it is not seen; over a photograph the picture shows through
+     * it, blurred, and the words read on any picture. It keeps its size either way, so nothing moves between the two.
+     */
     .hero-glass {
         padding: 1.75rem 1.5rem;
-        border: 1px solid color-mix(in srgb, var(--color-line) 70%, transparent);
+        border: 1px solid transparent;
         border-radius: 1.25rem;
+    }
+
+    .home-screen[data-kind='photo'] .hero-glass {
+        border-color: color-mix(in srgb, var(--color-line) 70%, transparent);
         background: color-mix(in srgb, var(--color-page) 74%, transparent);
         box-shadow: 0 20px 60px -30px rgb(0 0 0 / 0.55);
         backdrop-filter: blur(14px) saturate(1.2);
@@ -653,7 +682,7 @@ html.is-mourning {
 
     /* A browser that cannot blur what is behind gets a pane that is nearly solid, so the words still read. */
     @supports not (backdrop-filter: blur(1px)) {
-        .hero-glass {
+        .home-screen[data-kind='photo'] .hero-glass {
             background: color-mix(in srgb, var(--color-page) 92%, transparent);
         }
     }
@@ -682,6 +711,13 @@ html.is-mourning {
         font-weight: 500;
         text-decoration: none;
         backdrop-filter: blur(10px);
+    }
+
+    /* Alone on its photograph, the line is what the screen says: larger, as a heading would be. */
+    .home-screen[data-show='caption'] .hero-caption {
+        padding: 0.7rem 1.3rem;
+        font-size: 1.25rem;
+        font-weight: 600;
     }
 
     a.hero-caption:hover {

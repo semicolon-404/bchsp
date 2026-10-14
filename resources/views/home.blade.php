@@ -61,16 +61,12 @@
         and what is open today (drawn as an editor's window, read as a list).
     --}}
     @php($photos = SiteSettings::heroSlides())
-    <section @class(['home-screen', 'has-photo' => $photos]) @if (count($photos) > 1) data-hero @endif>
-        @if ($photos)
-            {{-- The hospital itself, clear behind the words, one photograph after another (Site settings > The hospital). --}}
-            <x-site.hero-photos :slides="$photos" />
-        @else
-            {{-- No photograph yet: a drawing in the site's colour stands in, so the first screen is not bare. --}}
-            <div class="hero-art" aria-hidden="true"><span></span><span></span><span></span></div>
-        @endif
-        <div @class(['wrap grid items-center gap-12 py-14 sm:py-20', 'lg:grid-cols-2' => $sessions->isNotEmpty()])>
-            <div @class(['text-center', 'lg:text-left' => $sessions->isNotEmpty(), 'hero-glass' => $photos])>
+    {{-- It says which of them is showing (data-kind, data-show), and the styles follow: resources/js/hero.js keeps the two up to date. --}}
+    <section class="home-screen" data-kind="{{ $photos[0]['kind'] }}" data-show="{{ $photos[0]['show'] }}" @if (count($photos) > 1) data-hero @endif>
+        {{-- The site's own drawing with the welcome, then the hospital's photographs, one after another (Site settings > The hospital). --}}
+        <x-site.hero-photos :slides="$photos" />
+        <div @class(['hero-front wrap grid items-center gap-12 py-14 sm:py-20', 'lg:grid-cols-2' => $sessions->isNotEmpty()])>
+            <div @class(['text-center', 'lg:text-left' => $sessions->isNotEmpty(), 'hero-glass' => collect($photos)->contains('kind', 'photo')])>
                 @if ($logo = SiteSettings::logoUrl())
                     <img src="{{ $logo }}" alt="" @class(['mx-auto mb-6 h-20 w-auto', 'lg:mx-0' => $sessions->isNotEmpty()])>
                 @endif

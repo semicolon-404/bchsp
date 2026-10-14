@@ -263,6 +263,11 @@ trait SiteSettingsForm
                             ->label(__('Show the logo in the top bar'))
                             ->helperText(__('Switched off, the top bar shows the name alone. The home page keeps the logo.'))
                             ->inline(false),
+                        Toggle::make(self::field('site.hero_welcome'))
+                            ->label(__('Begin the home page with the welcome on the site\'s own drawing'))
+                            ->helperText(__('The name, the motto, the numbers to call and today\'s clinics, on a drawing in the site\'s colour: no photograph needed. Photographs added below follow it, one after another. Switched off, the home page begins with the first photograph.'))
+                            ->inline(false)
+                            ->columnSpanFull(),
                         Repeater::make('hero_slides')
                             ->label(__('Photographs behind the top of the home page (optional)'))
                             ->helperText(__('Shown clear, one after another, behind the hospital\'s name: the building, the team, a new service, an activity. Up to :count; the first is also the picture of the hospital on "About us". Do not use one in which a patient can be recognised.', ['count' => Settings::MAX_HERO_SLIDES]))
@@ -278,6 +283,21 @@ trait SiteSettingsForm
                                     ->maxSize(8192)
                                     ->required()
                                     ->helperText(__('Wide, about 2000 × 1100. Up to 8 MB; it is made smaller by itself.'))
+                                    ->columnSpanFull(),
+                                Radio::make('show')
+                                    ->label(__('Over this photograph, show'))
+                                    ->options([
+                                        'caption' => __('Only its own line'),
+                                        'welcome' => __('The welcome and today\'s clinics'),
+                                        'none' => __('Nothing: the photograph alone'),
+                                    ])
+                                    ->descriptions([
+                                        'caption' => __('The photograph is seen whole, with the line below at its foot. Best for showing a service or an activity.'),
+                                        'welcome' => __('As on the drawing, on a pane of frosted glass over the photograph.'),
+                                        'none' => __('No words at all.'),
+                                    ])
+                                    ->default('caption')
+                                    ->required()
                                     ->columnSpanFull(),
                                 TextInput::make('caption')
                                     ->label(__('What it shows (optional)'))

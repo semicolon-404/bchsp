@@ -55,7 +55,7 @@ class SiteSettings
         // A photograph of the hospital behind the first screen of the home page: a path on the public disk, or nothing.
         // Since several can be given, "site.hero_slides" holds them (rows of image, caption, caption_en, url) and
         // "site.hero_image" is kept as the first of them, for what wants one picture of the hospital.
-        'site.name_en', 'site.logo', 'site.show_logo', 'site.hero_image', 'site.hero_slides',
+        'site.name_en', 'site.logo', 'site.show_logo', 'site.hero_image', 'site.hero_slides', 'site.hero_welcome',
         // What the home page says under the name, and of the hospital itself: plain text, one item to a line.
         'site.motto', 'identity.vision', 'identity.mission', 'identity.values',
         'contact.address', 'contact.phone', 'contact.emergency_phone', 'contact.email',
@@ -150,12 +150,27 @@ class SiteSettings
     public const MAX_HERO_SLIDES = 8;
 
     /**
+     * What is shown over a photograph of the first screen: the welcome and today's clinics, as on the site's
+     * own drawing; only the photograph's own line; or nothing, so the picture is seen whole.
+     */
+    public const HERO_SHOWS = ['welcome', 'caption', 'none'];
+
+    /**
+     * Whether the first screen begins with the welcome on the site's own drawing, before any photograph.
+     * It does until an administrator switches it off; and with no photograph at all it is all there is.
+     */
+    public static function heroBeginsWithWelcome(): bool
+    {
+        return (bool) self::get('site.hero_welcome', true) || self::heroRows() === [];
+    }
+
+    /**
      * The photographs behind the first screen of the home page, as saved: each a path on the public disk, with
      * the line that says what it shows (in both languages) and where it leads, when it has them. Only a page of
      * this site or a web address is ever kept as a link. A site set up before there could be several has its
      * one photograph as the only row.
      *
-     * @return list<array{image: string, caption: string, caption_en: string, url: string}>
+     * @return list<array{image: string, caption: string, caption_en: string, url: string, show: string}>
      */
     public static function heroRows(mixed $rows = null): array
     {
@@ -173,36 +188,48 @@ class SiteSettings
                     'image' => $image,
                     'caption' => trim((string) ($row['caption'] ?? '')),
                     'caption_en' => trim((string) ($row['caption_en'] ?? '')),
+                    // One kept before there was a choice had the welcome over it.
+                    'show' => in_array($row['show'] ?? null, self::HERO_SHOWS, true) ? $row['show'] : 'welcome',
                     'url' => preg_match('~^(/(?!/)[^\s"\'<>\\\\]*|https?://[^\s"\'<>]+)$~i', $url) ? $url : '',
                 ];
             }
         }
 
         if ($clean === [] && func_num_args() === 0 && is_string($one = self::get('site.hero_image')) && $one !== '') {
-            $clean[] = ['image' => $one, 'caption' => '', 'caption_en' => '', 'url' => ''];
+            $clean[] = ['image' => $one, 'caption' => '', 'caption_en' => '', 'url' => '', 'show' => 'welcome'];
         }
 
         return array_slice($clean, 0, self::MAX_HERO_SLIDES);
     }
 
     /**
-     * The same, ready for a page: the picture's address, its line in the reader's language, and its link.
+     * What the first screen turns through, ready for a page: first the site's own drawing with the welcome
+     * (kind "art"; see heroBeginsWithWelcome), then each photograph (kind "photo") with its address, its line
+     * in the reader's language, its link, and what is shown over it.
      *
-     * @return list<array{url: string, caption: ?string, link: ?string}>
+     * @return list<array{kind: string, url: ?string, caption: ?string, link: ?string, show: string}>
      */
     public static function heroSlides(): array
     {
-        return array_map(fn (array $row) => [
+        $photos = array_map(fn (array $row) => [
+            'kind' => 'photo',
             'url' => Storage::disk('public')->url($row['image']),
             'caption' => (app()->getLocale() === 'en' && $row['caption_en'] !== '' ? $row['caption_en'] : $row['caption']) ?: null,
             'link' => $row['url'] ?: null,
+            'show' => $row['show'],
         ], self::heroRows());
+
+        return self::heroBeginsWithWelcome()
+            ? [['kind' => 'art', 'url' => null, 'caption' => null, 'link' => null, 'show' => 'welcome'], ...$photos]
+            : $photos;
     }
 
     /** The address of the first photograph of the hospital, or null when there is none. */
     public static function heroUrl(): ?string
     {
-        return self::heroSlides()[0]['url'] ?? null;
+        $first = self::heroRows()[0] ?? null;
+
+        return $first ? Storage::disk('public')->url($first['image']) : null;
     }
 
     /** The address of the map to embed on the contact page, or null when there is none or it is not a Google Maps embed. */

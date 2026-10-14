@@ -1,7 +1,7 @@
 /**
  * The photographs behind the first screen of the home page, one after another (components/site/hero-photos).
  *
- *   <section data-hero> <img data-hero-slide class="is-on"> <img data-hero-slide data-src="..."> ...
+ *   <section data-hero data-kind data-show> <div data-hero-slide data-kind="art" class="is-on"> <img data-hero-slide data-kind="photo" data-show="caption" data-src="..."> ...
  *       <span data-hero-caption> ... <button data-hero-dot> ... <button data-hero-pause>
  *
  * Every few seconds the next one fades in, with its line. It never moves by itself for a reader who asked
@@ -35,10 +35,13 @@ export function startHero() {
     const show = (index) => {
         const next = (index + slides.length) % slides.length;
 
-        // Not before it has arrived: fading to an empty frame would flash the page behind.
-        if (slides[next].dataset.src || !slides[next].complete) return;
+        // Not before it has arrived: fading to an empty frame would flash the page behind. (The drawing is always there.)
+        if (slides[next].dataset.src || (slides[next].tagName === 'IMG' && !slides[next].complete)) return;
 
         at = next;
+        // What is over it follows it: the welcome, its own line, or nothing (app.css reads these two).
+        root.dataset.kind = slides[at].dataset.kind;
+        root.dataset.show = slides[at].dataset.show;
         slides.forEach((slide, i) => slide.classList.toggle('is-on', i === at));
         captions.forEach((caption, i) => (caption.hidden = i !== at));
         dots.forEach((dot, i) => dot.setAttribute('aria-current', i === at ? 'true' : 'false'));

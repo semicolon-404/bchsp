@@ -33,14 +33,16 @@ class DrawnWithoutPicturesTest extends TestCase
         $page->assertSeeInOrder(['class="cover-day', '7', 'Mar']);
     }
 
-    public function test_the_first_screen_has_a_drawing_until_the_hospital_gives_a_photograph(): void
+    public function test_the_first_screen_is_a_drawing_and_about_us_too_until_the_hospital_gives_a_photograph(): void
     {
-        $this->get('/')->assertSee('class="hero-art"', false)->assertDontSee('class="hero-photo', false);
+        $this->get('/')->assertSee('class="hero-art is-on"', false)->assertDontSee('class="hero-photo', false);
         $this->get('/about')->assertSee('class="hero-art"', false);
 
         SiteSettings::save(['site.hero_image' => 'site/hospital.webp']);
 
-        $this->get('/')->assertSee('class="hero-photo is-on"', false)->assertDontSee('class="hero-art"', false);
+        // The photograph follows the drawing on the home page (HeroPhotographsTest), and is the picture of "About us".
+        $this->get('/')->assertSee('class="hero-art is-on"', false)->assertSee('class="hero-photo"', false);
+        $this->get('/about')->assertSee('class="hero-photo is-on"', false)->assertDontSee('class="hero-art"', false);
     }
 
     public function test_a_department_without_a_picture_stands_under_its_symbol_or_its_first_letter(): void
