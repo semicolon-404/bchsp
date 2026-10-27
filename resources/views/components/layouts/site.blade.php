@@ -154,104 +154,155 @@
     </main>
 
     {{-- The home page and the hospital's profile are made of sections that fill the width: the last one meets the footer, with no gap between. --}}
-    <footer @class(['border-t border-line bg-surface', 'mt-16' => ! request()->routeIs('home', 'about', 'announcements.show')])>
-        {{-- As many columns as there is something for: the hospital, contact, social links, and the administrator's own groups of links (App\Support\Footer). --}}
-        <div class="wrap grid gap-10 py-12 sm:grid-cols-2 lg:grid-cols-[repeat(auto-fit,minmax(13rem,1fr))]">
-            <div>
-                <p class="flex items-center gap-3 text-lg font-semibold">
-                    @if ($logo)
-                        <img src="{{ $logo }}" alt="" class="h-10 w-auto shrink-0">
-                    @else
-                        <span class="flex size-10 shrink-0 items-center justify-center rounded bg-brand text-on-brand" aria-hidden="true"><x-heroicon-s-plus class="size-6" /></span>
-                    @endif
-                    {{ $name }}
-                </p>
-                @if ($about = App\Support\Footer::about())
-                    <p class="mt-3 whitespace-pre-line text-muted">{{ $about }}</p>
-                @endif
-                @if ($address)
-                    <p class="mt-3 whitespace-pre-line text-muted">{{ $address }}</p>
-                @endif
-                {{-- The map itself is on the contact page, loaded when asked for: here is the way to it. --}}
-                <p class="mt-3"><a href="{{ route('contact') }}" class="inline-flex items-center gap-2 font-semibold text-brand underline"><x-heroicon-m-map-pin class="size-4" aria-hidden="true" />{{ __('Map and directions') }}</a></p>
-                {{-- Pages written in the panel that asked to be linked here (App\Models\SitePage). --}}
-                @if ($pages->isNotEmpty())
-                    <ul class="mt-4 space-y-2">
-                        @foreach ($pages as $page)
-                            <li><a href="{{ route('pages.show', $page) }}" class="text-ink underline decoration-line underline-offset-4 hover:text-brand">{{ $page->localTitle() }}</a></li>
-                        @endforeach
-                    </ul>
-                @endif
-            </div>
-
-            {{-- The parts of the site people look for most, one press from the foot of any page. --}}
-            <div>
-                <h2 class="eyebrow">{{ __('Explore') }}</h2>
-                <ul class="mt-3 space-y-2">
-                    @foreach ([
-                        ['announcements.index', 'Announcements'], ['schedule', 'Clinic schedule'], ['departments.index', 'Departments'],
-                        ['downloads', 'Downloads'], ['ita', 'ITA'], ['about', 'About us'], ['complaint', 'Complaints and suggestions'], ['menu', 'Everything on this website'],
-                    ] as [$place, $label])
-                        <li><a href="{{ route($place) }}" class="inline-flex items-center gap-2 text-ink no-underline hover:text-brand"><x-heroicon-m-chevron-right class="size-4 text-brand" aria-hidden="true" />{{ __($label) }}</a></li>
-                    @endforeach
-                </ul>
-            </div>
-
-            <div>
-                <h2 class="eyebrow">{{ __('Contact us') }}</h2>
-                <ul class="mt-3 space-y-3">
+    {{--
+        The foot of every page, in three tiers:
+        1. a band with the three numbers and ways in people look for at the end of a page (not on the home page, which ends with its own);
+        2. the hospital on the left, then the site in columns of a few links each, grouped as a visitor thinks of them
+           (services, news and documents, the organisation), then how to reach it; the administrator's own groups of
+           links follow in a row of their own (App\Support\Footer);
+        3. a thin bar: the year and name, the pages every site must have (privacy, the map of the site), and when the
+           site was last updated.
+    --}}
+    @php
+        $hours = trim((string) SiteSettings::get('contact.hours'));
+        $drawn = App\Models\SitePage::published()->whereIn('slug', ['structure', 'executives'])->get()->keyBy('slug');
+        $columns = array_filter([
+            'Services' => [
+                ['schedule', __('Clinic schedule')], ['departments.index', __('Departments')], ['phones', __('Phone numbers of every department')],
+                App\Models\StaffLink::forThePublic()->exists() ? ['services', __('Online services')] : null, App\Models\Faq::shown()->exists() ? ['faq', __('Questions people ask')] : null,
+            ],
+            'News and documents' => [
+                ['announcements.index', __('Announcements')], ['posts', __('Feed of the departments')], ['calendar', __('Calendar')],
+                ['downloads', __('Downloads')], ['ita', __('ITA')],
+            ],
+            'The hospital' => [
+                ['about', __('About us')],
+                $drawn->has('structure') ? [route('pages.show', $drawn['structure']), $drawn['structure']->localTitle()] : null,
+                $drawn->has('executives') ? [route('pages.show', $drawn['executives']), $drawn['executives']->localTitle()] : null,
+                ['complaint', __('Complaints and suggestions')], ['contact', __('Contact us')],
+            ],
+        ]);
+        $href = fn (string $place) => str_starts_with($place, 'http') ? $place : route($place);
+    @endphp
+    <footer @class(['site-foot', 'mt-16' => ! request()->routeIs('home', 'about', 'announcements.show')])>
+        @unless (request()->routeIs('home'))
+            {{-- 1. What people come to the foot of a page for. --}}
+            <div class="foot-band">
+                <div class="wrap grid gap-3 py-6 sm:grid-cols-3">
                     @if ($phone)
-                        <li class="flex items-start gap-3"><x-heroicon-o-phone class="mt-1 size-5 shrink-0 text-brand" aria-hidden="true" /><span>{{ __('Phone') }}: <a href="{{ $dial($phone) }}" class="font-mono font-semibold text-brand underline">{{ $phone }}</a></span></li>
+                        <a href="{{ $dial($phone) }}" class="foot-action">
+                            <span class="foot-action-mark" aria-hidden="true"><x-heroicon-s-phone class="size-5" /></span>
+                            <span class="min-w-0"><span class="block text-sm text-muted">{{ __('Call the hospital') }}</span><span class="block font-mono text-lg font-semibold">{{ $phone }}</span></span>
+                        </a>
                     @endif
                     @if ($emergency)
-                        <li class="flex items-start gap-3"><x-heroicon-o-bell-alert class="mt-1 size-5 shrink-0 text-danger" aria-hidden="true" /><span>{{ __('Emergency') }}: <a href="{{ $dial($emergency) }}" class="font-mono font-semibold text-danger underline">{{ $emergency }}</a></span></li>
+                        <a href="{{ $dial($emergency) }}" class="foot-action is-danger">
+                            <span class="foot-action-mark" aria-hidden="true"><x-heroicon-s-bell-alert class="size-5" /></span>
+                            <span class="min-w-0"><span class="block text-sm text-muted">{{ __('Emergency, day and night') }}</span><span class="block font-mono text-lg font-semibold">{{ $emergency }}</span></span>
+                        </a>
+                    @endif
+                    <a href="{{ route('contact') }}" class="foot-action">
+                        <span class="foot-action-mark" aria-hidden="true"><x-heroicon-s-map-pin class="size-5" /></span>
+                        <span class="min-w-0"><span class="block text-sm text-muted">{{ __('Find us') }}</span><span class="block text-lg font-semibold">{{ __('Map and directions') }}</span></span>
+                    </a>
+                </div>
+            </div>
+        @endunless
+
+        {{-- 2. The hospital, the site in columns, how to reach it. --}}
+        <div class="wrap grid grid-cols-2 gap-x-6 gap-y-10 py-12 sm:gap-x-8 lg:grid-cols-12">
+            <div class="col-span-2 lg:col-span-4">
+                <p class="flex items-center gap-3 text-lg font-semibold">
+                    @if ($logo)
+                        <img src="{{ $logo }}" alt="" class="h-12 w-auto shrink-0">
+                    @else
+                        <span class="flex size-11 shrink-0 items-center justify-center rounded-lg bg-brand text-on-brand" aria-hidden="true"><x-heroicon-s-plus class="size-6" /></span>
+                    @endif
+                    <span class="leading-snug">{{ $name }}</span>
+                </p>
+                @if ($about = App\Support\Footer::about())
+                    <p class="mt-4 max-w-sm whitespace-pre-line text-muted">{{ $about }}</p>
+                @elseif ($motto = SiteSettings::get('site.motto'))
+                    <p class="mt-4 max-w-sm text-muted">“{{ $motto }}”</p>
+                @endif
+                @if ($address)
+                    <p class="mt-4 flex max-w-sm items-start gap-2 text-muted"><x-heroicon-m-map-pin class="mt-0.5 size-5 shrink-0 text-brand" aria-hidden="true" /><span class="whitespace-pre-line">{{ $address }}</span></p>
+                @endif
+                @if ($social)
+                    <ul class="mt-5 flex flex-wrap gap-2" aria-label="{{ __('Follow us') }}">
+                        @foreach ($social as $network => $url)
+                            <li><a href="{{ $url }}" target="_blank" rel="noopener noreferrer" class="foot-social">{{ $network }}<span class="sr-only"> {{ __('(opens in a new tab)') }}</span></a></li>
+                        @endforeach
+                    </ul>
+                @endif
+            </div>
+
+            @foreach ($columns as $heading => $links)
+                <nav class="lg:col-span-2" aria-label="{{ __($heading) }}">
+                    <h2 class="foot-heading">{{ __($heading) }}</h2>
+                    <ul class="mt-4 space-y-2.5">
+                        @foreach (array_filter($links) as [$place, $label])
+                            <li><a href="{{ $href($place) }}" class="foot-link">{{ $label }}</a></li>
+                        @endforeach
+                    </ul>
+                </nav>
+            @endforeach
+
+            <div class="col-span-2 sm:col-span-1 lg:col-span-2">
+                <h2 class="foot-heading">{{ __('Contact us') }}</h2>
+                <ul class="mt-4 space-y-2.5">
+                    @if ($phone)
+                        <li><a href="{{ $dial($phone) }}" class="foot-link font-mono">{{ $phone }}</a></li>
                     @endif
                     @if ($email)
-                        <li class="flex items-start gap-3"><x-heroicon-o-envelope class="mt-1 size-5 shrink-0 text-brand" aria-hidden="true" /><span class="min-w-0">{{ __('Email') }}: <a href="mailto:{{ $email }}" class="font-semibold text-brand underline break-all">{{ $email }}</a></span></li>
+                        <li><a href="mailto:{{ $email }}" class="foot-link break-all">{{ $email }}</a></li>
                     @endif
-                    <li class="flex items-start gap-3"><x-heroicon-o-phone-arrow-up-right class="mt-1 size-5 shrink-0 text-brand" aria-hidden="true" /><a href="{{ route('phones') }}" class="text-ink underline decoration-line underline-offset-4 hover:text-brand">{{ __('Phone numbers of every department') }}</a></li>
+                    @if ($hours !== '')
+                        <li class="whitespace-pre-line text-sm text-muted">{{ $hours }}</li>
+                    @endif
                 </ul>
             </div>
-
-            @if ($social)
-                <div>
-                    <h2 class="eyebrow">{{ __('Follow us') }}</h2>
-                    <ul class="mt-3 space-y-2">
-                        @foreach ($social as $network => $url)
-                            <li><a href="{{ $url }}" target="_blank" rel="noopener noreferrer" class="font-semibold text-brand underline">{{ $network }}</a></li>
-                        @endforeach
-                    </ul>
-                </div>
-            @endif
-
-            @foreach (App\Support\Footer::groups() as $heading => $links)
-                <div>
-                    <h2 class="eyebrow">{{ $heading }}</h2>
-                    <ul class="mt-3 space-y-2">
-                        @foreach ($links as $link)
-                            <li><a href="{{ $link['url'] }}" @if (parse_url($link['url'], PHP_URL_HOST) !== request()->getHost()) target="_blank" rel="noopener noreferrer" @endif class="text-ink underline decoration-line underline-offset-4 hover:text-brand">{{ $link['label'] }}</a></li>
-                        @endforeach
-                    </ul>
-                </div>
-            @endforeach
         </div>
 
-        <div class="border-t border-line">
-            <div class="wrap flex flex-wrap items-center justify-between gap-x-6 gap-y-1 py-4 font-mono text-sm text-muted">
-                <p>{{ App\Support\Footer::copyright() }}</p>
-                @if ($day)
-                    <p class="inline-flex items-center gap-2"><span class="day-dot" aria-hidden="true"></span>{{ now()->locale(app()->getLocale())->translatedFormat('l j F ').(now()->year + (app()->getLocale() === 'th' ? 543 : 0)) }}</p>
-                @endif
-                {{-- The newest release and its day: the site is looked after, and here is what changed (/updates). --}}
-                @if ($release = App\Models\SiteUpdate::newest())
-                    <p><a href="{{ route('updates') }}" class="text-muted underline decoration-line underline-offset-4 hover:text-brand">v{{ $release->version }} · {{ __('updated :date', ['date' => $release->releasedOn()]) }}</a></p>
-                @endif
-                {{-- Pages opened, as plain totals: nothing is kept about who opened them (App\Support\Visits). --}}
-                @if (App\Support\Footer::showsVisits())
-                    @php($visits = App\Support\Visits::totals())
-                    <p>{{ __('Pages opened: today :today · this month :month · in all :all', ['today' => number_format($visits['today']), 'month' => number_format($visits['month']), 'all' => number_format($visits['all'])]) }}</p>
-                @endif
+        @if ($groups = App\Support\Footer::groups())
+            {{-- The administrator's own groups of links (Site settings > Footer), in a row of their own. --}}
+            <div class="wrap grid gap-x-8 gap-y-8 border-t border-line py-10 sm:grid-cols-2 lg:grid-cols-4">
+                @foreach ($groups as $heading => $links)
+                    <nav aria-label="{{ $heading }}">
+                        <h2 class="foot-heading">{{ $heading }}</h2>
+                        <ul class="mt-4 space-y-2.5">
+                            @foreach ($links as $link)
+                                <li><a href="{{ $link['url'] }}" @if (parse_url($link['url'], PHP_URL_HOST) !== request()->getHost()) target="_blank" rel="noopener noreferrer" @endif class="foot-link">{{ $link['label'] }}</a></li>
+                            @endforeach
+                        </ul>
+                    </nav>
+                @endforeach
             </div>
+        @endif
+
+        {{-- 3. The year and name, the pages every site must have, and when it was last updated. --}}
+        <div class="border-t border-line">
+            <div class="wrap flex flex-col gap-3 py-5 text-sm text-muted md:flex-row md:items-center md:justify-between">
+                <p>{{ App\Support\Footer::copyright() }}</p>
+                <ul class="flex flex-wrap items-center gap-x-5 gap-y-2">
+                    @foreach ($pages as $page)
+                        <li><a href="{{ route('pages.show', $page) }}" class="foot-link">{{ $page->localTitle() }}</a></li>
+                    @endforeach
+                    <li><a href="{{ route('menu') }}" class="foot-link">{{ __('Everything on this website') }}</a></li>
+                    {{-- The newest release and its day: the site is looked after, and here is what changed (/updates). --}}
+                    @if ($release = App\Models\SiteUpdate::newest())
+                        <li><a href="{{ route('updates') }}" class="foot-link font-mono">v{{ $release->version }} · {{ __('updated :date', ['date' => $release->releasedOn()]) }}</a></li>
+                    @endif
+                    @if ($day)
+                        <li class="inline-flex items-center gap-2 font-mono"><span class="day-dot" aria-hidden="true"></span>{{ now()->locale(app()->getLocale())->translatedFormat('D j M ').(now()->year + (app()->getLocale() === 'th' ? 543 : 0)) }}</li>
+                    @endif
+                </ul>
+            </div>
+            {{-- Pages opened, as plain totals: nothing is kept about who opened them (App\Support\Visits). --}}
+            @if (App\Support\Footer::showsVisits())
+                @php($visits = App\Support\Visits::totals())
+                <p class="wrap pb-5 font-mono text-xs text-muted">{{ __('Pages opened: today :today · this month :month · in all :all', ['today' => number_format($visits['today']), 'month' => number_format($visits['month']), 'all' => number_format($visits['all'])]) }}</p>
+            @endif
         </div>
     </footer>
 

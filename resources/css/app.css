@@ -1161,6 +1161,119 @@ html.is-mourning {
 }
 
 /*
+ * The foot of every page (components/layouts/site): a band of the three ways people look for, the site in
+ * columns, and a thin bar of the year, the pages every site must have and the last update.
+ */
+@layer components {
+    .site-foot {
+        border-top: 1px solid var(--color-line);
+        background:
+            radial-gradient(40rem 18rem at 0% 0%, color-mix(in srgb, var(--color-brand) 7%, transparent), transparent 70%),
+            var(--color-surface);
+    }
+
+    .foot-band {
+        border-bottom: 1px solid var(--color-line);
+        background: color-mix(in srgb, var(--color-brand) 6%, var(--color-page));
+    }
+
+    .foot-action {
+        display: flex;
+        align-items: center;
+        gap: 0.9rem;
+        min-height: 4rem;
+        padding: 0.75rem 1rem;
+        border: 1px solid var(--color-line);
+        border-radius: 0.9rem;
+        background: var(--color-page);
+        color: var(--color-ink);
+        text-decoration: none;
+        transition: border-color 0.15s ease, transform 0.15s ease;
+    }
+
+    .foot-action:hover {
+        border-color: var(--color-brand);
+        transform: translateY(-1px);
+    }
+
+    .foot-action-mark {
+        display: grid;
+        width: 2.5rem;
+        height: 2.5rem;
+        flex: none;
+        place-items: center;
+        border-radius: 0.7rem;
+        background: var(--color-brand);
+        color: var(--color-on-brand);
+    }
+
+    .foot-action.is-danger:hover {
+        border-color: var(--color-danger);
+    }
+
+    .foot-action.is-danger .foot-action-mark {
+        background: var(--color-danger);
+        color: var(--color-on-danger);
+    }
+
+    /* A heading of a column: small capitals over a short bar of the site's colour. */
+    .foot-heading {
+        font-size: 0.8125rem;
+        font-weight: 600;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: var(--color-ink);
+    }
+
+    .foot-heading::after {
+        content: '';
+        display: block;
+        width: 1.75rem;
+        height: 2px;
+        margin-top: 0.5rem;
+        border-radius: 9999px;
+        background: var(--color-brand);
+    }
+
+    .foot-link {
+        color: var(--color-muted);
+        text-decoration: none;
+        transition: color 0.15s ease;
+    }
+
+    .foot-link:hover,
+    .foot-link:focus-visible {
+        color: var(--color-brand);
+        text-decoration: underline;
+        text-underline-offset: 4px;
+    }
+
+    .foot-social {
+        display: inline-flex;
+        min-height: 2.5rem;
+        align-items: center;
+        padding: 0 1rem;
+        border: 1px solid var(--color-line);
+        border-radius: 9999px;
+        background: var(--color-page);
+        color: var(--color-ink);
+        font-weight: 600;
+        text-decoration: none;
+    }
+
+    .foot-social:hover {
+        border-color: var(--color-brand);
+        color: var(--color-brand);
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .foot-action:hover {
+            transform: none;
+        }
+    }
+}
+
+/*
  * A form a visitor fills in (complaint/send, complaint/track): fields large enough for a thumb and for old
  * eyes, each under its name, with what is wrong said in words beside it and not by colour alone.
  */
