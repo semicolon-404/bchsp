@@ -71,7 +71,6 @@
                         $line = $rejected ? ['received', 'checking', 'rejected'] : ['received', 'checking', 'working', 'done'];
                     @endphp
                     <section id="result" class="card" aria-labelledby="result-heading" tabindex="-1">
-                        <p class="eyebrow">{{ __('Result') }}</p>
                         <h2 id="result-heading" class="mt-2 text-2xl">{{ $complaint->title }}</h2>
                         <p class="mt-2 flex flex-wrap gap-x-5 gap-y-1 font-mono text-sm text-muted">
                             <span>{{ $complaint->code }}</span>
@@ -134,7 +133,6 @@
 
         {{-- What each state means, as a line a matter moves along. --}}
         <section class="mt-14" aria-labelledby="states-heading">
-            <p class="eyebrow">{{ __('Reading the result') }}</p>
             <h2 id="states-heading" class="mt-2 text-2xl sm:text-3xl">{{ __('What each state means') }}</h2>
             <ol class="track mt-6">
                 @foreach ($states as $key => [$icon, $text, $tone])

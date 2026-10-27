@@ -58,7 +58,6 @@
     <div class="wrap max-w-5xl py-10 sm:py-14">
         {{-- The way, in three steps, read left to right. --}}
         <section aria-labelledby="steps-heading">
-            <p class="eyebrow">{{ __('How it works') }}</p>
             <h2 id="steps-heading" class="mt-2 text-2xl sm:text-3xl">{{ __('Three steps') }}</h2>
             <ol class="steps mt-6">
                 @foreach ($steps as [$icon, $title, $text])
@@ -76,7 +75,6 @@
             <div class="min-w-0 space-y-14 lg:col-span-2">
                 {{-- What is taken through here. --}}
                 <section aria-labelledby="kinds-heading">
-                    <p class="eyebrow">{{ __('What you can send') }}</p>
                     <h2 id="kinds-heading" class="mt-2 text-2xl sm:text-3xl">{{ __('Matters taken through this way') }}</h2>
                     <ul class="mt-6 grid gap-4 sm:grid-cols-2">
                         @foreach ($kinds as [$icon, $title, $text])
@@ -90,7 +88,6 @@
 
                 {{-- What a reader should know before writing. --}}
                 <section aria-labelledby="notes-heading">
-                    <p class="eyebrow">{{ __('Before you write') }}</p>
                     <h2 id="notes-heading" class="mt-2 text-2xl sm:text-3xl">{{ __('Good to know') }}</h2>
                     <ul class="mt-6 space-y-3">
                         @foreach ([

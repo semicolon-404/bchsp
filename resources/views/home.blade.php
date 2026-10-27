@@ -74,7 +74,7 @@
                     {{-- The hospital's emblem, large, over the middle of the words it belongs to. --}}
                     <img src="{{ $logo }}" alt="" class="hero-logo">
                 @endif
-                <p class="eyebrow">{{ __('Welcome to') }}</p>
+                <p class="text-lg text-muted">{{ __('Welcome to') }}</p>
                 <h1 class="hero-name mt-4 text-4xl leading-tight sm:text-5xl md:text-6xl">{{ $name }}</h1>
                 <p @class(['mx-auto mt-6 max-w-xl text-lg text-muted sm:text-xl', 'lg:mx-0' => $aside])>{{ $motto ? '“'.$motto.'”' : __('News, announcements and services of the hospital, in one place.') }}</p>
 
@@ -100,15 +100,12 @@
             @if ($sessions->isNotEmpty())
                 <section class="code-block" aria-labelledby="today-heading">
                     <div class="code-header">
-                        <span class="code-dot bg-danger" aria-hidden="true"></span>
-                        <span class="code-dot bg-syn-string" aria-hidden="true"></span>
-                        <span class="code-dot bg-syn-function" aria-hidden="true"></span>
-                        <h2 id="today-heading" class="ml-3 text-sm font-medium text-muted">{{ __('Open today') }} · <span @class(['day-chip' => App\Support\Theme::touchOfTheDay()])>{{ __(App\Models\ClinicSession::DAYS[now()->dayOfWeek]) }}</span></h2>
+                        <h2 id="today-heading" class="text-sm font-semibold">{{ __('Open today') }} · <span @class(['day-chip' => App\Support\Theme::touchOfTheDay()])>{{ __(App\Models\ClinicSession::DAYS[now()->dayOfWeek]) }}</span></h2>
                     </div>
                     <ul class="px-4 py-2">
                         @foreach ($sessions->take(7) as $session)
                             <li class="flex items-baseline gap-3 border-b border-line py-2 last:border-b-0">
-                                <span class="w-28 shrink-0 font-mono text-sm text-syn-string">{{ $session->hours() }}</span>
+                                <span class="w-28 shrink-0 font-mono text-sm font-semibold text-ink">{{ $session->hours() }}</span>
                                 <span class="min-w-0 flex-1">{{ $session->localName() }}</span>
                                 @if ($session->isOpenNow())
                                     <span class="shrink-0 font-mono text-xs font-semibold text-syn-function">{{ __('Open now') }}</span>
@@ -151,7 +148,6 @@
             <div class="wrap py-16 sm:py-24">
                 <div class="flex flex-wrap items-end justify-between gap-3">
                     <div>
-                        <p class="eyebrow">{{ __('Announcements') }}</p>
                         <h2 class="mt-2 text-3xl sm:text-4xl">{{ __('News') }}</h2>
                     </div>
                     <a href="{{ route('announcements.index') }}" class="btn btn-line">{{ __('All announcements') }} &rarr;</a>
@@ -247,7 +243,6 @@
     <section class="bg-surface" aria-label="{{ __('Shortcuts') }}">
         <div class="wrap py-16 sm:py-24">
             <div class="mx-auto max-w-2xl text-center">
-                <p class="eyebrow">{{ __('Shortcuts') }}</p>
                 <h2 class="mt-2 text-3xl sm:text-4xl">{{ __('The rest of the site') }}</h2>
                 <p class="mt-4 text-lg text-muted">{{ __('Each has a page of its own. Choose one from the list.') }}</p>
             </div>
@@ -264,7 +259,6 @@
                         <a href="{{ $address }}" id="door-{{ $index }}" class="card group flex h-full flex-col bg-page text-ink no-underline">
                             <span class="flex items-center justify-between gap-3">
                                 <span class="door-mark" aria-hidden="true"><x-dynamic-component :component="'heroicon-o-'.$mark" class="size-5" /></span>
-                                <span class="font-mono text-sm text-syn-comment" aria-hidden="true">{{ str_pad((string) ($index + 1), 2, '0', STR_PAD_LEFT) }}</span>
                             </span>
                             <span class="mt-4 block text-lg font-medium group-hover:text-brand">{{ __($label) }}</span>
                             <span class="mt-1 block flex-1 text-sm text-muted">{{ __($about) }}</span>
@@ -335,7 +329,6 @@
             <div class="wrap py-12 sm:py-16">
                 <div class="flex flex-wrap items-end justify-between gap-3">
                     <div>
-                        <p class="eyebrow">{{ __('Departments') }}</p>
                         <h2 class="mt-2 text-2xl sm:text-3xl">{{ __('Departments and services') }}</h2>
                     </div>
                     <a href="{{ route('departments.index') }}" class="btn btn-line">{{ __('All departments') }} &rarr;</a>
@@ -357,7 +350,6 @@
     @if ($phone || $emergency)
         <section class="home-screen !min-h-0 border-t border-line" aria-labelledby="reach-heading">
             <div class="wrap max-w-4xl py-16 text-center sm:py-20">
-                <p class="eyebrow">{{ __('Contact us') }}</p>
                 <h2 id="reach-heading" class="mt-2 text-3xl sm:text-4xl">{{ __('We are here when you need us') }}</h2>
                 <div @class(['mx-auto mt-8 grid max-w-3xl gap-4', 'sm:grid-cols-2' => $emergency && $phone])>
                     @if ($emergency)

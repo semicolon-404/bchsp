@@ -103,7 +103,6 @@
             @else
                 <span class="mx-auto mb-6 flex size-20 items-center justify-center rounded-2xl bg-brand text-on-brand shadow-lg" aria-hidden="true"><x-heroicon-s-plus class="size-10" /></span>
             @endif
-            <p class="eyebrow">{{ __('About us') }}</p>
             <h1 class="hero-name mt-3 text-4xl leading-tight sm:text-5xl md:text-6xl">{{ $name }}</h1>
             @if ($motto)
                 <p class="mx-auto mt-5 max-w-2xl text-xl text-muted sm:text-2xl">“{{ $motto }}”</p>
@@ -221,7 +220,6 @@
     @if ($director || $org['groups'])
         <section id="people" class="scroll-mt-32">
             <div class="wrap max-w-5xl py-16 sm:py-20">
-                <p class="eyebrow">{{ __('Who leads it') }}</p>
                 <h2 class="mt-2 text-3xl sm:text-4xl">{{ __('The people behind the hospital') }}</h2>
                 @if ($founded)
                     <p class="mt-3 text-lg text-muted">
@@ -269,7 +267,6 @@
         <section id="story" class="scroll-mt-32">
             <div class="wrap grid max-w-5xl items-start gap-10 py-16 sm:py-20 lg:grid-cols-5">
                 <div class="lg:col-span-2">
-                    <p class="eyebrow">{{ __('Our story') }}</p>
                     <h2 class="mt-2 text-3xl sm:text-4xl">{{ $story->localTitle() }}</h2>
                 </div>
                 <div class="lg:col-span-3">
@@ -284,7 +281,6 @@
     @if ($hours || $sessions->isNotEmpty())
         <section id="hours" class="scroll-mt-32 bg-surface">
             <div class="wrap max-w-5xl py-16 sm:py-20">
-                <p class="eyebrow">{{ __('When we are open') }}</p>
                 <h2 class="mt-2 text-3xl sm:text-4xl">{{ __('Opening hours') }}</h2>
 
                 <div @class(['mt-8 grid items-start gap-6', 'lg:grid-cols-2' => $hours && $sessions->isNotEmpty()])>
@@ -309,10 +305,7 @@
                         @php($today = ClinicSession::today())
                         <div class="code-block">
                             <div class="code-header">
-                                <span class="code-dot bg-danger" aria-hidden="true"></span>
-                                <span class="code-dot bg-syn-string" aria-hidden="true"></span>
-                                <span class="code-dot bg-syn-function" aria-hidden="true"></span>
-                                <h3 class="ml-3 text-sm font-medium text-muted">{{ __('Open today') }} · {{ __(ClinicSession::DAYS[now()->dayOfWeek]) }}</h3>
+                                <h3 class="text-sm font-semibold">{{ __('Open today') }} · {{ __(ClinicSession::DAYS[now()->dayOfWeek]) }}</h3>
                             </div>
                             @if ($today->isEmpty())
                                 <p class="px-4 py-4 text-muted">{{ __('No clinics on this day.') }}</p>
@@ -320,7 +313,7 @@
                                 <ul class="px-4 py-2">
                                     @foreach ($today->take(8) as $session)
                                         <li class="flex items-baseline gap-3 border-b border-line py-2 last:border-b-0">
-                                            <span class="w-28 shrink-0 font-mono text-sm text-syn-string">{{ $session->hours() }}</span>
+                                            <span class="w-28 shrink-0 font-mono text-sm font-semibold text-ink">{{ $session->hours() }}</span>
                                             <span class="min-w-0 flex-1">{{ $session->localName() }}</span>
                                             @if ($session->isOpenNow())
                                                 <span class="shrink-0 font-mono text-xs font-semibold text-syn-function">{{ __('Open now') }}</span>
@@ -343,7 +336,6 @@
             <div class="wrap max-w-5xl py-16 sm:py-20">
                 <div class="flex flex-wrap items-end justify-between gap-3">
                     <div>
-                        <p class="eyebrow">{{ __('Departments') }}</p>
                         <h2 class="mt-2 text-3xl sm:text-4xl">{{ __('The people who look after you') }}</h2>
                     </div>
                     <a href="{{ route('phones') }}" class="btn btn-line"><x-heroicon-m-phone class="size-4" aria-hidden="true" />{{ __('Phone numbers') }}</a>
@@ -371,7 +363,6 @@
     {{-- 6. Everything filed under "About us": each page with how it begins, then the site's own places and the administrator's links. --}}
     <section id="more" class="scroll-mt-32 bg-surface">
         <div class="wrap max-w-5xl py-16 sm:py-20">
-            <p class="eyebrow">{{ __('More about us') }}</p>
             <h2 class="mt-2 text-3xl sm:text-4xl">{{ __('Read on') }}</h2>
 
             <ul class="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -398,7 +389,6 @@
     {{-- 7. How to reach it. --}}
     <section id="reach" class="scroll-mt-32">
         <div class="wrap max-w-5xl py-16 text-center sm:py-20">
-            <p class="eyebrow">{{ __('Reach us') }}</p>
             <h2 class="mt-2 text-3xl sm:text-4xl">{{ __('We are here when you need us') }}</h2>
 
             <div @class(['mx-auto mt-8 grid max-w-3xl gap-4', 'sm:grid-cols-2' => $emergency && $phone])>

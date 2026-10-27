@@ -19,7 +19,6 @@
     {{-- The band at the top: what this is, the search, and how much there is. --}}
     <section class="home-screen !min-h-0 border-b border-line">
         <div class="wrap py-10 sm:py-14">
-            <p class="eyebrow">{{ __('Announcements') }}</p>
             <h1 class="hero-name mt-2 text-3xl sm:text-5xl">{{ $type ? $type->localName() : __('Announcements from the hospital') }}</h1>
             <p class="mt-3 max-w-2xl text-lg text-muted">{{ __('News, notices, health knowledge and what the hospital has been doing: the newest first, and everything before it kept.') }}</p>
 

@@ -30,7 +30,6 @@
         --}}
         <section class="bg-surface" aria-label="{{ __('Banners') }}">
             <div class="wrap py-12 sm:py-16">
-                <p class="eyebrow">{{ __('Slides') }}</p>
                 <h2 class="mt-2 text-2xl sm:text-3xl">{{ __('Banners') }}</h2>
             {{-- The arrows are placed against this box, so that they sit at the middle of the pictures and not of the heading. --}}
             <div class="mt-8"><x-site.banners part="stage" :banners="$banners" frame="aspect-[4/3] sm:aspect-[16/9] lg:aspect-[21/9]" /></div>

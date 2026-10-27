@@ -4,7 +4,6 @@
 @import '@fontsource/ibm-plex-sans-thai/500.css';
 @import '@fontsource/ibm-plex-sans-thai/600.css';
 @import '@fontsource/ibm-plex-sans-thai/700.css';
-@import '@fontsource-variable/jetbrains-mono/wght.css';
 
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 @source '../../storage/framework/views/*.php';
@@ -21,8 +20,10 @@
  */
 @theme {
     --font-sans: 'IBM Plex Sans Thai', 'Leelawadee UI', Tahoma, ui-sans-serif, system-ui, sans-serif;
-    /* Thai inside a line of "code" falls back to the sans face: the mono one has no Thai. */
-    --font-mono: 'JetBrains Mono Variable', 'IBM Plex Sans Thai', ui-monospace, Consolas, monospace;
+    /* Numbers (phones, times, dates) in the same face as the words, each figure as wide as the next so that columns line up
+       (.font-mono below); a typewriter face is kept for real code alone (--font-code). */
+    --font-mono: var(--font-sans);
+    --font-code: ui-monospace, Consolas, 'Courier New', monospace;
 
     --color-page: #0d0d0d;
     --color-surface: #161616;
@@ -937,7 +938,7 @@ html.is-mourning {
     }
 
     .rich code {
-        font-family: var(--font-mono);
+        font-family: var(--font-code);
         font-size: 0.9em;
         color: var(--color-syn-string);
     }
@@ -964,17 +965,14 @@ html.is-mourning {
         text-align: left;
     }
 
-    /* The small line above a section's heading, set like a label in code. */
+    /* The small line above a heading, where one says what kind of thing follows (a name's office, a part of a form). */
     .eyebrow {
-        font-family: var(--font-mono);
-        font-size: 0.8rem;
-        font-weight: 500;
-        letter-spacing: 0.08em;
-        text-transform: uppercase;
-        color: var(--color-brand);
+        font-size: 0.9rem;
+        font-weight: 600;
+        color: var(--color-muted);
     }
 
-    /* A box drawn as an editor's window: three dots and a file name, then the lines. */
+    /* A box with a heading bar: a list kept together (today's clinics, a release's changes). */
     .code-block {
         background: var(--color-surface);
         border: 1px solid var(--color-line);
@@ -993,6 +991,7 @@ html.is-mourning {
     }
 
     .code-dot {
+        display: none;
         width: 12px;
         height: 12px;
         border-radius: 50%;
@@ -1001,7 +1000,7 @@ html.is-mourning {
     .code-body {
         padding: 1rem;
         overflow-x: auto;
-        font-family: var(--font-mono);
+        font-family: var(--font-sans);
         font-size: 0.875rem;
         line-height: 1.8;
     }
@@ -1852,4 +1851,9 @@ html.is-mourning {
     a {
         color: #000000;
     }
+}
+
+/* Figures that line up, in the face of the words (see --font-mono). */
+.font-mono {
+    font-variant-numeric: tabular-nums;
 }

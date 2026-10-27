@@ -60,18 +60,14 @@ class SiteUpdatesTest extends TestCase
         $this->get('/updates')->assertSee('Comes out next week');
     }
 
-    public function test_every_page_names_the_newest_release_and_follows_a_new_one_at_once(): void
+    public function test_every_page_leads_to_what_is_new_while_there_is_something(): void
     {
-        $this->get('/')->assertSee('href="'.route('updates').'"', false)->assertSee('v0.7 · updated 13 Oct 2026');
-
-        SiteUpdate::factory()->create(['version' => '1.0', 'released_on' => now()->toDateString()]);
-
-        $this->get('/contact')->assertSee('v1.0 · updated');
+        $this->get('/')->assertSee('href="'.route('updates').'"', false)->assertSee('What is new on this website')->assertDontSee('v0.7');
 
         // With none at all, the footer says nothing of it.
         SiteUpdate::query()->get()->each->delete();
         $this->assertNull(SiteUpdate::newest());
-        $this->get('/')->assertOk()->assertDontSee('· updated');
+        $this->get('/')->assertOk()->assertDontSee('What is new on this website');
         $this->get('/updates')->assertOk()->assertSee('Nothing has been added here yet.');
     }
 

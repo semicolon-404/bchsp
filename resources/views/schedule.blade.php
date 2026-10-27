@@ -71,7 +71,7 @@
                             <ul>
                                 @foreach ($held as $session)
                                     <li class="{{ $line }}">
-                                        <span class="shrink-0 font-mono text-syn-string sm:w-36">{{ $session->hours() }}</span>
+                                        <span class="shrink-0 font-mono font-semibold text-ink sm:w-36">{{ $session->hours() }}</span>
                                         <span class="min-w-0 flex-1">
                                             <span class="font-medium">{{ $session->localName() }}</span>
                                             @if ($session->note)

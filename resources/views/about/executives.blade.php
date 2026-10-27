@@ -58,7 +58,6 @@
             <section class="mt-14" aria-labelledby="heads-heading">
                 <div class="flex flex-wrap items-end justify-between gap-4">
                     <div>
-                        <p class="eyebrow">{{ __('Groups of work') }}</p>
                         <h2 id="heads-heading" class="mt-1 text-2xl sm:text-3xl">{{ __('Heads of the groups of work') }}</h2>
                     </div>
                     <a href="{{ route('pages.show', 'structure') }}" class="btn btn-line"><x-heroicon-m-rectangle-group class="size-5" aria-hidden="true" />{{ __('Organisation structure') }}</a>

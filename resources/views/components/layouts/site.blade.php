@@ -289,9 +289,9 @@
                         <li><a href="{{ route('pages.show', $page) }}" class="foot-link">{{ $page->localTitle() }}</a></li>
                     @endforeach
                     <li><a href="{{ route('menu') }}" class="foot-link">{{ __('Everything on this website') }}</a></li>
-                    {{-- The newest release and its day: the site is looked after, and here is what changed (/updates). --}}
-                    @if ($release = App\Models\SiteUpdate::newest())
-                        <li><a href="{{ route('updates') }}" class="foot-link font-mono">v{{ $release->version }} · {{ __('updated :date', ['date' => $release->releasedOn()]) }}</a></li>
+                    {{-- What changed on the site (/updates), by name: the numbers of releases are for the people who make it. --}}
+                    @if (App\Models\SiteUpdate::newest())
+                        <li><a href="{{ route('updates') }}" class="foot-link">{{ __('What is new on this website') }}</a></li>
                     @endif
                     @if ($day)
                         <li class="inline-flex items-center gap-2 font-mono"><span class="day-dot" aria-hidden="true"></span>{{ now()->locale(app()->getLocale())->translatedFormat('D j M ').(now()->year + (app()->getLocale() === 'th' ? 543 : 0)) }}</li>

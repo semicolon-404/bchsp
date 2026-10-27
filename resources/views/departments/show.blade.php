@@ -47,7 +47,6 @@
 
                 {{-- On a phone the name takes a row of its own under the picture. --}}
                 <div class="min-w-0 flex-1 basis-full sm:basis-0 sm:pt-3">
-                    <p class="eyebrow">{{ __('Departments') }}</p>
                     <h1 class="hero-name mt-1 text-2xl sm:text-4xl">{{ $department->localName() }}</h1>
                     @if (filled($department->localHeadline()))
                         <p class="mt-1 text-muted">{{ $department->localHeadline() }}</p>
@@ -180,7 +179,7 @@
                                                     <span class="font-mono text-xs font-semibold text-syn-function">{{ __('Open now') }}</span>
                                                 @endif
                                             </p>
-                                            <p class="font-mono text-sm text-syn-string">{{ $days($session) }} · {{ $session->hours() }}</p>
+                                            <p class="font-mono text-sm font-semibold text-ink">{{ $days($session) }} · {{ $session->hours() }}</p>
                                             @if ($session->note)
                                                 <p class="text-sm text-muted">{{ $session->note }}</p>
                                             @endif
