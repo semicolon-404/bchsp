@@ -32,6 +32,10 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->web(append: [SetLocale::class, MaintenanceMode::class, CountVisit::class]);
         // The language cookie is read as it is; it only ever holds "th" or "en".
         $middleware->encryptCookies(except: [SetLocale::COOKIE]);
+        // Behind a proxy that says the visitor came by https (a Cloudflare tunnel, a load balancer): TRUSTED_PROXIES="*".
+        if ($proxies = env('TRUSTED_PROXIES')) {
+            $middleware->trustProxies(at: $proxies === '*' ? '*' : explode(',', $proxies));
+        }
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //
