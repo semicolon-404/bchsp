@@ -4,9 +4,9 @@ namespace App\Models;
 
 use App\Models\Concerns\InTwoLanguages;
 use App\Support\PostNotices;
+use App\Support\RichText;
 use App\Support\Slug;
 use Database\Factories\AnnouncementFactory;
-use Filament\Forms\Components\RichEditor\RichContentRenderer;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -380,7 +380,7 @@ class Announcement extends Model
     /** The text as HTML that is safe to print: Filament's renderer drops anything that is not formatting. */
     public function renderedBody(): string
     {
-        return RichContentRenderer::make($this->inLanguage('body'))->fileAttachmentsDisk('public')->toHtml();
+        return RichText::html($this->inLanguage('body'));
     }
 
     /**
