@@ -4,6 +4,7 @@ namespace App\Providers\Filament;
 
 use App\Filament\Auth\Login;
 use App\Http\Middleware\RequireTwoStepOfStaff;
+use App\Http\Middleware\SetLocale;
 use App\Support\SiteSettings;
 use App\Support\Theme;
 use App\Support\TwoStep;
@@ -81,6 +82,8 @@ class AdminPanelProvider extends PanelProvider
                 EncryptCookies::class,
                 AddQueuedCookiesToResponse::class,
                 StartSession::class,
+                // The language chosen on the site or on the sign-in page (a cookie), as on the public pages.
+                SetLocale::class,
                 AuthenticateSession::class,
                 ShareErrorsFromSession::class,
                 VerifyCsrfToken::class,

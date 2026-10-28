@@ -14,7 +14,7 @@ use Symfony\Component\HttpFoundation\Response;
  * cookie). The words themselves are in lang/th.json, keyed by the English
  * text in the views.
  *
- * The admin panel is not among the pages this runs on: it is in Thai for everyone.
+ * It runs on the staff panel too (AdminPanelProvider), so that someone who reads English there can sign in and work in it.
  */
 class SetLocale
 {

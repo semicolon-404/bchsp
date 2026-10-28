@@ -119,11 +119,12 @@ class ThemeAndLanguageSwitchTest extends TestCase
         $this->withUnencryptedCookie(SetLocale::COOKIE, 'th')->get('/')->assertStatus(503)->assertSee('ปิดปรับปรุงชั่วคราว');
     }
 
-    public function test_the_panel_stays_in_the_sites_own_language(): void
+    public function test_the_panel_follows_the_language_chosen_and_offers_both_on_its_sign_in_page(): void
     {
         config(['app.locale' => 'th']);
         app()->setLocale('th');
 
-        $this->withUnencryptedCookie(SetLocale::COOKIE, 'en')->get('/admin/login')->assertOk()->assertSee('ชื่อผู้ใช้หรืออีเมล');
+        $this->get('/admin/login')->assertOk()->assertSee('ชื่อผู้ใช้หรืออีเมล')->assertSee(route('language', 'en'), false);
+        $this->withUnencryptedCookie(SetLocale::COOKIE, 'en')->get('/admin/login')->assertOk()->assertSee('Username or email')->assertDontSee('ชื่อผู้ใช้หรืออีเมล');
     }
 }

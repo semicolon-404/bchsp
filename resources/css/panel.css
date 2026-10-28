@@ -954,3 +954,66 @@ html.dark {
     font-size: 0.8125rem;
     opacity: 0.7;
 }
+
+/* The sign-in page's corner: light or dark, and the language. */
+.signin-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+.signin-tools {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.signin-tool,
+.signin-languages {
+    display: inline-flex;
+    align-items: center;
+    height: 2.5rem;
+    border-radius: 999px;
+    background: rgb(255 255 255 / 0.6);
+    -webkit-backdrop-filter: blur(20px);
+    backdrop-filter: blur(20px);
+    box-shadow: 0 0 0 1px rgb(0 0 0 / 0.06);
+}
+
+.dark .signin-tool,
+.dark .signin-languages {
+    background: rgb(39 39 42 / 0.6);
+    box-shadow: 0 0 0 1px rgb(255 255 255 / 0.08);
+}
+
+.signin-tool {
+    justify-content: center;
+    width: 2.5rem;
+}
+
+.signin-tool-icon {
+    width: 1.15rem;
+    height: 1.15rem;
+}
+
+.signin-languages {
+    padding: 0.25rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.signin-languages a {
+    display: inline-flex;
+    align-items: center;
+    height: 100%;
+    padding: 0 0.75rem;
+    border-radius: 999px;
+    opacity: 0.6;
+}
+
+.signin-languages a[aria-current='true'] {
+    background: color-mix(in oklab, var(--signin-day) 70%, #000);
+    color: #fff;
+    opacity: 1;
+}

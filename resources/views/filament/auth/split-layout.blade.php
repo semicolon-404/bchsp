@@ -8,10 +8,10 @@
     $name = SiteSettings::name();
     $logo = SiteSettings::logoUrl();
     $motto = SiteSettings::get('site.motto');
-    $year = now()->year + 543;
+    $year = now()->year + (app()->getLocale() === 'th' ? 543 : 0);
     // The colour of the day, as the site wears it (App\Support\Theme): today's, or the one colour where only one is set.
     $day = App\Support\Theme::touchOfTheDay() ?? App\Support\Theme::accent();
-    $today = now()->locale('th');
+    $today = now()->locale(app()->getLocale());
 @endphp
 
 {{--
@@ -43,7 +43,7 @@
                 <div class="signin-weekday">{{ $today->translatedFormat('l') }}</div>
                 <div class="signin-when">
                     <span>{{ $today->translatedFormat('j F ').$year }}</span>
-                    <b x-text="now.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit', hour12: false })">{{ now()->format('H:i') }}</b>
+                    <b x-text="now.toLocaleTimeString(@js(app()->getLocale() === 'th' ? 'th-TH' : 'en-GB'), { hour: '2-digit', minute: '2-digit', hour12: false })">{{ now()->format('H:i') }}</b>
                 </div>
             </div>
 
@@ -55,11 +55,30 @@
         </aside>
 
         <div class="signin-side">
-            <div class="signin-phone-brand">
-                @if ($logo)
-                    <img src="{{ $logo }}" alt="" class="signin-logo">
-                @endif
-                <span>{{ $name }}</span>
+            <div class="signin-top">
+                <div class="signin-phone-brand">
+                    @if ($logo)
+                        <img src="{{ $logo }}" alt="" class="signin-logo">
+                    @endif
+                    <span>{{ $name }}</span>
+                </div>
+
+                {{-- Light or dark (Filament keeps the choice, as its own switcher does), and the language (SetLocale). --}}
+                <div class="signin-tools">
+                    <button type="button" class="signin-tool"
+                        x-data="{ dark: document.documentElement.classList.contains('dark') }"
+                        x-on:click="dark = ! dark; localStorage.setItem('theme', dark ? 'dark' : 'light'); $dispatch('theme-changed', dark ? 'dark' : 'light')"
+                        x-bind:aria-pressed="dark.toString()"
+                        aria-label="{{ __('Dark look') }}">
+                        <x-filament::icon icon="heroicon-m-moon" class="signin-tool-icon" x-show="! dark" />
+                        <x-filament::icon icon="heroicon-m-sun" class="signin-tool-icon" x-show="dark" x-cloak />
+                    </button>
+                    <div class="signin-languages" role="group" aria-label="{{ __('Language') }}">
+                        @foreach (App\Http\Middleware\SetLocale::LANGUAGES as $code => $language)
+                            <a href="{{ route('language', $code) }}" lang="{{ $code }}" rel="nofollow" aria-current="{{ app()->getLocale() === $code ? 'true' : 'false' }}">{{ $language }}</a>
+                        @endforeach
+                    </div>
+                </div>
             </div>
 
             <div class="signin-badge">
