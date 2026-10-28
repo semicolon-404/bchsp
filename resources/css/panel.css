@@ -498,53 +498,71 @@ html.dark {
 
 @media (min-width: 1024px) {
     .signin {
-        grid-template-columns: 1.1fr 1fr;
+        grid-template-columns: 1.15fr 1fr;
     }
 }
 
-/* The half with the hospital and the time: the panel's colour, deep, with a fine grid. */
-.signin-visual {
-    position: relative;
+/*
+ * A pulse drawn across the whole page in the colour of the day, once, as the page opens; already drawn for anyone
+ * who has asked for less motion.
+ */
+.signin-pulse {
+    position: fixed;
+    inset: auto 0 38% 0;
+    width: 100%;
+    height: 9rem;
+    pointer-events: none;
+    color: color-mix(in oklab, var(--signin-day) 75%, #000);
+    opacity: 0.5;
+}
+
+.dark .signin-pulse {
+    color: var(--signin-day);
+    opacity: 0.4;
+}
+
+.signin-pulse path {
+    stroke-dasharray: 3000;
+    stroke-dashoffset: 3000;
+    animation: signin-pulse 2.6s ease-out 0.2s forwards;
+}
+
+@keyframes signin-pulse {
+    to {
+        stroke-dashoffset: 0;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .signin-pulse path {
+        stroke-dashoffset: 0;
+        animation: none;
+    }
+}
+
+/* The hospital and the day, as words on the backdrop: no box around them. */
+.signin-words {
     display: none;
     flex-direction: column;
     justify-content: space-between;
-    gap: 2rem;
-    margin: 0.75rem;
-    padding: 2.5rem 3rem;
-    overflow: hidden;
-    border-radius: 2rem;
+    padding: 3rem 3.5rem;
+    color: var(--gray-900);
+}
+
+.dark .signin-words {
     color: #fff;
-    background:
-        radial-gradient(ellipse at top left, color-mix(in oklab, var(--signin-day) 55%, transparent), transparent 55%),
-        radial-gradient(ellipse at bottom right, color-mix(in oklab, #000 55%, transparent), transparent 60%),
-        color-mix(in oklab, var(--signin-day) 45%, #101214);
-    box-shadow: 0 30px 60px -30px rgb(0 0 0 / 0.45);
-}
-
-.signin-visual::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    opacity: 0.08;
-    background-image: linear-gradient(to right, #fff 1px, transparent 1px), linear-gradient(to bottom, #fff 1px, transparent 1px);
-    background-size: 48px 48px;
-    pointer-events: none;
-}
-
-.signin-visual > * {
-    position: relative;
 }
 
 @media (min-width: 1024px) {
-    .signin-visual {
+    .signin-words {
         display: flex;
     }
 }
 
-.signin-visual-top {
+.signin-brand {
     display: flex;
     align-items: center;
-    gap: 0.9rem;
+    gap: 1rem;
 }
 
 .signin-logo {
@@ -560,72 +578,48 @@ html.dark {
 }
 
 .signin-small {
-    font-size: 0.875rem;
+    font-size: 0.9rem;
+    opacity: 0.65;
+}
+
+.signin-today {
+    font-size: 1rem;
+    font-weight: 600;
     opacity: 0.7;
 }
 
-.signin-label {
-    font-size: 0.9rem;
-    font-weight: 600;
-    opacity: 0.75;
+.signin-weekday {
+    margin-top: 0.25rem;
+    font-size: clamp(4rem, 7.5vw, 6.5rem);
+    font-weight: 700;
+    line-height: 1.05;
+    color: color-mix(in oklab, var(--signin-day) 72%, #000);
 }
 
-.signin-clock {
-    margin-top: 0.25rem;
-    font-size: clamp(4.5rem, 8vw, 7rem);
-    font-weight: 700;
-    line-height: 1;
-    letter-spacing: -0.02em;
+.dark .signin-weekday {
+    color: var(--signin-day);
+}
+
+.signin-when {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.5rem 1rem;
+    margin-top: 1rem;
+    font-size: 1.25rem;
+}
+
+.signin-when b {
+    font-size: 1.6rem;
     font-variant-numeric: tabular-nums;
 }
 
-.signin-date {
-    margin-top: 0.75rem;
-    font-size: 1.15rem;
-    opacity: 0.8;
-}
-
-.signin-steps {
-    max-width: 30rem;
-    padding: 1.25rem;
-    border: 1px solid rgb(255 255 255 / 0.15);
-    border-radius: 1.25rem;
-    background: rgb(255 255 255 / 0.07);
-}
-
-.signin-steps ol {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 0.5rem;
-    margin-top: 0.75rem;
-}
-
-.signin-steps li {
-    display: flex;
-    flex-direction: column;
-    gap: 0.4rem;
-    padding: 0.75rem;
-    border-radius: 0.75rem;
-    background: rgb(255 255 255 / 0.08);
-    font-size: 0.875rem;
-    line-height: 1.35;
-}
-
-.signin-steps li span {
-    display: flex;
-    width: 1.6rem;
-    height: 1.6rem;
-    align-items: center;
-    justify-content: center;
-    border-radius: 999px;
-    background: #fff;
-    color: color-mix(in oklab, var(--signin-day) 45%, #101214);
-    font-weight: 700;
-}
-
 .signin-motto {
-    margin-top: 1rem;
-    font-size: 0.9rem;
+    max-width: 30rem;
+    padding-left: 1rem;
+    border-left: 3px solid var(--signin-day);
+    font-size: 1rem;
+    line-height: 1.6;
     opacity: 0.75;
 }
 
@@ -645,14 +639,12 @@ html.dark {
 .signin-phone-brand {
     display: flex;
     align-items: center;
-    gap: 0.6rem;
+    gap: 0.75rem;
     font-weight: 700;
 }
 
 .signin-phone-brand .signin-logo {
     height: 3rem;
-    padding: 0;
-    background: none;
 }
 
 @media (min-width: 1024px) {
@@ -661,26 +653,96 @@ html.dark {
     }
 }
 
-.signin-card {
+/* The form, as a staff card on its lanyard: a strap in the day's colour, the slot it hangs from, the card. */
+.signin-badge {
+    position: relative;
     width: 100%;
     max-width: 26rem;
     margin: auto;
-    padding: 2rem 1.5rem;
+    padding-top: 3.5rem;
+}
+
+.signin-strap {
+    position: absolute;
+    top: -100vh;
+    left: 50%;
+    width: 2.25rem;
+    height: calc(100vh + 4.5rem);
+    transform: translateX(-50%);
+    border-radius: 0 0 0.4rem 0.4rem;
+    background:
+        repeating-linear-gradient(90deg, transparent 0 6px, rgb(255 255 255 / 0.18) 6px 7px),
+        color-mix(in oklab, var(--signin-day) 85%, #000);
+    box-shadow: 0 6px 14px -6px rgb(0 0 0 / 0.4);
+}
+
+/* On a phone the card stands under the name, without its strap. */
+@media (max-width: 1023px) {
+    .signin-strap {
+        display: none;
+    }
+}
+
+.signin-card {
+    position: relative;
+    padding: 2.75rem 1.5rem 2rem;
     border-radius: 1.75rem;
-    background: rgb(255 255 255 / 0.6);
+    background: rgb(255 255 255 / 0.62);
     -webkit-backdrop-filter: blur(40px) saturate(1.5);
     backdrop-filter: blur(40px) saturate(1.5);
-    box-shadow: 0 0 0 1px rgb(255 255 255 / 0.6), 0 30px 60px -25px rgb(0 0 0 / 0.25);
+    box-shadow: 0 0 0 1px rgb(255 255 255 / 0.65), 0 40px 70px -30px rgb(0 0 0 / 0.3);
 }
 
 .dark .signin-card {
-    background: rgb(24 24 27 / 0.6);
-    box-shadow: 0 0 0 1px rgb(255 255 255 / 0.08);
+    background: rgb(24 24 27 / 0.62);
+    box-shadow: 0 0 0 1px rgb(255 255 255 / 0.08), 0 40px 70px -30px rgb(0 0 0 / 0.6);
+}
+
+/* The slot the strap goes through. */
+.signin-card::before {
+    content: '';
+    position: absolute;
+    top: 1rem;
+    left: 50%;
+    width: 3.5rem;
+    height: 0.6rem;
+    transform: translateX(-50%);
+    border-radius: 999px;
+    background: rgb(0 0 0 / 0.12);
+    box-shadow: inset 0 1px 2px rgb(0 0 0 / 0.25);
+}
+
+.dark .signin-card::before {
+    background: rgb(0 0 0 / 0.45);
+}
+
+.signin-card-label {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1.25rem;
+    padding-bottom: 0.9rem;
+    border-bottom: 1px dashed rgb(0 0 0 / 0.15);
+    font-size: 0.8rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    opacity: 0.7;
+}
+
+.dark .signin-card-label {
+    border-color: rgb(255 255 255 / 0.15);
+}
+
+.signin-card-label i {
+    width: 0.65rem;
+    height: 0.65rem;
+    border-radius: 999px;
+    background: var(--signin-day);
 }
 
 @media (min-width: 640px) {
     .signin-card {
-        padding: 2.5rem 2.25rem;
+        padding: 3rem 2.25rem 2.5rem;
     }
 }
 
