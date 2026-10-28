@@ -616,8 +616,6 @@ html.dark {
 
 .signin-motto {
     max-width: 30rem;
-    padding-left: 1rem;
-    border-left: 3px solid var(--signin-day);
     font-size: 1rem;
     line-height: 1.6;
     opacity: 0.75;
