@@ -1894,3 +1894,21 @@ html.is-mourning {
         animation: none;
     }
 }
+
+/* The newest announcements beside the pictures on the home page: the rows share out the height of the frame. */
+@media (min-width: 64rem) {
+    .news-list {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .news-list > li {
+        display: flex;
+        flex: 1;
+    }
+
+    .news-list > li > a {
+        flex: 1;
+        align-items: center;
+    }
+}

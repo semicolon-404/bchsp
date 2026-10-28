@@ -158,14 +158,15 @@
                     <a href="{{ route('announcements.index') }}" class="btn btn-line">{{ __('All announcements') }} &rarr;</a>
                 </div>
 
-                <div @class(['mt-10 grid items-start gap-8', 'lg:grid-cols-5' => $slides->isNotEmpty() && $announcements->isNotEmpty()])>
+                <div @class(['mt-10 grid gap-8', 'lg:grid-cols-12' => $slides->isNotEmpty() && $announcements->isNotEmpty()])>
                     @if ($slides->isNotEmpty())
-                        <div class="lg:col-span-3"><x-site.banners part="stage" :banners="$slides" frame="aspect-[4/3]" /></div>
+                        {{-- The pictures are mostly posters, upright: an upright frame shows them whole, as tall as the list beside it. --}}
+                        <div class="lg:col-span-5"><x-site.banners part="stage" :banners="$slides" frame="aspect-[4/5]" /></div>
                     @endif
                     @if ($announcements->isNotEmpty())
-                        <ul @class(['card p-0', 'lg:col-span-2' => $slides->isNotEmpty(), 'mx-auto w-full max-w-4xl' => $slides->isEmpty()])>
+                        <ul @class(['card news-list p-0', 'lg:col-span-7' => $slides->isNotEmpty(), 'mx-auto w-full max-w-4xl' => $slides->isEmpty()])>
                             @foreach ($announcements as $announcement)
-                                <x-site.announcement-item :announcement="$announcement" />
+                                <x-site.announcement-row :announcement="$announcement" />
                             @endforeach
                         </ul>
                     @endif
