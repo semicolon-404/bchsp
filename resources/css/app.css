@@ -505,16 +505,30 @@ html.is-mourning {
         color: var(--color-brand);
     }
 
+    /*
+     * A card: in the light look a sheet of white lifted off the page by a soft shadow, with no line round it, so
+     * a page of them reads as things laid on it rather than a grid of boxes; in the dark look a faint edge does
+     * what the shadow cannot. A border given in the page (border-danger) still shows.
+     */
     .card {
-        background: var(--color-surface);
-        border: 1px solid var(--color-line);
-        border-radius: 12px;
+        background: var(--color-page);
+        border: 1px solid transparent;
+        border-radius: 18px;
         padding: 1.5rem;
-        transition: border-color 200ms;
+        box-shadow:
+            0 1px 2px color-mix(in srgb, var(--color-ink) 6%, transparent),
+            0 12px 32px -18px color-mix(in srgb, var(--color-ink) 22%, transparent);
+        transition: border-color 200ms, box-shadow 250ms ease;
+    }
+
+    :root[data-theme='dark'] .card {
+        background: var(--color-surface);
+        border-color: color-mix(in srgb, var(--color-line) 70%, transparent);
+        box-shadow: none;
     }
 
     a.card:hover {
-        border-color: var(--color-brand);
+        border-color: color-mix(in srgb, var(--color-brand) 35%, transparent);
     }
 
     /* A card that leads somewhere rises a little under the pointer, where there is one and motion is welcome. */
