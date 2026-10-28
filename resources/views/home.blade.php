@@ -98,27 +98,22 @@
             </div>
 
             @if ($sessions->isNotEmpty())
-                {{-- Today's clinics as a board on frosted glass: the day named large in its colour, then each clinic and its hours. --}}
-                <section class="today-board" aria-labelledby="today-heading">
-                    <div class="today-head">
-                        <h2 id="today-heading">
-                            <span class="today-label">{{ __('Open today') }}</span>
-                            <span class="today-day">{{ __(App\Models\ClinicSession::DAYS[now()->dayOfWeek]) }}</span>
-                        </h2>
-                        <span class="today-date">{{ now()->locale(app()->getLocale())->translatedFormat('j M ').(now()->year + (app()->getLocale() === 'th' ? 543 : 0)) }}</span>
+                <section class="code-block" aria-labelledby="today-heading">
+                    <div class="code-header">
+                        <h2 id="today-heading" class="text-sm font-semibold">{{ __('Open today') }} · <span @class(['day-chip' => App\Support\Theme::touchOfTheDay()])>{{ __(App\Models\ClinicSession::DAYS[now()->dayOfWeek]) }}</span></h2>
                     </div>
-                    <ul>
+                    <ul class="px-4 py-2">
                         @foreach ($sessions->take(7) as $session)
-                            <li @class(['today-row', 'is-open' => $session->isOpenNow()])>
-                                <span class="today-hours font-mono">{{ $session->hours() }}</span>
+                            <li class="flex items-baseline gap-3 border-b border-line py-2 last:border-b-0">
+                                <span class="w-28 shrink-0 font-mono text-sm font-semibold text-ink">{{ $session->hours() }}</span>
                                 <span class="min-w-0 flex-1">{{ $session->localName() }}</span>
                                 @if ($session->isOpenNow())
-                                    <span class="today-open"><span class="today-live" aria-hidden="true"></span>{{ __('Open now') }}</span>
+                                    <span class="shrink-0 font-mono text-xs font-semibold text-syn-function">{{ __('Open now') }}</span>
                                 @endif
                             </li>
                         @endforeach
                     </ul>
-                    <a href="{{ route('schedule') }}" class="today-more">{{ __('The whole week') }}<x-heroicon-m-arrow-right class="size-4" aria-hidden="true" /></a>
+                    <p class="border-t border-line px-4 py-3 text-sm"><a href="{{ route('schedule') }}" class="font-semibold text-brand underline">{{ __('The whole week') }} &rarr;</a></p>
                 </section>
             @endif
         </div>

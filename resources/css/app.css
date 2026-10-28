@@ -1084,8 +1084,8 @@ html.is-mourning {
 
     /*
      * The first screen of the home page and of "About us" before the hospital has given a photograph
-     * (hero-art in home.blade.php): soft, muted colours blurred hard and drifting slowly, the site's own and
-     * the day's among them, as on the panel's sign-in page. Behind the words, and nothing a reader needs.
+     * (hero-art in home.blade.php): a field of fine lines fading towards the edges, and three soft rings
+     * in the site's colour, drifting slowly. Behind the words, and nothing a reader needs.
      */
     .hero-art {
         position: absolute;
@@ -1093,44 +1093,47 @@ html.is-mourning {
         z-index: -2;
         overflow: hidden;
         pointer-events: none;
-        background: color-mix(in srgb, var(--color-surface) 70%, var(--color-page));
+        background:
+            linear-gradient(color-mix(in srgb, var(--color-brand) 9%, transparent) 1px, transparent 1px) 0 0 / 3rem 3rem,
+            linear-gradient(90deg, color-mix(in srgb, var(--color-brand) 9%, transparent) 1px, transparent 1px) 0 0 / 3rem 3rem;
+        mask-image: radial-gradient(90% 80% at 50% 40%, #000 25%, transparent 78%);
     }
 
     .hero-art span {
         position: absolute;
         aspect-ratio: 1;
+        border: 2px solid color-mix(in srgb, var(--color-brand) 30%, transparent);
         border-radius: 9999px;
-        filter: blur(90px);
-        animation: hero-drift 26s ease-in-out infinite alternate;
+        animation: hero-drift 18s ease-in-out infinite alternate;
     }
 
     .hero-art span:nth-child(1) {
-        top: -30%;
-        left: -10%;
-        width: 42rem;
-        background: color-mix(in srgb, var(--color-brand) 22%, transparent);
+        top: -12%;
+        right: 6%;
+        width: 26rem;
     }
 
     .hero-art span:nth-child(2) {
-        top: -10%;
-        right: -12%;
-        width: 36rem;
-        background: color-mix(in srgb, var(--color-day, var(--color-brand)) 18%, transparent);
-        animation-duration: 32s;
+        top: 4%;
+        right: 14%;
+        width: 15rem;
+        border-style: dashed;
+        animation-duration: 24s;
         animation-direction: alternate-reverse;
     }
 
     .hero-art span:nth-child(3) {
-        bottom: -45%;
-        left: 30%;
-        width: 40rem;
-        background: color-mix(in srgb, #8fa9b8 20%, transparent);
-        animation-duration: 38s;
+        bottom: -30%;
+        left: -6%;
+        width: 30rem;
+        border-width: 2.5rem;
+        border-color: color-mix(in srgb, var(--color-brand) 7%, transparent);
+        animation-duration: 30s;
     }
 
     @keyframes hero-drift {
         to {
-            transform: translate3d(3rem, 2rem, 0) scale(1.08);
+            transform: translate3d(1.5rem, 1rem, 0) rotate(12deg);
         }
     }
 
@@ -1845,87 +1848,9 @@ html.is-mourning {
 }
 
 /*
- * The home page's first screen (home.blade.php, "hero"): today's clinics as a board on frosted glass, a pulse
+ * The home page's first screen (home.blade.php, "hero"): the dot that says something is open now, a pulse
  * across its foot in the colour of the day, and under it one row of the ways in people most often look for.
  */
-.today-board {
-    overflow: hidden;
-    border: 1px solid color-mix(in srgb, var(--color-line) 70%, transparent);
-    border-radius: 1.5rem;
-    background: color-mix(in srgb, var(--color-page) 62%, transparent);
-    -webkit-backdrop-filter: blur(24px) saturate(1.3);
-    backdrop-filter: blur(24px) saturate(1.3);
-    box-shadow: 0 30px 60px -35px rgb(0 0 0 / 0.35);
-}
-
-.today-head {
-    display: flex;
-    align-items: flex-end;
-    justify-content: space-between;
-    gap: 1rem;
-    padding: 1.25rem 1.5rem 1rem;
-}
-
-.today-label {
-    display: block;
-    font-size: 0.9rem;
-    font-weight: 600;
-    color: var(--color-muted);
-}
-
-.today-day {
-    display: block;
-    font-size: 2.25rem;
-    font-weight: 700;
-    line-height: 1.15;
-    color: color-mix(in srgb, var(--color-day, var(--color-brand)) 72%, var(--color-ink));
-}
-
-.today-date {
-    padding-bottom: 0.35rem;
-    font-size: 0.9rem;
-    color: var(--color-muted);
-}
-
-.today-board ul {
-    padding: 0 0.75rem;
-}
-
-.today-row {
-    display: flex;
-    align-items: baseline;
-    gap: 0.75rem;
-    padding: 0.6rem 0.75rem;
-    border-top: 1px solid color-mix(in srgb, var(--color-line) 60%, transparent);
-}
-
-.today-row.is-open {
-    margin-block: 2px;
-    border-radius: 0.75rem;
-    border-top-color: transparent;
-    background: color-mix(in srgb, var(--color-brand) 9%, transparent);
-}
-
-.today-row.is-open + .today-row {
-    border-top-color: transparent;
-}
-
-.today-hours {
-    width: 7.5rem;
-    flex-shrink: 0;
-    font-size: 0.9rem;
-    font-weight: 600;
-}
-
-.today-open {
-    display: inline-flex;
-    flex-shrink: 0;
-    align-items: center;
-    gap: 0.4rem;
-    font-size: 0.8rem;
-    font-weight: 600;
-    color: var(--color-brand);
-}
 
 .today-live {
     display: inline-block;
@@ -1939,9 +1864,6 @@ html.is-mourning {
     animation: today-live 2s ease-out infinite;
 }
 
-.today-open .today-live {
-    margin-right: 0;
-}
 
 @keyframes today-live {
     to {
@@ -1949,23 +1871,6 @@ html.is-mourning {
     }
 }
 
-.today-more {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.4rem;
-    margin-top: 0.75rem;
-    padding: 0.9rem;
-    border-top: 1px solid color-mix(in srgb, var(--color-line) 60%, transparent);
-    font-size: 0.9rem;
-    font-weight: 600;
-    color: var(--color-brand);
-    text-decoration: none;
-}
-
-.today-more:hover {
-    background: color-mix(in srgb, var(--color-brand) 7%, transparent);
-}
 
 .hero-pulse {
     position: absolute;
@@ -1997,12 +1902,13 @@ html.is-mourning {
 }
 
 /*
- * The ways in, as the signs along a hospital's corridor: a band of the site's colour, deep, and on it in white
+ * The ways in, as the signs along a hospital's corridor: a light band of the site's colour, and on it in its deep shade
  * a symbol, the name, and an arrow for the way. Hairlines between, no boxes.
  */
 .doors {
-    background: color-mix(in srgb, var(--color-brand) 58%, #0b1a10);
-    color: #fff;
+    border-block: 1px solid color-mix(in srgb, var(--color-brand) 22%, var(--color-line));
+    background: color-mix(in srgb, var(--color-brand) 8%, var(--color-page));
+    color: color-mix(in srgb, var(--color-brand) 55%, var(--color-ink));
 }
 
 .doors ul {
@@ -2025,12 +1931,12 @@ html.is-mourning {
 }
 
 .doors li {
-    border-bottom: 1px solid rgb(255 255 255 / 0.14);
+    border-bottom: 1px solid color-mix(in srgb, var(--color-brand) 20%, transparent);
 }
 
 @media (min-width: 40rem) {
     .doors li:nth-child(odd) {
-        border-right: 1px solid rgb(255 255 255 / 0.14);
+        border-right: 1px solid color-mix(in srgb, var(--color-brand) 20%, transparent);
     }
 }
 
@@ -2038,7 +1944,7 @@ html.is-mourning {
     .doors li,
     .doors li:nth-child(odd) {
         border-bottom: 0;
-        border-right: 1px solid rgb(255 255 255 / 0.14);
+        border-right: 1px solid color-mix(in srgb, var(--color-brand) 20%, transparent);
     }
 
     .doors li:last-child {
@@ -2052,21 +1958,21 @@ html.is-mourning {
     align-items: center;
     gap: 0.75rem;
     padding: 1.15rem 1rem;
-    color: #fff;
+    color: inherit;
     text-decoration: none;
     transition: background-color 200ms;
 }
 
 .door:hover,
 .door:focus-visible {
-    background: rgb(255 255 255 / 0.08);
+    background: color-mix(in srgb, var(--color-brand) 10%, transparent);
 }
 
 .door-icon {
     width: 1.6rem;
     height: 1.6rem;
     flex-shrink: 0;
-    opacity: 0.85;
+    color: var(--color-brand);
 }
 
 .door-name {
