@@ -521,7 +521,7 @@ html.is-mourning {
         transition: border-color 200ms, box-shadow 250ms ease;
     }
 
-    :root[data-theme='dark'] .card {
+    :root:not([data-theme='light']) .card {
         background: var(--color-surface);
         border-color: color-mix(in srgb, var(--color-line) 70%, transparent);
         box-shadow: none;
