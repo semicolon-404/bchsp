@@ -9,6 +9,8 @@
     $logo = SiteSettings::logoUrl();
     $motto = SiteSettings::get('site.motto');
     $year = now()->year + 543;
+    // The colour of the day, as the site wears it (AppSupportTheme): today's, or the one colour where only one is set.
+    $day = App\Support\Theme::touchOfTheDay() ?? App\Support\Theme::accent();
 @endphp
 
 {{--
@@ -17,8 +19,8 @@
 --}}
 <x-filament-panels::layout.base :livewire="$livewire">
     {{-- Soft colours, blurred and drifting slowly, under frosted glass; still for anyone who has asked for less motion. --}}
-    <div class="signin-backdrop" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
-    <div class="signin">
+    <div class="signin-backdrop" style="--signin-day: {{ $day }}" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+    <div class="signin" style="--signin-day: {{ $day }}">
         <aside class="signin-visual" aria-hidden="true">
             <div class="signin-visual-top">
                 @if ($logo)
