@@ -89,48 +89,55 @@
                     </div>
                 @endif
 
-                {{-- One line, as a status bar: is anything open this minute. --}}
+                {{-- One line: is anything open this minute. --}}
                 @if ($openNow)
-                    <p class="mt-6 font-mono text-sm text-muted">
-                        <span class="mr-2 inline-block size-2 animate-pulse-dot rounded-full bg-syn-function align-middle" aria-hidden="true"></span>{{ trans_choice('{1} :count clinic or service is open now|[2,*] :count clinics and services are open now', $openNow, ['count' => $openNow]) }}
+                    <p class="mt-6 text-sm text-muted">
+                        <span class="today-live" aria-hidden="true"></span>{{ trans_choice('{1} :count clinic or service is open now|[2,*] :count clinics and services are open now', $openNow, ['count' => $openNow]) }}
                     </p>
                 @endif
             </div>
 
             @if ($sessions->isNotEmpty())
-                <section class="code-block" aria-labelledby="today-heading">
-                    <div class="code-header">
-                        <h2 id="today-heading" class="text-sm font-semibold">{{ __('Open today') }} · <span @class(['day-chip' => App\Support\Theme::touchOfTheDay()])>{{ __(App\Models\ClinicSession::DAYS[now()->dayOfWeek]) }}</span></h2>
+                {{-- Today's clinics as a board on frosted glass: the day named large in its colour, then each clinic and its hours. --}}
+                <section class="today-board" aria-labelledby="today-heading">
+                    <div class="today-head">
+                        <h2 id="today-heading">
+                            <span class="today-label">{{ __('Open today') }}</span>
+                            <span class="today-day">{{ __(App\Models\ClinicSession::DAYS[now()->dayOfWeek]) }}</span>
+                        </h2>
+                        <span class="today-date">{{ now()->locale(app()->getLocale())->translatedFormat('j M ').(now()->year + (app()->getLocale() === 'th' ? 543 : 0)) }}</span>
                     </div>
-                    <ul class="px-4 py-2">
+                    <ul>
                         @foreach ($sessions->take(7) as $session)
-                            <li class="flex items-baseline gap-3 border-b border-line py-2 last:border-b-0">
-                                <span class="w-28 shrink-0 font-mono text-sm font-semibold text-ink">{{ $session->hours() }}</span>
+                            <li @class(['today-row', 'is-open' => $session->isOpenNow()])>
+                                <span class="today-hours font-mono">{{ $session->hours() }}</span>
                                 <span class="min-w-0 flex-1">{{ $session->localName() }}</span>
                                 @if ($session->isOpenNow())
-                                    <span class="shrink-0 font-mono text-xs font-semibold text-syn-function">{{ __('Open now') }}</span>
+                                    <span class="today-open"><span class="today-live" aria-hidden="true"></span>{{ __('Open now') }}</span>
                                 @endif
                             </li>
                         @endforeach
                     </ul>
-                    <p class="border-t border-line px-4 py-3 text-sm"><a href="{{ route('schedule') }}" class="font-semibold text-brand underline">{{ __('The whole week') }} &rarr;</a></p>
+                    <a href="{{ route('schedule') }}" class="today-more">{{ __('The whole week') }}<x-heroicon-m-arrow-right class="size-4" aria-hidden="true" /></a>
                 </section>
             @endif
         </div>
+
+        {{-- A pulse across the foot of the first screen, in the colour of the day, drawn once as the page opens. --}}
+        <svg class="hero-pulse" viewBox="0 0 1200 120" preserveAspectRatio="none" fill="none" aria-hidden="true">
+            <path d="M0 60H520l18-22 16 22h40l14-50 22 100 18-78 12 28h40l16-14 14 14H1200" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke" />
+        </svg>
     </section>
 
-    {{-- What people most often come to do: a tile each, in reach before any scrolling on a wide screen. --}}
-    <section class="border-y border-line bg-surface" aria-label="{{ __('What would you like to do?') }}">
-        <ul @class(['wrap grid grid-cols-2 gap-3 py-6 sm:grid-cols-3', 'lg:grid-cols-5' => count($actions) === 5, 'lg:grid-cols-6' => count($actions) >= 6])>
+    {{-- What people most often come to do, as the signs in a hospital's corridor: a symbol, the name, the way. --}}
+    <section class="doors" aria-label="{{ __('What would you like to do?') }}">
+        <ul class="wrap">
             @foreach (array_slice($actions, 0, 6) as [$to, $label, $about, $mark])
-                {{-- On a phone, two to a row: an odd one out takes the whole of the last row. --}}
-                <li @class(['max-sm:col-span-2' => $loop->last && $loop->count % 2 === 1])>
-                    <a href="{{ $to }}" class="card group flex h-full flex-col items-start gap-3 bg-page px-4 py-4 text-ink no-underline">
-                        <span class="door-mark" aria-hidden="true"><x-dynamic-component :component="'heroicon-o-'.$mark" class="size-5" /></span>
-                        <span>
-                            <span class="block font-medium leading-snug group-hover:text-brand">{{ __($label) }}</span>
-                            <span class="mt-0.5 block text-sm text-muted">{{ __($about) }}</span>
-                        </span>
+                <li>
+                    <a href="{{ $to }}" class="door" title="{{ __($about) }}">
+                        <x-dynamic-component :component="'heroicon-o-'.$mark" class="door-icon" aria-hidden="true" />
+                        <span class="door-name">{{ __($label) }}</span>
+                        <x-heroicon-m-arrow-right class="door-way" aria-hidden="true" />
                     </a>
                 </li>
             @endforeach

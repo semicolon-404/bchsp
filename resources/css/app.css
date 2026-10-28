@@ -544,21 +544,10 @@ html.is-mourning {
         transform: none;
     }
 
-    /* The hospital's name on the home page: from the colour of the words into the colour of the site. */
+    /* The name at the head of a page: one solid colour, deep in the site's. */
     .hero-name {
-        background: linear-gradient(115deg, var(--color-ink) 35%, var(--color-brand));
-        -webkit-background-clip: text;
-        background-clip: text;
-        color: transparent;
-        /* Thai marks above and below the line are cut off by the clip without room for them. */
+        color: color-mix(in srgb, var(--color-brand) 30%, var(--color-ink));
         padding-block: 0.15em;
-    }
-
-    @media (forced-colors: active) {
-        .hero-name {
-            background: none;
-            color: CanvasText;
-        }
     }
 
     /*
@@ -1095,8 +1084,8 @@ html.is-mourning {
 
     /*
      * The first screen of the home page and of "About us" before the hospital has given a photograph
-     * (hero-art in home.blade.php): a field of fine lines fading towards the edges, and three soft rings
-     * in the site's colour, drifting slowly. Behind the words, and nothing a reader needs.
+     * (hero-art in home.blade.php): soft, muted colours blurred hard and drifting slowly, the site's own and
+     * the day's among them, as on the panel's sign-in page. Behind the words, and nothing a reader needs.
      */
     .hero-art {
         position: absolute;
@@ -1104,47 +1093,44 @@ html.is-mourning {
         z-index: -2;
         overflow: hidden;
         pointer-events: none;
-        background:
-            linear-gradient(color-mix(in srgb, var(--color-brand) 9%, transparent) 1px, transparent 1px) 0 0 / 3rem 3rem,
-            linear-gradient(90deg, color-mix(in srgb, var(--color-brand) 9%, transparent) 1px, transparent 1px) 0 0 / 3rem 3rem;
-        mask-image: radial-gradient(90% 80% at 50% 40%, #000 25%, transparent 78%);
+        background: color-mix(in srgb, var(--color-surface) 70%, var(--color-page));
     }
 
     .hero-art span {
         position: absolute;
         aspect-ratio: 1;
-        border: 2px solid color-mix(in srgb, var(--color-brand) 30%, transparent);
         border-radius: 9999px;
-        animation: hero-drift 18s ease-in-out infinite alternate;
+        filter: blur(90px);
+        animation: hero-drift 26s ease-in-out infinite alternate;
     }
 
     .hero-art span:nth-child(1) {
-        top: -12%;
-        right: 6%;
-        width: 26rem;
+        top: -30%;
+        left: -10%;
+        width: 42rem;
+        background: color-mix(in srgb, var(--color-brand) 22%, transparent);
     }
 
     .hero-art span:nth-child(2) {
-        top: 4%;
-        right: 14%;
-        width: 15rem;
-        border-style: dashed;
-        animation-duration: 24s;
+        top: -10%;
+        right: -12%;
+        width: 36rem;
+        background: color-mix(in srgb, var(--color-day, var(--color-brand)) 18%, transparent);
+        animation-duration: 32s;
         animation-direction: alternate-reverse;
     }
 
     .hero-art span:nth-child(3) {
-        bottom: -30%;
-        left: -6%;
-        width: 30rem;
-        border-width: 2.5rem;
-        border-color: color-mix(in srgb, var(--color-brand) 7%, transparent);
-        animation-duration: 30s;
+        bottom: -45%;
+        left: 30%;
+        width: 40rem;
+        background: color-mix(in srgb, #8fa9b8 20%, transparent);
+        animation-duration: 38s;
     }
 
     @keyframes hero-drift {
         to {
-            transform: translate3d(1.5rem, 1rem, 0) rotate(12deg);
+            transform: translate3d(3rem, 2rem, 0) scale(1.08);
         }
     }
 
@@ -1856,4 +1842,261 @@ html.is-mourning {
 /* Figures that line up, in the face of the words (see --font-mono). */
 .font-mono {
     font-variant-numeric: tabular-nums;
+}
+
+/*
+ * The home page's first screen (home.blade.php, "hero"): today's clinics as a board on frosted glass, a pulse
+ * across its foot in the colour of the day, and under it one row of the ways in people most often look for.
+ */
+.today-board {
+    overflow: hidden;
+    border: 1px solid color-mix(in srgb, var(--color-line) 70%, transparent);
+    border-radius: 1.5rem;
+    background: color-mix(in srgb, var(--color-page) 62%, transparent);
+    -webkit-backdrop-filter: blur(24px) saturate(1.3);
+    backdrop-filter: blur(24px) saturate(1.3);
+    box-shadow: 0 30px 60px -35px rgb(0 0 0 / 0.35);
+}
+
+.today-head {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 1.25rem 1.5rem 1rem;
+}
+
+.today-label {
+    display: block;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--color-muted);
+}
+
+.today-day {
+    display: block;
+    font-size: 2.25rem;
+    font-weight: 700;
+    line-height: 1.15;
+    color: color-mix(in srgb, var(--color-day, var(--color-brand)) 72%, var(--color-ink));
+}
+
+.today-date {
+    padding-bottom: 0.35rem;
+    font-size: 0.9rem;
+    color: var(--color-muted);
+}
+
+.today-board ul {
+    padding: 0 0.75rem;
+}
+
+.today-row {
+    display: flex;
+    align-items: baseline;
+    gap: 0.75rem;
+    padding: 0.6rem 0.75rem;
+    border-top: 1px solid color-mix(in srgb, var(--color-line) 60%, transparent);
+}
+
+.today-row.is-open {
+    margin-block: 2px;
+    border-radius: 0.75rem;
+    border-top-color: transparent;
+    background: color-mix(in srgb, var(--color-brand) 9%, transparent);
+}
+
+.today-row.is-open + .today-row {
+    border-top-color: transparent;
+}
+
+.today-hours {
+    width: 7.5rem;
+    flex-shrink: 0;
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.today-open {
+    display: inline-flex;
+    flex-shrink: 0;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--color-brand);
+}
+
+.today-live {
+    display: inline-block;
+    width: 0.5rem;
+    height: 0.5rem;
+    margin-right: 0.5rem;
+    border-radius: 999px;
+    background: var(--color-brand);
+    vertical-align: middle;
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--color-brand) 50%, transparent);
+    animation: today-live 2s ease-out infinite;
+}
+
+.today-open .today-live {
+    margin-right: 0;
+}
+
+@keyframes today-live {
+    to {
+        box-shadow: 0 0 0 8px transparent;
+    }
+}
+
+.today-more {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+    margin-top: 0.75rem;
+    padding: 0.9rem;
+    border-top: 1px solid color-mix(in srgb, var(--color-line) 60%, transparent);
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--color-brand);
+    text-decoration: none;
+}
+
+.today-more:hover {
+    background: color-mix(in srgb, var(--color-brand) 7%, transparent);
+}
+
+.hero-pulse {
+    position: absolute;
+    inset: auto 0 1.5rem 0;
+    z-index: -1;
+    width: 100%;
+    height: 6rem;
+    color: var(--color-day, var(--color-brand));
+    opacity: 0.45;
+    pointer-events: none;
+    transition: opacity 0.9s ease;
+}
+
+.hero-pulse path {
+    stroke-dasharray: 3000;
+    stroke-dashoffset: 3000;
+    animation: hero-pulse 2.6s ease-out 0.3s forwards;
+}
+
+@keyframes hero-pulse {
+    to {
+        stroke-dashoffset: 0;
+    }
+}
+
+/* Over a photograph the pulse would only cross it. */
+.home-screen[data-kind='photo'] .hero-pulse {
+    opacity: 0;
+}
+
+/*
+ * The ways in, as the signs along a hospital's corridor: a band of the site's colour, deep, and on it in white
+ * a symbol, the name, and an arrow for the way. Hairlines between, no boxes.
+ */
+.doors {
+    background: color-mix(in srgb, var(--color-brand) 58%, #0b1a10);
+    color: #fff;
+}
+
+.doors ul {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+}
+
+@media (min-width: 40rem) {
+    .doors ul {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (min-width: 64rem) {
+    .doors ul {
+        grid-auto-columns: minmax(0, 1fr);
+        grid-auto-flow: column;
+        grid-template-columns: none;
+    }
+}
+
+.doors li {
+    border-bottom: 1px solid rgb(255 255 255 / 0.14);
+}
+
+@media (min-width: 40rem) {
+    .doors li:nth-child(odd) {
+        border-right: 1px solid rgb(255 255 255 / 0.14);
+    }
+}
+
+@media (min-width: 64rem) {
+    .doors li,
+    .doors li:nth-child(odd) {
+        border-bottom: 0;
+        border-right: 1px solid rgb(255 255 255 / 0.14);
+    }
+
+    .doors li:last-child {
+        border-right: 0;
+    }
+}
+
+.door {
+    display: flex;
+    height: 100%;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1.15rem 1rem;
+    color: #fff;
+    text-decoration: none;
+    transition: background-color 200ms;
+}
+
+.door:hover,
+.door:focus-visible {
+    background: rgb(255 255 255 / 0.08);
+}
+
+.door-icon {
+    width: 1.6rem;
+    height: 1.6rem;
+    flex-shrink: 0;
+    opacity: 0.85;
+}
+
+.door-name {
+    flex: 1;
+    min-width: 0;
+    font-size: 1.05rem;
+    font-weight: 600;
+    line-height: 1.35;
+}
+
+.door-way {
+    width: 1.25rem;
+    height: 1.25rem;
+    flex-shrink: 0;
+    opacity: 0.6;
+    transition: transform 200ms, opacity 200ms;
+}
+
+.door:hover .door-way {
+    opacity: 1;
+    transform: translateX(3px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .hero-pulse path {
+        stroke-dashoffset: 0;
+        animation: none;
+    }
+
+    .today-live {
+        animation: none;
+    }
 }
