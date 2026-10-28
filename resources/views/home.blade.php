@@ -117,6 +117,11 @@
                 </section>
             @endif
         </div>
+
+        {{-- A pulse across the first screen, in the colour of the day, drawn once as the page opens. --}}
+        <svg class="hero-pulse" viewBox="0 0 1200 120" preserveAspectRatio="none" fill="none" aria-hidden="true">
+            <path d="M0 60H520l18-22 16 22h40l14-50 22 100 18-78 12 28h40l16-14 14 14H1200" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke" />
+        </svg>
     </section>
 
     {{-- What people most often come to do: a tile each, in reach before any scrolling on a wide screen. --}}

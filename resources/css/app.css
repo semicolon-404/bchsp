@@ -1857,3 +1857,40 @@ html.is-mourning {
 .font-mono {
     font-variant-numeric: tabular-nums;
 }
+
+/* A pulse across the home page's first screen (home.blade.php, "hero"), in the colour of the day, drawn once. */
+.hero-pulse {
+    position: absolute;
+    inset: auto 0 1.5rem 0;
+    z-index: -1;
+    width: 100%;
+    height: 6rem;
+    color: var(--color-day, var(--color-brand));
+    opacity: 0.4;
+    pointer-events: none;
+    transition: opacity 0.9s ease;
+}
+
+.hero-pulse path {
+    stroke-dasharray: 3000;
+    stroke-dashoffset: 3000;
+    animation: hero-pulse 2.6s ease-out 0.3s forwards;
+}
+
+@keyframes hero-pulse {
+    to {
+        stroke-dashoffset: 0;
+    }
+}
+
+/* Over a photograph the pulse would only cross it. */
+.home-screen[data-kind='photo'] .hero-pulse {
+    opacity: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .hero-pulse path {
+        stroke-dashoffset: 0;
+        animation: none;
+    }
+}

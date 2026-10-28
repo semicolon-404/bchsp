@@ -1,0 +1,17 @@
+{
+  "detector": {
+    "ignoreRules": [],
+    "ignoreFiles": [],
+    "ignoreValues": [
+      {
+        "rule": "gradient-text",
+        "value": "*",
+        "files": [
+          "resources/css/app.css"
+        ],
+        "createdAt": "2026-10-28T04:28:36.159Z",
+        "reason": "user confirmed: asked to put the home page back exactly as before (2026-10-28), gradient hospital name included"
+      }
+    ]
+  }
+}
