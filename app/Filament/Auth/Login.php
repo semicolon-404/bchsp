@@ -18,6 +18,15 @@ use SensitiveParameter;
  */
 class Login extends FilamentLogin
 {
+    /** In two halves, the hospital beside the form (resources/views/filament/auth/split-layout.blade.php). */
+    protected static string $layout = 'filament.auth.split-layout';
+
+    /** The logo is in the half beside the form. */
+    public function hasLogo(): bool
+    {
+        return false;
+    }
+
     protected function getEmailFormComponent(): Component
     {
         return TextInput::make('email')

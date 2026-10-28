@@ -389,20 +389,310 @@ html.dark {
     text-decoration: underline;
 }
 
-/* ------------------------------------------------------------ the sign-in page */
-.fi-simple-layout {
-    background:
-        radial-gradient(42rem 26rem at 12% 0%, var(--panel-tint-strong), transparent 65%),
-        radial-gradient(36rem 24rem at 95% 100%, var(--panel-tint), transparent 65%);
+/* ------------------------------------------------------------ the sign-in page (filament.auth.split-layout) */
+.signin {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    min-height: 100vh;
 }
 
-.fi-simple-main {
-    border-radius: 1.5rem;
-    border-top: 4px solid var(--primary-500);
-    box-shadow: 0 1px 2px rgb(0 0 0 / 0.05), 0 30px 60px -30px rgb(0 0 0 / 0.3);
+/* Behind it all: soft, muted colours, blurred hard and drifting slowly, as on a Mac's desktop. */
+.signin-backdrop {
+    position: fixed;
+    inset: 0;
+    overflow: hidden;
+    pointer-events: none;
+    background: #eceef0;
+}
+
+.dark .signin-backdrop {
+    background: #0b0c0d;
+}
+
+.signin-backdrop i {
+    position: absolute;
+    border-radius: 999px;
+    filter: blur(110px);
+    animation: signin-drift 24s ease-in-out infinite;
+    will-change: transform;
+}
+
+.signin-backdrop i:nth-child(1) {
+    left: -10%;
+    top: -15%;
+    width: 55vmax;
+    height: 55vmax;
+    background: #fff;
+}
+
+.signin-backdrop i:nth-child(2) {
+    right: -15%;
+    top: 5%;
+    width: 50vmax;
+    height: 50vmax;
+    background: color-mix(in oklab, var(--primary-300) 45%, #9fb8c8);
+    opacity: 0.55;
+    animation-duration: 30s;
+    animation-direction: reverse;
+}
+
+.signin-backdrop i:nth-child(3) {
+    left: 20%;
+    bottom: -25%;
+    width: 50vmax;
+    height: 50vmax;
+    background: #b9cfc6;
+    opacity: 0.7;
+    animation-duration: 36s;
+}
+
+.signin-backdrop i:nth-child(4) {
+    right: -5%;
+    bottom: -10%;
+    width: 35vmax;
+    height: 35vmax;
+    background: #c9c6cf;
+    opacity: 0.6;
+    animation-duration: 27s;
+    animation-direction: reverse;
+}
+
+.dark .signin-backdrop i:nth-child(1) {
+    background: #3a3d40;
+    opacity: 0.5;
+}
+
+.dark .signin-backdrop i:nth-child(2) {
+    background: var(--primary-800);
+    opacity: 0.4;
+}
+
+.dark .signin-backdrop i:nth-child(3) {
+    background: #24443d;
+    opacity: 0.45;
+}
+
+.dark .signin-backdrop i:nth-child(4) {
+    background: #2c2a33;
+    opacity: 0.5;
+}
+
+@keyframes signin-drift {
+    0%,
+    100% {
+        transform: translate3d(0, 0, 0) scale(1);
+    }
+
+    50% {
+        transform: translate3d(4%, -6%, 0) scale(1.08);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .signin-backdrop i {
+        animation: none;
+    }
+}
+
+@media (min-width: 1024px) {
+    .signin {
+        grid-template-columns: 1.1fr 1fr;
+    }
+}
+
+/* The half with the hospital and the time: the panel's colour, deep, with a fine grid. */
+.signin-visual {
+    position: relative;
+    display: none;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 2rem;
+    margin: 0.75rem;
+    padding: 2.5rem 3rem;
+    overflow: hidden;
+    border-radius: 2rem;
+    color: #fff;
+    background:
+        radial-gradient(ellipse at top left, color-mix(in oklab, var(--primary-400) 45%, transparent), transparent 55%),
+        radial-gradient(ellipse at bottom right, color-mix(in oklab, var(--primary-950) 80%, transparent), transparent 60%),
+        var(--primary-800);
+    box-shadow: 0 30px 60px -30px rgb(0 0 0 / 0.45);
+}
+
+.signin-visual::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    opacity: 0.08;
+    background-image: linear-gradient(to right, #fff 1px, transparent 1px), linear-gradient(to bottom, #fff 1px, transparent 1px);
+    background-size: 48px 48px;
+    pointer-events: none;
+}
+
+.signin-visual > * {
+    position: relative;
+}
+
+@media (min-width: 1024px) {
+    .signin-visual {
+        display: flex;
+    }
+}
+
+.signin-visual-top {
+    display: flex;
+    align-items: center;
+    gap: 0.9rem;
+}
+
+.signin-logo {
+    width: auto;
+    height: 3.25rem;
+    object-fit: contain;
+}
+
+.signin-name {
+    font-size: 1.15rem;
+    font-weight: 700;
+    line-height: 1.3;
+}
+
+.signin-small {
+    font-size: 0.875rem;
+    opacity: 0.7;
+}
+
+.signin-label {
+    font-size: 0.9rem;
+    font-weight: 600;
+    opacity: 0.75;
+}
+
+.signin-clock {
+    margin-top: 0.25rem;
+    font-size: clamp(4.5rem, 8vw, 7rem);
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: -0.02em;
+    font-variant-numeric: tabular-nums;
+}
+
+.signin-date {
+    margin-top: 0.75rem;
+    font-size: 1.15rem;
+    opacity: 0.8;
+}
+
+.signin-steps {
+    max-width: 30rem;
+    padding: 1.25rem;
+    border: 1px solid rgb(255 255 255 / 0.15);
+    border-radius: 1.25rem;
+    background: rgb(255 255 255 / 0.07);
+}
+
+.signin-steps ol {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.5rem;
+    margin-top: 0.75rem;
+}
+
+.signin-steps li {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    padding: 0.75rem;
+    border-radius: 0.75rem;
+    background: rgb(255 255 255 / 0.08);
+    font-size: 0.875rem;
+    line-height: 1.35;
+}
+
+.signin-steps li span {
+    display: flex;
+    width: 1.6rem;
+    height: 1.6rem;
+    align-items: center;
+    justify-content: center;
+    border-radius: 999px;
+    background: #fff;
+    color: var(--primary-800);
+    font-weight: 700;
+}
+
+.signin-motto {
+    margin-top: 1rem;
+    font-size: 0.9rem;
+    opacity: 0.75;
+}
+
+/* The half with the form. */
+.signin-side {
+    display: flex;
+    flex-direction: column;
+    padding: 1.25rem 1rem;
+}
+
+@media (min-width: 640px) {
+    .signin-side {
+        padding: 1.5rem 2.5rem;
+    }
+}
+
+.signin-phone-brand {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    font-weight: 700;
+}
+
+.signin-phone-brand .signin-logo {
+    height: 2.25rem;
+    padding: 0;
+    background: none;
+}
+
+@media (min-width: 1024px) {
+    .signin-phone-brand {
+        visibility: hidden;
+    }
+}
+
+.signin-card {
+    width: 100%;
+    max-width: 26rem;
+    margin: auto;
+    padding: 2rem 1.5rem;
+    border-radius: 1.75rem;
+    background: rgb(255 255 255 / 0.6);
+    -webkit-backdrop-filter: blur(40px) saturate(1.5);
+    backdrop-filter: blur(40px) saturate(1.5);
+    box-shadow: 0 0 0 1px rgb(255 255 255 / 0.6), 0 30px 60px -25px rgb(0 0 0 / 0.25);
+}
+
+.dark .signin-card {
+    background: rgb(24 24 27 / 0.6);
+    box-shadow: 0 0 0 1px rgb(255 255 255 / 0.08);
+}
+
+@media (min-width: 640px) {
+    .signin-card {
+        padding: 2.5rem 2.25rem;
+    }
+}
+
+.signin-foot {
+    margin-top: 1.5rem;
+    text-align: center;
+    font-size: 0.8rem;
+    opacity: 0.6;
 }
 
 .panel-signin-note {
+
     text-align: center;
     font-size: 0.875rem;
     opacity: 0.75;
