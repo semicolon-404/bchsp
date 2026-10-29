@@ -541,6 +541,32 @@ html.is-mourning {
             transform: translateY(-3px);
             box-shadow: 0 14px 30px -16px color-mix(in srgb, var(--color-ink) 45%, transparent);
         }
+
+        /* Its icon leans towards where the card leads. */
+        a.card svg:first-child {
+            transition: transform 250ms ease;
+        }
+
+        a.card:hover svg:first-child {
+            transform: translateX(2px) scale(1.08);
+        }
+
+        .btn {
+            transition: background-color 200ms, border-color 200ms, color 200ms, box-shadow 200ms, transform 150ms ease;
+        }
+
+        .btn:hover {
+            transform: translateY(-1px);
+        }
+    }
+
+    /* A button or card pressed gives a little under the finger, on a phone as with a mouse. */
+    @media (prefers-reduced-motion: no-preference) {
+        .btn:active,
+        a.card:active {
+            transform: scale(0.98);
+            transition-duration: 80ms;
+        }
     }
 
     /*

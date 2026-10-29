@@ -20,6 +20,8 @@ function rise() {
             if (!entry.isIntersecting) return;
 
             entry.target.classList.add('is-in');
+            // Once in place, the wait goes, so that a hover answers at once.
+            entry.target.addEventListener('transitionend', () => entry.target.style.removeProperty('transition-delay'), { once: true });
             seen.unobserve(entry.target);
         });
     }, { rootMargin: '0px 0px -8% 0px' });
@@ -30,6 +32,9 @@ function rise() {
         if (part.getBoundingClientRect().top < window.innerHeight || part.parentElement.closest('.rise')) return;
 
         part.classList.add('rise');
+        // Cards side by side in a row come one after another, not all at once.
+        const row = [...part.parentElement.children].filter((child) => child.classList.contains('rise'));
+        part.style.transitionDelay = `${Math.min(row.indexOf(part), 5) * 70}ms`;
         seen.observe(part);
     });
 }
