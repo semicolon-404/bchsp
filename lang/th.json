@@ -1188,5 +1188,16 @@
     "{1} :count unit of work|[2,*] :count units of work": ":count งาน",
     "{1} A matter is dealt with within :count day of being received.|[2,*] A matter is dealt with within :count days of being received.": "ระยะเวลาดำเนินการมาตรฐาน :count วัน นับจากวันที่รับเรื่อง",
     "{1} at work for :count year|[2,*] at work for :count years": "ดำเนินงานมาแล้ว :count ปี",
-    "{1} opened :count time|[2,*] opened :count times": "เปิดอ่าน :count ครั้ง"
+    "{1} opened :count time|[2,*] opened :count times": "เปิดอ่าน :count ครั้ง",
+    "A department deleted a post": "หน่วยงานลบโพสต์",
+    "A department changed a post that is showing": "หน่วยงานแก้ไขโพสต์ที่เผยแพร่อยู่",
+    "Many failed sign-ins": "เข้าสู่ระบบไม่สำเร็จหลายครั้ง",
+    ":count failed sign-ins within 15 minutes from :address": "เข้าสู่ระบบไม่สำเร็จ :count ครั้งภายใน 15 นาที จาก :address",
+    "See the access log": "ดูบันทึกการเข้าใช้",
+    "Recent activity": "ความเคลื่อนไหวล่าสุด",
+    "Nothing has been done in the panel yet.": "ยังไม่มีความเคลื่อนไหวในระบบหลังบ้าน",
+    "Someone": "ไม่ทราบชื่อ",
+    ":name: what was done in the panel on :day": ":name: ความเคลื่อนไหวในระบบหลังบ้านวันที่ :day",
+    "What was done in the panel on :day (:count):": "ความเคลื่อนไหวในระบบหลังบ้านวันที่ :day (:count รายการ):",
+    "The whole access log:": "ดูบันทึกทั้งหมด:"
 }

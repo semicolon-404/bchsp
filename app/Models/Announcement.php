@@ -112,6 +112,8 @@ class Announcement extends Model
 
             if ($announcement->wasChanged('status')) {
                 PostNotices::tell($announcement, $announcement->getRawOriginal('status'));
+            } elseif ($announcement->status === self::STATUS_PUBLISHED && array_diff(array_keys($announcement->getChanges()), ['updated_at', 'ending_told_at', 'views', 'helpful']) !== []) {
+                PostNotices::tellOfDepartmentChange($announcement, 'updated');
             }
 
             // The files belong to the announcement alone: one taken off it, or the whole announcement deleted, removes them.
@@ -137,6 +139,8 @@ class Announcement extends Model
         // Not an arrow function: delete() answers false for a file already gone, and a listener that answers false
         // stops the ones after it (the access log's among them).
         // In the bin its files are kept, so that it comes back whole; they go when it goes for good.
+        static::deleted(fn (Announcement $announcement) => PostNotices::tellOfDepartmentChange($announcement, 'deleted'));
+
         static::forceDeleted(function (Announcement $announcement) {
             Storage::disk('public')->delete(array_filter([...($announcement->attachments ?? []), ...($announcement->gallery ?? []), $announcement->image_path]));
         });

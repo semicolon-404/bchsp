@@ -16,7 +16,8 @@ use Illuminate\Support\Str;
  * The bell in the panel, for the posts of the departments (Announcement::booted, "created" and "updated").
  *
  * A post sent for approval tells those who can approve it; one approved, or sent back, tells the accounts
- * of the department it belongs to. Whoever did the thing is not told of it.
+ * of the department it belongs to. A department changing a post already showing, or deleting one, tells the
+ * administrators. Whoever did the thing is not told of it.
  */
 class PostNotices
 {
@@ -44,6 +45,22 @@ class PostNotices
             ),
             default => null,
         };
+    }
+
+    /** A department changed a post already showing ('updated'), or deleted one ('deleted'): the administrators are told. */
+    public static function tellOfDepartmentChange(Announcement $post, string $what): void
+    {
+        if (! auth()->user()?->postsForOneDepartment()) {
+            return;
+        }
+
+        self::send(
+            self::admins(),
+            $what === 'deleted' ? __('A department deleted a post') : __('A department changed a post that is showing'),
+            collect([$post->title, $post->department?->name, auth()->user()->name])->filter()->implode(' · '),
+            $what === 'deleted' ? 'heroicon-o-trash' : 'heroicon-o-pencil-square',
+            $what === 'deleted' ? 'danger' : 'info', $post, __('Open the post'),
+        );
     }
 
     /**
@@ -79,6 +96,11 @@ class PostNotices
     private static function reviewers(): Collection
     {
         return User::where(fn ($query) => $query->where('role', Role::Admin->value)->orWhereNull('department_id'))->get();
+    }
+
+    private static function admins(): Collection
+    {
+        return User::where('role', Role::Admin->value)->get();
     }
 
     /** The accounts of the department the post belongs to. */

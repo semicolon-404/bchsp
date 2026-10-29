@@ -30,3 +30,6 @@ Schedule::call(fn () => SystemHealth::beat())->everyMinute()->name('system:heart
 // Every morning: an email to the administrators when something on System status is wrong (a backup that
 // did not run, a disk nearly full), so it is noticed the next day and not the day it is needed.
 Schedule::command('health:notify')->dailyAt('07:30');
+
+// Every morning: what each account did in the panel yesterday, to the administrators. Nothing on a quiet day.
+Schedule::command('activity:daily')->dailyAt('07:35');
