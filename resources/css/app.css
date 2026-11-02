@@ -900,6 +900,120 @@ html.is-mourning {
         }
     }
 
+    /*
+     * The ITA page (ita.blade.php). An item's state as a round mark: all its parts have their documents, some do,
+     * none do. Under it, each part with a dot that fills when it has its documents, and its files as small pills.
+     */
+    .ita-state {
+        display: flex;
+        flex-shrink: 0;
+        align-items: center;
+        justify-content: center;
+        width: 2.25rem;
+        height: 2.25rem;
+        border-radius: 999px;
+        background: var(--color-raised);
+        color: var(--color-muted);
+    }
+
+    .ita-state.is-full {
+        background: color-mix(in srgb, var(--color-syn-function) 15%, transparent);
+        color: var(--color-syn-function);
+    }
+
+    .ita-state.is-part {
+        background: color-mix(in srgb, var(--color-syn-string) 16%, transparent);
+        color: var(--color-syn-string);
+    }
+
+    .ita-rounds {
+        grid-auto-flow: column;
+    }
+
+    .ita-rounds > a {
+        text-decoration: none;
+        white-space: nowrap;
+    }
+
+    .ita-toc {
+        display: grid;
+        gap: 0.125rem;
+        border-left: 2px solid var(--color-line);
+    }
+
+    .ita-toc a {
+        display: flex;
+        gap: 0.75rem;
+        align-items: baseline;
+        margin-left: -2px;
+        padding: 0.5rem 0.75rem;
+        border-left: 2px solid transparent;
+        color: var(--color-ink);
+        font-size: 0.9375rem;
+        line-height: 1.4;
+        text-decoration: none;
+        transition: border-color 200ms, color 200ms;
+    }
+
+    .ita-toc a:hover {
+        border-color: var(--color-brand);
+        color: var(--color-brand);
+    }
+
+    .ita-round {
+        margin: 1.25rem 0 0.5rem;
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: var(--color-brand);
+    }
+
+    .ita-round:first-child {
+        margin-top: 0;
+    }
+
+    .ita-parts > li {
+        display: flex;
+        gap: 0.875rem;
+        padding: 0.75rem 0;
+        border-bottom: 1px solid var(--color-line);
+    }
+
+    .ita-parts > li:last-child {
+        border-bottom: 0;
+    }
+
+    .ita-dot {
+        flex-shrink: 0;
+        width: 0.75rem;
+        height: 0.75rem;
+        margin-top: 0.45rem;
+        border-radius: 999px;
+        border: 2px solid var(--color-line);
+    }
+
+    .ita-dot.is-full {
+        border-color: var(--color-syn-function);
+        background: var(--color-syn-function);
+    }
+
+    .ita-file {
+        display: inline-flex;
+        gap: 0.375rem;
+        align-items: center;
+        max-width: 100%;
+        padding: 0.375rem 0.75rem;
+        border-radius: 999px;
+        background: color-mix(in srgb, var(--color-brand) 9%, transparent);
+        color: var(--color-brand);
+        font-size: 0.875rem;
+        text-decoration: none;
+        transition: background-color 200ms;
+    }
+
+    .ita-file:hover {
+        background: color-mix(in srgb, var(--color-brand) 18%, transparent);
+    }
+
     /* A choice in a row of filters (the blog's categories); the one in force is lit. */
     .chip {
         display: inline-flex;

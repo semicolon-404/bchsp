@@ -175,4 +175,54 @@ class ItaTest extends TestCase
         $this->get('/ita')->assertSee('การประเมินคุณธรรมและความโปร่งใส (ITA)')->assertSee('ปีงบประมาณ 2569')->assertSee('ยังไม่มีเอกสาร');
         $this->actingAs(User::factory()->create())->get('/admin/ita-items')->assertOk()->assertSee('หัวข้อ ITA')->assertSee('เริ่มปีงบประมาณใหม่');
     }
+    public function test_an_item_shows_its_parts_by_round_and_how_many_have_documents(): void
+    {
+        ItaItem::factory()->create(['year' => 2569, 'number' => 4, 'category' => '2. Procurement', 'title' => 'Procurement system', 'parts' => [
+            ['round' => 'year', 'title' => '1.1 Memo to the director', 'links' => [['label' => 'Signed memo', 'url' => 'https://drive.google.com/file/d/a/view']]],
+            ['round' => 'q2', 'title' => '2.1 Report of quarters 1 and 2'],
+            ['round' => 'q4', 'title' => '2.1 Report of quarters 3 and 4'],
+        ]]);
+
+        $item = ItaItem::sole();
+        $this->assertSame(['done' => 1, 'of' => 3], $item->progress());
+        $this->assertSame(['done' => 0, 'of' => 1], $item->progress('q2'));
+
+        $this->get('/ita')
+            ->assertSee('2. Procurement')
+            ->assertSeeInOrder(['The whole year', '1.1 Memo to the director', 'Signed memo', 'Quarter 2 · six-month round', '2.1 Report of quarters 1 and 2', 'Quarter 4 · twelve-month round'])
+            ->assertSee('1 of 3 with documents');
+
+        // One round at a time: the other rounds' parts are left out.
+        $this->get('/ita?round=q2')->assertSee('2.1 Report of quarters 1 and 2')->assertDontSee('Report of quarters 3 and 4')->assertDontSee('Memo to the director');
+        $this->get('/ita?round=nonsense')->assertOk()->assertSee('Report of quarters 3 and 4');
+    }
+
+    public function test_a_file_taken_off_a_part_is_removed_and_a_new_year_copies_the_parts_without_evidence(): void
+    {
+        Storage::fake('public');
+        Storage::disk('public')->put('ita/memo.pdf', '%PDF');
+
+        $item = ItaItem::factory()->create(['year' => 2569, 'number' => 1, 'category' => '1. Disclosure', 'parts' => [['round' => 'q2', 'title' => 'Memo', 'attachments' => ['ita/memo.pdf']]]]);
+
+        $this->assertSame(1, ItaItem::startYearFrom(2569, 2570));
+        $copy = ItaItem::where('year', 2570)->sole();
+        $this->assertSame('1. Disclosure', $copy->category);
+        $this->assertSame([['round' => 'q2', 'title' => 'Memo']], $copy->parts);
+
+        $item->update(['parts' => [['round' => 'q2', 'title' => 'Memo']]]);
+        Storage::disk('public')->assertMissing('ita/memo.pdf');
+    }
+
+    public function test_the_year_2569_starts_from_its_written_out_list_once(): void
+    {
+        $this->artisan('ita:template', ['year' => 2569])->assertSuccessful();
+
+        $this->assertSame(22, ItaItem::where('year', 2569)->count());
+        $this->assertSame('9. วัฒนธรรมองค์กร', ItaItem::where('number', 22)->value('category'));
+        $this->assertGreaterThan(5, count(ItaItem::where('number', 4)->value('parts')));
+
+        $this->artisan('ita:template', ['year' => 2569])->assertSuccessful();
+        $this->assertSame(22, ItaItem::count());
+        $this->artisan('ita:template', ['year' => 2400])->assertFailed();
+    }
 }

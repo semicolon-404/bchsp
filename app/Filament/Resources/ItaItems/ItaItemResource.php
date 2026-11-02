@@ -13,6 +13,7 @@ use Filament\Actions\DeleteAction;
 use Filament\Actions\EditAction;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Repeater;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
@@ -24,6 +25,7 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\ToggleColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
+use Illuminate\Support\Str;
 use UnitEnum;
 
 /**
@@ -79,6 +81,13 @@ class ItaItemResource extends Resource
                             ->maxLength(30)
                             ->placeholder('MOIT 1')
                             ->helperText(__('Left blank, it is called "MOIT" and its number.')),
+                        TextInput::make('category')
+                            ->label(__('Heading it sits under'))
+                            ->maxLength(200)
+                            ->placeholder('1. การเปิดเผยข้อมูล')
+                            // The headings already used, to pick from rather than type again slightly differently.
+                            ->datalist(fn () => ItaItem::query()->whereNotNull('category')->distinct()->orderBy('category')->pluck('category')->all())
+                            ->helperText(__('Items with the same heading are shown together.')),
                         Toggle::make('is_active')
                             ->label(__('Shown on the site'))
                             ->default(true),
@@ -96,8 +105,53 @@ class ItaItemResource extends Resource
                             ->label(__('Note (optional)'))
                             ->rows(2)
                             ->maxLength(2000),
+                        Repeater::make('parts')
+                            ->label(__('Parts of the item'))
+                            ->helperText(__('The numbered documents the assessment asks for under this item, each in the round it is due, with its own files or links.'))
+                            ->schema([
+                                Select::make('round')
+                                    ->label(__('Due in'))
+                                    ->options(collect(ItaItem::ROUNDS)->map(fn (string $label) => __($label))->all())
+                                    ->default('year')
+                                    ->required()
+                                    ->native(false),
+                                Textarea::make('title')
+                                    ->label(__('What is asked for'))
+                                    ->required()
+                                    ->rows(2)
+                                    ->maxLength(1000)
+                                    ->placeholder('1.1 บันทึกข้อความที่ผู้บริหารลงนาม…'),
+                                FileUpload::make('attachments')
+                                    ->label(__('PDF files'))
+                                    ->multiple()
+                                    ->maxFiles(ItaItem::MAX_FILES)
+                                    ->acceptedFileTypes(['application/pdf'])
+                                    ->maxSize(20480)
+                                    ->disk('public')
+                                    ->directory('ita')
+                                    ->visibility('public')
+                                    ->storeFileNamesIn('attachment_names')
+                                    ->reorderable()
+                                    ->downloadable(),
+                                Repeater::make('links')
+                                    ->label(__('Links to documents kept elsewhere'))
+                                    ->schema([
+                                        TextInput::make('label')->label(__('What the document is'))->required()->maxLength(200),
+                                        TextInput::make('url')->label(__('Link'))->required()->url()->startsWith('https://')->maxLength(1000)->placeholder('https://drive.google.com/file/d/…'),
+                                    ])
+                                    ->columns(2)
+                                    ->defaultItems(0)
+                                    ->maxItems(ItaItem::MAX_FILES)
+                                    ->addActionLabel(__('Add a link')),
+                            ])
+                            ->itemLabel(fn (array $state) => Str::limit(trim((string) ($state['title'] ?? '')), 90) ?: null)
+                            ->collapsible()
+                            ->collapsed()
+                            ->defaultItems(0)
+                            ->reorderableWithButtons()
+                            ->addActionLabel(__('Add a part')),
                         FileUpload::make('attachments')
-                            ->label(__('PDF files'))
+                            ->label(__('PDF files of the item itself'))
                             ->multiple()
                             ->maxFiles(ItaItem::MAX_FILES)
                             ->acceptedFileTypes(['application/pdf'])
@@ -145,9 +199,13 @@ class ItaItemResource extends Resource
                     ->limit(120),
                 TextColumn::make('evidence')
                     ->label(__('Documents'))
-                    ->state(fn (ItaItem $record) => count($record->attachments ?? []) + count($record->links ?? []))
+                    ->state(fn (ItaItem $record) => $record->progress()['done'].' / '.$record->progress()['of'])
                     ->badge()
-                    ->color(fn (int $state) => $state > 0 ? 'success' : 'danger'),
+                    ->color(fn (ItaItem $record) => match (true) {
+                        $record->progress()['done'] === $record->progress()['of'] => 'success',
+                        $record->progress()['done'] > 0 => 'warning',
+                        default => 'danger',
+                    }),
                 ToggleColumn::make('is_active')
                     ->label(__('Shown on the site')),
             ])
