@@ -24,6 +24,7 @@ class WebCron
         'backup' => ['03:10', 'backup:database', []],
         'daily' => ['04:20', 'site:daily', ['--links' => 20]],
         'notify' => ['07:30', 'health:notify', []],
+        'activity' => ['07:35', 'activity:daily', []],
         // Asked every day, sent on the first of the month only.
         'report' => ['08:00', 'report:monthly', ['--if-first' => true]],
     ];
