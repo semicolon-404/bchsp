@@ -97,7 +97,7 @@ class InstallAndDailyWorkTest extends TestCase
         $this->travelTo('2026-11-10 09:00');
         Cache::forget('webcron:tick');
         config(['bchsp.backup.connection' => 'nowhere']);   // the backup itself fails on the tests' database: it is still marked as tried
-        $this->assertSame(['backup', 'daily', 'notify', 'report'], WebCron::tick());
+        $this->assertSame(['backup', 'daily', 'notify', 'activity', 'report'], WebCron::tick());
 
         // The next day at one in the morning: nothing is due yet; at four, the night's work again.
         $this->travelTo('2026-11-11 00:10');
