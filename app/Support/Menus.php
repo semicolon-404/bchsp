@@ -101,7 +101,47 @@ class Menus
      *
      * @return array{url: string, active: bool, children: list<array{label: string, url: string, active: bool}>}|null
      */
+    /** Whether there are online services to list: asked by the menu, the footer and the home page, once a request. */
+    public static function hasServices(): bool
+    {
+        return self::once('menus.services', fn () => StaffLink::forThePublic()->exists());
+    }
+
+    /** Whether there are questions people ask to list: as hasServices. */
+    public static function hasFaq(): bool
+    {
+        return self::once('menus.faq', fn () => Faq::shown()->exists());
+    }
+
+    /** Forgets what this request worked out: for code that changes what the menus list and reads them again at once. */
+    public static function forget(): void
+    {
+        foreach (array_keys(request()->attributes->all()) as $key) {
+            if (str_starts_with($key, 'menus.')) {
+                request()->attributes->remove($key);
+            }
+        }
+    }
+
+    /** What one request has worked out already, kept on it (and so never carried to the next). */
+    private static function once(string $key, \Closure $work): mixed
+    {
+        $attributes = request()->attributes;
+
+        if (! $attributes->has($key)) {
+            $attributes->set($key, $work());
+        }
+
+        return $attributes->get($key);
+    }
+
     private static function place(string $key): ?array
+    {
+        // Asked for by the bar, the dock and the menu page of one request: worked out once for it.
+        return self::once('menus.place.'.$key, fn () => self::build($key));
+    }
+
+    private static function build(string $key): ?array
     {
         $request = request();
         $type = $request->routeIs('announcements.index') ? $request->query('type') : null;
@@ -116,11 +156,11 @@ class Menus
                     ->map(fn (SitePage $page) => $link($page->localTitle(), route('pages.show', $page), $request->routeIs('pages.show') && $request->route('page')?->is($page)))
                     ->all();
                 // What patients look for, each listed once it has something in it.
-                if (StaffLink::forThePublic()->exists()) {
+                if (self::hasServices()) {
                     $children[] = $link(__('Services online'), route('services'), $request->routeIs('services'));
                 }
 
-                if (Faq::shown()->exists()) {
+                if (self::hasFaq()) {
                     $children[] = $link(__('Questions people ask'), route('faq'), $request->routeIs('faq'));
                 }
 

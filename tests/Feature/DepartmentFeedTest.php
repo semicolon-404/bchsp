@@ -70,7 +70,12 @@ class DepartmentFeedTest extends TestCase
 
     public function test_there_are_ways_in_once_a_department_has_posted_and_a_feed_for_one_department(): void
     {
-        $children = fn () => array_column(collect(Menus::items('all'))->firstWhere('key', 'news')['children'], 'label');
+        // Read afresh each time: the menus keep what one request worked out.
+        $children = function () {
+            Menus::forget();
+
+            return array_column(collect(Menus::items('all'))->firstWhere('key', 'news')['children'], 'label');
+        };
 
         $this->assertNotContains('Feed of the departments', $children());
 

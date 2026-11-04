@@ -62,6 +62,7 @@ class CommentsRelationManager extends RelationManager
     public function table(Table $table): Table
     {
         return $table
+            ->modifyQueryUsing(fn ($query) => $query->with('user'))
             ->defaultSort('created_at')
             ->paginated(false)
             ->emptyStateHeading(__('No comments yet'))

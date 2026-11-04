@@ -39,8 +39,8 @@
         [route('phones'), 'Phone numbers', 'Every department\'s number', 'phone'],
         [route('announcements.index'), 'Announcements', 'News and notices', 'megaphone'],
         [route('departments.index'), 'Departments', 'Who looks after what', 'building-office-2'],
-        App\Models\StaffLink::forThePublic()->exists() ? [route('services'), 'Services online', 'Without coming in', 'computer-desktop'] : null,
-        App\Models\Faq::shown()->exists() ? [route('faq'), 'Questions people ask', 'Answers before you call', 'question-mark-circle'] : null,
+        App\Support\Menus::hasServices() ? [route('services'), 'Services online', 'Without coming in', 'computer-desktop'] : null,
+        App\Support\Menus::hasFaq() ? [route('faq'), 'Questions people ask', 'Answers before you call', 'question-mark-circle'] : null,
         App\Models\Announcement::hasEvents() ? [route('calendar'), 'Calendar', 'What happens when', 'calendar'] : null,
         [route('contact'), 'Contact and map', 'How to reach us', 'map-pin'],
     ]));

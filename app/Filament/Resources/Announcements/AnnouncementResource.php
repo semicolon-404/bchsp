@@ -257,7 +257,7 @@ class AnnouncementResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
-            ->modifyQueryUsing(fn ($query) => $query->inListOrder())
+            ->modifyQueryUsing(fn ($query) => $query->with(['type', 'department'])->inListOrder())
             ->columns([
                 // The title carries what used to be columns of their own, so the list fits a screen without scrolling
                 // sideways: a bookmark when pinned, and its type and department in small letters under it.

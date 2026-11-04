@@ -352,7 +352,7 @@ class Announcement extends Model
      */
     public static function slides(): Collection
     {
-        return static::current()->where('in_slider', true)->whereNotNull('image_path')->inListOrder()->limit(self::SLIDES)->get();
+        return static::current()->with('type')->where('in_slider', true)->whereNotNull('image_path')->inListOrder()->limit(self::SLIDES)->get();
     }
 
     /** The first of the posters that open over the page. */

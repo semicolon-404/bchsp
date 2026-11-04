@@ -86,6 +86,7 @@ class ItaTest extends TestCase
         ItaItem::factory()->create(['year' => 2568]);
         SitePage::factory()->create(['title' => 'Anti-corruption plan', 'section' => 'ita']);
 
+        Menus::forget();
         $ita = collect(Menus::items('top'))->firstWhere('key', 'ita');
 
         $this->assertSame(['Fiscal year 2569', 'Fiscal year 2568', 'Anti-corruption plan'], array_column($ita['children'], 'label'));

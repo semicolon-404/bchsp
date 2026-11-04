@@ -170,7 +170,7 @@
         $columns = array_filter([
             'Services' => [
                 ['schedule', __('Clinic schedule')], ['departments.index', __('Departments')], ['phones', __('Phone numbers of every department')],
-                App\Models\StaffLink::forThePublic()->exists() ? ['services', __('Online services')] : null, App\Models\Faq::shown()->exists() ? ['faq', __('Questions people ask')] : null,
+                App\Support\Menus::hasServices() ? ['services', __('Online services')] : null, App\Support\Menus::hasFaq() ? ['faq', __('Questions people ask')] : null,
             ],
             'News and documents' => [
                 ['announcements.index', __('Announcements')], ['posts', __('Feed of the departments')], ['calendar', __('Calendar')],
