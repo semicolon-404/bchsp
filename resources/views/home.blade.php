@@ -215,7 +215,7 @@
                         @if ($mostRead->isNotEmpty())
                             <div>
                                 <h3 class="flex items-center gap-2 text-xl"><x-heroicon-o-fire class="size-5 text-brand" aria-hidden="true" />{{ __('Most read') }}</h3>
-                                <ol class="card mt-3 p-0">
+                                <ol class="card rank-list mt-3 p-0">
                                     @foreach ($mostRead as $one)
                                         <li class="border-b border-line last:border-b-0">
                                             <a href="{{ route('announcements.show', $one) }}" class="group flex items-start gap-3 px-4 py-3 no-underline">

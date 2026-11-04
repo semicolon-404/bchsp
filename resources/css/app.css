@@ -2427,4 +2427,102 @@ html.is-mourning {
         border-radius: 10px;
     }
 
+
+    /*
+     * What answers the pointer, on a device that has one and for a visitor who has not asked for less motion:
+     * the poster leans in, a row of news lights up with a bar of its colour and its title steps aside,
+     * the picture beside it grows a little, the kinds rise, and the links underline from the left.
+     */
+    @media (hover: hover) and (prefers-reduced-motion: no-preference) {
+        .poster-stage img {
+            transition: transform 600ms cubic-bezier(0.2, 0.7, 0.2, 1);
+        }
+
+        .poster-stage li:hover img {
+            transform: scale(1.04);
+        }
+
+        .news-list > li {
+            position: relative;
+        }
+
+        .news-list > li::before {
+            content: "";
+            position: absolute;
+            inset-block: 0.75rem;
+            left: 0;
+            width: 3px;
+            border-radius: 0 3px 3px 0;
+            background: var(--color-brand);
+            transform: scaleY(0);
+            transition: transform 200ms ease;
+        }
+
+        .news-list > li:hover::before {
+            transform: scaleY(1);
+        }
+
+        .news-list > li > a {
+            transition: background 200ms ease;
+        }
+
+        .news-list > li > a:hover {
+            background: color-mix(in srgb, var(--color-brand) 5%, transparent);
+        }
+
+        .news-list > li > a > span,
+        .news-list > li > a .news-detail > span {
+            transition: transform 200ms ease;
+        }
+
+        .news-list > li > a:hover .news-detail > span:not(:first-child),
+        .news-list > li > a:hover .news-line {
+            transform: translateX(4px);
+        }
+
+        .news-list > li img {
+            transition: transform 250ms ease, box-shadow 250ms ease;
+        }
+
+        .news-list > li > a:hover img {
+            transform: scale(1.08) rotate(-1deg);
+            box-shadow: 0 8px 18px -8px rgb(0 0 0 / 0.35);
+        }
+
+        .chip {
+            transition: transform 200ms ease, box-shadow 200ms ease, border-color 200ms ease;
+        }
+
+        .chip:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 18px -10px color-mix(in srgb, var(--color-ink) 35%, transparent);
+        }
+
+        /* The most read: the number grows and the row lights up, as a chart's top entries do. */
+        .rank-list a {
+            transition: background 200ms ease;
+        }
+
+        .rank-list a:hover {
+            background: color-mix(in srgb, var(--color-brand) 5%, transparent);
+        }
+
+        .rank-list a > span:first-child {
+            transition: transform 250ms cubic-bezier(0.3, 1.6, 0.5, 1);
+        }
+
+        .rank-list a:hover > span:first-child {
+            transform: scale(1.35);
+        }
+
+        .foot-link {
+            background: linear-gradient(currentColor, currentColor) 0 100% / 0 1px no-repeat;
+            transition: background-size 250ms ease, color 150ms;
+        }
+
+        .foot-link:hover {
+            background-size: 100% 1px;
+            text-decoration: none;
+        }
+    }
 }
