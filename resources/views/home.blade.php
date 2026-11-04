@@ -21,7 +21,7 @@
     // What visitors most often phone to ask, beside the name: what is open today.
     $sessions = App\Models\ClinicSession::today();
     $openNow = $sessions->filter->isOpenNow()->count();
-    $announcements = $shows('announcements') ? App\Models\Announcement::current()->with('type')->inListOrder()->limit(5)->get() : collect();
+    $announcements = $shows('announcements') ? App\Models\Announcement::current()->with('type')->inListOrder()->limit(8)->get() : collect();
     // The slides sit beside the announcements, unless an administrator gave them a section of their own.
     $slides = $shows('announcements') && ! $shows('slides') ? App\Models\Announcement::slides() : collect();
     // The departments that posted most lately, newest first: a way in to their own pages.
@@ -169,11 +169,11 @@
 
                 <div @class(['mt-10 grid gap-8', 'lg:grid-cols-12' => $slides->isNotEmpty() && $announcements->isNotEmpty()])>
                     @if ($slides->isNotEmpty())
-                        {{-- The pictures are mostly posters, upright: an upright frame shows them whole, as tall as the list beside it. --}}
-                        <div class="min-w-0 lg:col-span-5"><x-site.banners part="stage" :banners="$slides" frame="aspect-[4/5]" /></div>
+                        {{-- The posters are mostly wide: a wide frame, the larger part of the row, so they stand out. --}}
+                        <div class="min-w-0 lg:col-span-7"><x-site.banners part="stage" :banners="$slides" frame="aspect-[16/10]" /></div>
                     @endif
                     @if ($announcements->isNotEmpty())
-                        <ul @class(['card news-list p-0', 'lg:col-span-7' => $slides->isNotEmpty(), 'mx-auto w-full max-w-4xl' => $slides->isEmpty()])>
+                        <ul @class(['card news-list min-w-0 p-0', 'lg:col-span-5' => $slides->isNotEmpty(), 'mx-auto w-full max-w-4xl' => $slides->isEmpty()])>
                             @foreach ($announcements as $announcement)
                                 <x-site.announcement-row :announcement="$announcement" />
                             @endforeach

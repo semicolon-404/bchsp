@@ -364,17 +364,17 @@ class AnnouncementsTest extends TestCase
             ->assertSee('href="'.route('announcements.index').'" class="chip gap-2"', false);
     }
 
-    public function test_the_home_page_shows_the_five_at_the_top_of_the_list_and_the_way_to_the_rest(): void
+    public function test_the_home_page_shows_the_eight_at_the_top_of_the_list_and_the_way_to_the_rest(): void
     {
         $this->get('/')->assertDontSee('All announcements');
 
-        foreach (range(1, 6) as $days) {
+        foreach (range(1, 9) as $days) {
             Announcement::factory()->create(['title' => "Notice from $days days ago", 'starts_at' => now()->subDays($days)]);
         }
 
         $this->get('/')
-            ->assertSeeInOrder(['<section id="news"', 'All announcements', 'Notice from 1 days ago', 'Notice from 5 days ago'], false)
-            ->assertDontSee('Notice from 6 days ago')
+            ->assertSeeInOrder(['<section id="news"', 'All announcements', 'Notice from 1 days ago', 'Notice from 8 days ago'], false)
+            ->assertDontSee('Notice from 9 days ago')
             // The rest of the site is one list, each line leading to a part of it.
             ->assertSee('href="'.route('announcements.index', ['type' => 'procurement']).'" id="door-0"', false);
     }

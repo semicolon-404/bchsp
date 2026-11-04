@@ -10,7 +10,8 @@
         <span class="news-detail">
         <x-site.type-mark :type="$announcement->type" class="mt-0.5" />
         <span class="min-w-0 flex-1">
-            <span class="block text-ink group-hover:text-brand">
+            {{-- On one line: a longer title ends in an ellipsis, so more announcements fit; the whole of it is one press away. --}}
+            <span class="relative block truncate text-ink group-hover:text-brand" title="{{ $announcement->localTitle() }}">
                 @if ($announcement->isNew())
                     <span class="mr-1 inline-flex items-center rounded bg-brand px-1.5 font-sans text-xs font-semibold text-on-brand">{{ __('New') }}</span>
                 @endif
