@@ -262,9 +262,16 @@
 
                 @if ($posting->isNotEmpty())
                     <div class="mt-10">
-                        <h3 class="eyebrow">{{ __('From the departments') }}</h3>
-                        {{-- The departments that posted lately, each a card with its picture, then the way to all their posts. --}}
-                        <ul class="dept-shelf mt-4">
+                        <div class="flex items-center justify-between gap-3">
+                            <h3 class="eyebrow">{{ __('From the departments') }}</h3>
+                            <div class="flex gap-2">
+                                <button type="button" class="rail-arrow" data-rail-prev aria-label="{{ __('Previous slide') }}"><x-heroicon-m-chevron-left class="size-5" aria-hidden="true" /></button>
+                                <button type="button" class="rail-arrow" data-rail-next aria-label="{{ __('Next slide') }}"><x-heroicon-m-chevron-right class="size-5" aria-hidden="true" /></button>
+                            </div>
+                        </div>
+                        {{-- The departments that posted lately, each a card with its picture, then the way to all their posts:
+                             one row, swiped, dragged or moved with the arrows (resources/js/rail.js). --}}
+                        <ul class="dept-shelf mt-4" data-rail>
                             @foreach ($posting as $one)
                                 <li>
                                     <a href="{{ route('departments.show', $one) }}" class="dept-tile no-underline">
