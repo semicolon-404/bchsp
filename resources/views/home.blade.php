@@ -171,8 +171,11 @@
                         <div @class(['card flex flex-col p-0', 'lg:col-span-5' => $slides->isNotEmpty()])>
                             <h3 class="news-month-head">{{ __('Latest') }}</h3>
                             <ul class="flex-1">
+                                {{-- A day's date once, on its first announcement: those under it on the same day show only their time. --}}
                                 @foreach ($beside as $announcement)
-                                    <x-site.announcement-row :announcement="$announcement" />
+                                    @php($day = ($announcement->starts_at ?? $announcement->created_at)->toDateString())
+                                    <x-site.announcement-row :announcement="$announcement" :same-day="$day === ($previous ?? null)" />
+                                    @php($previous = $day)
                                 @endforeach
                             </ul>
                             <a href="{{ route('announcements.index') }}" class="border-t border-line px-5 py-3 text-sm font-semibold text-brand no-underline hover:underline">{{ __('All announcements') }} &rarr;</a>

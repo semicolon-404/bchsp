@@ -2222,31 +2222,50 @@ html.is-mourning {
         border-top: 0;
     }
 
-    /* The date of a row, where the eye looks first: the day large, the month and year small under it. */
-    .news-date {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        width: 3.25rem;
+    /* The date of a row as a leaf torn from a calendar: the month on a band of the brand's colour, the day large. */
+    .news-leaf,
+    .news-leaf-gap {
+        width: 3.5rem;
         flex-shrink: 0;
-        padding-top: 0.125rem;
-        line-height: 1.1;
-        text-align: center;
     }
 
-    .news-day {
-        font-size: 1.5rem;
+    .news-leaf {
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        border: 1px solid var(--color-line);
+        border-radius: 10px;
+        background: var(--color-page);
+        text-align: center;
+        box-shadow: 0 1px 2px color-mix(in srgb, var(--color-ink) 8%, transparent);
+    }
+
+    .news-leaf-month {
+        padding: 0.125rem 0;
+        font-size: 0.6875rem;
         font-weight: 700;
-        color: var(--color-brand);
+        line-height: 1.5;
+        color: var(--color-on-brand);
+        background: var(--color-brand);
+        white-space: nowrap;
+    }
+
+    .news-leaf-day {
+        padding: 0.125rem 0 0.25rem;
+        font-size: 1.375rem;
+        font-weight: 700;
+        line-height: 1.25;
+        color: var(--color-ink);
         font-variant-numeric: tabular-nums;
     }
 
-    .news-month {
-        margin-top: 0.2rem;
-        font-size: 0.75rem;
-        font-weight: 500;
-        color: var(--color-muted);
-        white-space: nowrap;
+    /* Under the day it belongs to: no line between, so the two read as one day. */
+    .news-row.is-same-day {
+        border-top: 0;
+    }
+
+    .news-row.is-same-day > a {
+        padding-top: 0.25rem;
     }
 
     .news-kind::before {
