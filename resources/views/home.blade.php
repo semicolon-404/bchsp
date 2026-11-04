@@ -271,6 +271,13 @@
                                         </li>
                                     @endforeach
                                 </ol>
+                                @if ($mostRead->count() > 5)
+                                    {{-- As a list, five and then the rest on asking: the page stays short. --}}
+                                    <button type="button" class="more-button" data-more aria-expanded="false">
+                                        <span>{{ __('Show more') }}</span><span>{{ __('Show less') }}</span>
+                                        <x-heroicon-m-chevron-down class="size-4" aria-hidden="true" />
+                                    </button>
+                                @endif
                             </div>
                         @endif
                     </div>

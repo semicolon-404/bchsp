@@ -6,7 +6,8 @@ import { startMenu } from './menu';
 import { startMotion } from './motion';
 import { startNewsView } from './news-view';
 import { startPopup } from './popup';
-import { startRail } from './rail';
+import { startMore, startRail } from './rail';
+import { startSeen } from './seen';
 import { startShare } from './share';
 import { startSlider } from './slider';
 import { startSpot } from './spot';
@@ -28,6 +29,8 @@ startLightbox();
 startHero();
 startNewsView();
 startRail();
+startMore();
+startSeen();
 
 // The small program that answers with the phone numbers when there is no connection (SeoController::worker).
 // Where a browser has none of that, or the page is not served securely, the site is simply as it was.

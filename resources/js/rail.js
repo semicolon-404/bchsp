@@ -45,3 +45,15 @@ export function startRail() {
         rail.addEventListener('dragstart', (event) => event.preventDefault());
     });
 }
+
+/** "Show more" under a list cut short: opens the rest, and closes it again. */
+export function startMore() {
+    document.querySelectorAll('[data-more]').forEach((button) => {
+        const list = button.previousElementSibling;
+        button.addEventListener('click', () => {
+            const open = button.getAttribute('aria-expanded') !== 'true';
+            button.setAttribute('aria-expanded', String(open));
+            list.classList.toggle('is-open', open);
+        });
+    });
+}

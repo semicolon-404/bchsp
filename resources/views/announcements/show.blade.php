@@ -6,6 +6,8 @@
 @php($files = $announcement->files())
 @php($links = $announcement->documentLinks())
 <x-layouts.site :title="$announcement->localTitle()" :image="$announcement->imageUrl()">
+    {{-- Read: the lists stop calling it new for this visitor (resources/js/seen.js). --}}
+    <span hidden data-seen-mark="{{ $announcement->id }}"></span>
     <section class="home-screen !min-h-0 border-b border-line">
     <div class="wrap max-w-3xl py-10 sm:py-12">
         <p class="text-sm"><a href="{{ route('announcements.index') }}" class="font-semibold text-brand underline">&larr; {{ __('All announcements') }}</a></p>

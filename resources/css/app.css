@@ -2830,4 +2830,94 @@ html.is-mourning {
         color: #fff;
         background: #d4a017;
     }
+
+    /* "New" goes once the visitor has opened it (resources/js/seen.js). */
+    .is-seen .seen-new {
+        display: none;
+    }
+
+    /* Days left before an announcement closes, when there are a week or fewer. */
+    .days-left {
+        display: inline-flex;
+        align-items: center;
+        padding: 0 0.4rem;
+        border-radius: 4px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: #b45309;
+        background: color-mix(in srgb, #f59e0b 18%, transparent);
+    }
+
+    /* The posters' dots as a timer: the one shown is a bar that fills while it waits to move on (resources/js/slider.js). */
+    [data-slider-auto] .slider-dot {
+        transition: width 300ms ease;
+    }
+
+    [data-slider-auto] .slider-dot[aria-current='true'] {
+        position: relative;
+        width: 2.5rem;
+        overflow: hidden;
+        background-color: color-mix(in srgb, var(--color-brand) 25%, transparent);
+    }
+
+    [data-slider-auto] .slider-dot[aria-current='true']::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        border-radius: inherit;
+        background: var(--color-brand);
+        transform-origin: left;
+        animation: slider-timer var(--slider-every, 6s) linear forwards;
+    }
+
+    [data-slider-auto].is-paused .slider-dot[aria-current='true']::after {
+        animation-play-state: paused;
+    }
+
+    @keyframes slider-timer {
+        from { transform: scaleX(0); }
+        to { transform: scaleX(1); }
+    }
+
+    /* The most read as a list: five, then the rest when "Show more" is pressed (resources/js/rail.js). */
+    .more-button {
+        display: none;
+    }
+
+    [data-news-view-key][data-news-view='list'] .more-button {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.375rem;
+        width: 100%;
+        margin-top: 0.5rem;
+        padding: 0.6rem;
+        border-radius: 12px;
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: var(--color-brand);
+        cursor: pointer;
+        transition: background 150ms;
+    }
+
+    .more-button:hover {
+        background: color-mix(in srgb, var(--color-brand) 7%, transparent);
+    }
+
+    .more-button svg {
+        transition: transform 200ms ease;
+    }
+
+    .more-button[aria-expanded='true'] svg {
+        transform: rotate(180deg);
+    }
+
+    .more-button[aria-expanded='false'] span:nth-child(2),
+    .more-button[aria-expanded='true'] span:nth-child(1) {
+        display: none;
+    }
+
+    [data-news-view='list'] > .most-read:not(.is-open) > li:nth-child(n + 6) {
+        display: none;
+    }
 }

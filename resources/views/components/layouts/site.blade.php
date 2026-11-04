@@ -232,13 +232,6 @@
                 @if ($address)
                     <p class="mt-2 flex max-w-sm items-start gap-1.5 text-sm text-muted"><x-heroicon-m-map-pin class="mt-0.5 size-4 shrink-0 text-brand" aria-hidden="true" /><span class="whitespace-pre-line">{{ $address }}</span></p>
                 @endif
-                @if ($social)
-                    <ul class="mt-3 flex flex-wrap gap-2" aria-label="{{ __('Follow us') }}">
-                        @foreach ($social as $network => $url)
-                            <li><a href="{{ $url }}" target="_blank" rel="noopener noreferrer" class="foot-social">{{ $network }}<span class="sr-only"> {{ __('(opens in a new tab)') }}</span></a></li>
-                        @endforeach
-                    </ul>
-                @endif
             </div>
 
             @foreach ($columns as $heading => $links)
@@ -261,6 +254,10 @@
                     @if ($email)
                         <li><a href="mailto:{{ $email }}" class="foot-link break-all">{{ $email }}</a></li>
                     @endif
+                    {{-- Where the hospital is followed: with the ways to reach it, a link like the others. --}}
+                    @foreach ($social as $network => $url)
+                        <li><a href="{{ $url }}" target="_blank" rel="noopener noreferrer" class="foot-link inline-flex items-center gap-1.5">{{ $network }}<x-heroicon-m-arrow-up-right class="size-3.5" aria-hidden="true" /><span class="sr-only"> {{ __('(opens in a new tab)') }}</span></a></li>
+                    @endforeach
                     @if ($hours !== '')
                         <li class="whitespace-pre-line pt-1 text-xs text-muted">{{ $hours }}</li>
                     @endif

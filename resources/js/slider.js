@@ -30,12 +30,35 @@ export function startSlider() {
         if (slider.hasAttribute('data-slider-still') || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
 
         let paused = false;
+        let waited = 0;
 
-        ['pointerenter', 'focusin'].forEach((event) => slider.addEventListener(event, () => (paused = true)));
-        ['pointerleave', 'focusout'].forEach((event) => slider.addEventListener(event, () => (paused = false)));
+        // The dot of the slide shown fills as a bar while it waits (resources/css/app.css, [data-slider-auto]).
+        slider.setAttribute('data-slider-auto', '');
+        slider.style.setProperty('--slider-every', `${EVERY}ms`);
+        const restart = () => {
+            waited = 0;
+            dots.forEach((dot) => {
+                dot.style.animation = 'none';
+                void dot.offsetWidth;
+                dot.style.animation = '';
+            });
+        };
+        const pause = (on) => {
+            paused = on;
+            slider.classList.toggle('is-paused', on);
+        };
+
+        ['pointerenter', 'focusin'].forEach((event) => slider.addEventListener(event, () => pause(true)));
+        ['pointerleave', 'focusout'].forEach((event) => slider.addEventListener(event, () => pause(false)));
+        track.addEventListener('scrollend', restart);
 
         setInterval(() => {
-            if (!paused && !document.hidden) go(current() + 1);
-        }, EVERY);
+            if (paused || document.hidden) return;
+            waited += 250;
+            if (waited >= EVERY) {
+                waited = 0;
+                go(current() + 1);
+            }
+        }, 250);
     });
 }
