@@ -2651,42 +2651,49 @@ html.is-mourning {
         }
     }
 
-    /* The first photographs of an album, in a row under a news title; the last tile says how many more. */
-    .album-strip {
+    /* An event's album over the corner of its poster: the photographs fanned like prints, and their count. */
+    .poster-album {
+        position: absolute;
+        right: 1rem;
+        top: 1rem;
         display: flex;
-        gap: 0.25rem;
-        margin-top: 0.5rem;
+        align-items: center;
+        padding: 0.35rem 0.35rem 0.35rem 0.9rem;
+        border-radius: 14px;
+        background: rgb(0 0 0 / 0.45);
+        backdrop-filter: blur(8px);
+        text-decoration: none;
     }
 
-    .album-strip img,
-    .album-more {
-        width: 3rem;
-        height: 2.25rem;
-        flex-shrink: 0;
-        border-radius: 6px;
+    .poster-album img {
+        width: 3.25rem;
+        height: 3.25rem;
+        margin-left: -0.6rem;
+        border: 2px solid #fff;
+        border-radius: 10px;
         object-fit: cover;
+        box-shadow: 0 4px 10px rgb(0 0 0 / 0.3);
+        transition: transform 250ms ease, margin 250ms ease;
     }
 
-    .album-more {
-        display: grid;
-        place-items: center;
-        font-size: 0.75rem;
+    .poster-album img:nth-child(1) { transform: rotate(-6deg); }
+    .poster-album img:nth-child(3) { transform: rotate(6deg); }
+
+    .poster-album-count {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.25rem;
+        margin-left: 0.5rem;
+        padding-right: 0.4rem;
+        font-size: 0.875rem;
         font-weight: 700;
-        color: var(--color-on-brand);
-        background: var(--color-brand);
+        color: #fff;
     }
 
     @media (hover: hover) and (prefers-reduced-motion: no-preference) {
-        .album-strip img {
-            transition: transform 200ms ease;
-        }
-
-        a:hover .album-strip img:nth-child(odd) {
-            transform: translateY(-2px) rotate(-2deg);
-        }
-
-        a:hover .album-strip img:nth-child(even) {
-            transform: translateY(-2px) rotate(2deg);
+        .poster-album:hover img {
+            margin-left: 0.15rem;
+            transform: none;
         }
     }
 }

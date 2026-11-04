@@ -29,17 +29,6 @@
                 @endif
                 <time datetime="{{ ($announcement->starts_at ?? $announcement->created_at)->toIso8601String() }}">{{ $announcement->shownOn() }} · {{ ($announcement->starts_at ?? $announcement->created_at)->format('H:i') }}{{ app()->getLocale() === 'th' ? ' น.' : '' }}</time>
             </span>
-            {{-- An album (an event's photographs): the first few small in a row, and how many more, so it reads as one. --}}
-            @if ($photos = $announcement->photos())
-                <span class="album-strip" aria-label="{{ trans_choice('{1} :count photograph|[2,*] :count photographs', count($photos), ['count' => count($photos)]) }}">
-                    @foreach (array_slice($photos, 0, 4) as $photo)
-                        <img src="{{ $photo }}" alt="" loading="lazy">
-                    @endforeach
-                    @if (count($photos) > 4)
-                        <span class="album-more">+{{ count($photos) - 4 }}</span>
-                    @endif
-                </span>
-            @endif
         </span>
         {{-- Its "one page" picture, small: a list of announcements with pictures is easier to scan. --}}
         @if ($image = $announcement->imageUrl())

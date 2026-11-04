@@ -41,7 +41,7 @@
                 <ul class="slider-track poster-stage" data-slider-track>
                     @foreach ($banners as $banner)
                         {{-- The picture, and under it what it is about: its kind in its colour and its title, to be read without opening it. --}}
-                        <li class="w-full shrink-0 snap-center" aria-roledescription="slide" aria-label="{{ $loop->iteration }} / {{ $loop->count }}">
+                        <li class="relative w-full shrink-0 snap-center" aria-roledescription="slide" aria-label="{{ $loop->iteration }} / {{ $loop->count }}">
                             {!! $framed($banner, $frame) !!}
                             <a href="{{ route('announcements.show', $banner) }}" class="poster-caption" @if ($banner->type) style="--kind: {{ $banner->type->colour() }}" @endif aria-hidden="true" tabindex="-1">
                                 @if ($banner->type)
@@ -49,6 +49,15 @@
                                 @endif
                                 <span class="line-clamp-2 text-base font-semibold leading-[1.65] text-ink">{{ $banner->localTitle() }}</span>
                             </a>
+                            {{-- An event with an album: its next photographs over the corner of the poster, and how many there are. --}}
+                            @if ($photos = $banner->photos())
+                                <a href="{{ route('announcements.show', $banner) }}" class="poster-album" aria-label="{{ trans_choice('{1} :count photograph|[2,*] :count photographs', count($photos), ['count' => count($photos)]) }}">
+                                    @foreach (array_slice($photos, 0, 3) as $photo)
+                                        <img src="{{ $photo }}" alt="" loading="lazy">
+                                    @endforeach
+                                    <span class="poster-album-count"><x-heroicon-s-photo class="size-4" aria-hidden="true" />{{ count($photos) }}</span>
+                                </a>
+                            @endif
                         </li>
                     @endforeach
                 </ul>
