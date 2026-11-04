@@ -36,6 +36,7 @@ export function startLightbox() {
     document.body.append(dialog);
 
     const picture = dialog.querySelector('.lightbox-picture');
+    const stage = dialog.querySelector('.lightbox-stage');
     const count = dialog.querySelector('.lightbox-count');
     const title = dialog.querySelector('.lightbox-title');
     const strip = dialog.querySelector('.lightbox-strip');
@@ -47,7 +48,6 @@ export function startLightbox() {
     close.setAttribute('aria-label', words.lightboxClose || 'Close');
     previous.setAttribute('aria-label', words.lightboxPrevious || 'Previous');
     next.setAttribute('aria-label', words.lightboxNext || 'Next');
-    all.textContent = words.lightboxAll || 'All photographs';
 
     // The whole album at once, or one photograph at a time.
     const lay = (whole) => {
@@ -64,6 +64,8 @@ export function startLightbox() {
         at = (index + set.length) % set.length;
         picture.classList.remove('is-in');
         picture.src = set[at].href;
+        // The stage behind it takes the photograph's own colours, out of focus and muted.
+        stage.style.setProperty('--photo', `url("${set[at].href}")`);
         picture.alt = set[at].querySelector('img')?.alt ?? '';
         requestAnimationFrame(() => picture.classList.add('is-in'));
         count.textContent = set.length > 1 ? `${at + 1} / ${set.length}` : '';
@@ -84,6 +86,8 @@ export function startLightbox() {
         }));
         strip.hidden = set.length < 2;
         all.hidden = set.length < 2;
+        // Its words come with the album, in the reader's language.
+        all.textContent = gallery?.dataset.galleryAll || 'All';
         grid.replaceChildren(...set.map((link, i) => {
             const tile = document.createElement('button');
             tile.type = 'button';

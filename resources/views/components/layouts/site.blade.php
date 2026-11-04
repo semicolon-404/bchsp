@@ -85,7 +85,7 @@
         <style>:root{--color-day:{{ $day }}}</style>
     @endif
 </head>
-<body data-worker="{{ route('worker') }}" data-lightbox-close="{{ __('Close') }}" data-lightbox-previous="{{ __('Previous') }}" data-lightbox-next="{{ __('Next') }}" data-lightbox-all="{{ __('All photographs') }}" class="has-dock flex min-h-screen flex-col font-sans antialiased">
+<body data-worker="{{ route('worker') }}" data-lightbox-close="{{ __('Close') }}" data-lightbox-previous="{{ __('Previous') }}" data-lightbox-next="{{ __('Next') }}" class="has-dock flex min-h-screen flex-col font-sans antialiased">
     <a href="#main" class="btn btn-brand sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50">{{ __('Skip to the content') }}</a>
 
     <x-site.alert />

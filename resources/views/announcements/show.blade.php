@@ -72,7 +72,7 @@
             --}}
             <section class="mt-10" aria-label="{{ __('Photographs') }}">
                 <h2 class="flex items-center gap-2 text-lg"><x-heroicon-o-photo class="size-5 text-brand" aria-hidden="true" />{{ trans_choice('{1} :count photograph|[2,*] :count photographs', count($photos), ['count' => count($photos)]) }}</h2>
-                <ul @class(['album mt-4', 'is-one' => count($photos) === 1, 'is-two' => count($photos) === 2]) data-gallery data-gallery-title="{{ $announcement->localTitle() }}">
+                <ul @class(['album mt-4', 'is-one' => count($photos) === 1, 'is-two' => count($photos) === 2]) data-gallery data-gallery-title="{{ $announcement->localTitle() }}" data-gallery-all="{{ __('See all') }}">
                     @foreach ($photos as $photo)
                         <li @class(['is-hidden' => $loop->iteration > 9])>
                             <a href="{{ $photo }}" target="_blank" rel="noopener" data-lightbox>
