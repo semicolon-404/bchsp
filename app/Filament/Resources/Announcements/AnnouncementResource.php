@@ -35,7 +35,6 @@ use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
-use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\Filter;
 use Filament\Tables\Filters\SelectFilter;
@@ -260,28 +259,30 @@ class AnnouncementResource extends Resource
         return $table
             ->modifyQueryUsing(fn ($query) => $query->inListOrder())
             ->columns([
-                IconColumn::make('is_pinned')
-                    ->label(__('Pinned'))
-                    ->icon(fn (bool $state) => $state ? Heroicon::Bookmark : null)
-                    ->color('primary'),
+                // The title carries what used to be columns of their own, so the list fits a screen without scrolling
+                // sideways: a bookmark when pinned, and its type and department in small letters under it.
                 TextColumn::make('title')
                     ->label(__('Title'))
                     ->searchable()
                     ->wrap()
                     // Wide enough to be read as a title, not a column of single words.
-                    ->extraCellAttributes(['style' => 'min-width: 20rem'])
+                    ->extraCellAttributes(['style' => 'min-width: 16rem'])
+                    ->icon(fn (Announcement $record) => $record->is_pinned ? Heroicon::Bookmark : null)
+                    ->iconColor('primary')
+                    ->description(fn (Announcement $record) => collect([$record->type?->name, $record->department?->name])->filter()->implode(' · '))
                     ->weight('medium'),
                 TextColumn::make('type.name')
                     ->label(__('Type'))
                     ->badge()
-                    ->placeholder('—'),
+                    ->placeholder('—')
+                    ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('department.name')
                     ->label(__('Department'))
                     ->placeholder('—')
                     // Its page on the site, in a new tab: where the post is shown among the department's others.
                     ->url(fn (Announcement $record) => $record->department ? route('departments.show', $record->department) : null, shouldOpenInNewTab: true)
                     ->color('primary')
-                    ->toggleable(),
+                    ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('state')
                     ->label(__('Status'))
                     ->state(fn (Announcement $record) => $record->state())
