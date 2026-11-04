@@ -278,6 +278,9 @@ class AnnouncementResource extends Resource
                 TextColumn::make('department.name')
                     ->label(__('Department'))
                     ->placeholder('—')
+                    // Its page on the site, in a new tab: where the post is shown among the department's others.
+                    ->url(fn (Announcement $record) => $record->department ? route('departments.show', $record->department) : null, shouldOpenInNewTab: true)
+                    ->color('primary')
                     ->toggleable(),
                 TextColumn::make('state')
                     ->label(__('Status'))

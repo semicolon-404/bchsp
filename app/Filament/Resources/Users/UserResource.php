@@ -116,7 +116,9 @@ class UserResource extends Resource
                     ->color(fn (Role $state) => $state === Role::Admin ? 'primary' : 'gray'),
                 TextColumn::make('department.name')
                     ->label(__('Department'))
-                    ->placeholder('—'),
+                    ->placeholder('—')
+                    ->url(fn (User $record) => $record->department ? route('departments.show', $record->department) : null, shouldOpenInNewTab: true)
+                    ->color('primary'),
                 TextColumn::make('created_at')
                     ->label(__('Added'))
                     ->date()
