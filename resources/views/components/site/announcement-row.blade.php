@@ -14,6 +14,7 @@
 
 <li @class(['news-row', 'is-same-day' => $sameDay]) @if ($announcement->type) style="--kind: {{ $announcement->type->colour() }}" @endif>
     <a href="{{ route('announcements.show', $announcement) }}" class="group flex items-start gap-4 px-4 py-3 no-underline sm:px-5">
+        <span class="news-detail">
         @if ($sameDay)
             <span class="news-leaf-gap" aria-hidden="true"></span>
         @else
@@ -34,6 +35,12 @@
                 <span class="ml-auto shrink-0 text-xs text-muted">{{ $local->format('H:i') }}{{ app()->getLocale() === 'th' ? ' น.' : '' }}</span>
             </span>
             <span class="mt-1 block truncate text-[0.9375rem] font-medium leading-[1.7] text-ink group-hover:text-brand" title="{{ $announcement->localTitle() }}">{{ $announcement->localTitle() }}</span>
+        </span>
+        </span>
+        {{-- As a list: the title and when, nothing else. --}}
+        <span class="news-line">
+            <span class="min-w-0 flex-1 truncate text-ink group-hover:text-brand">{{ $announcement->localTitle() }}</span>
+            <time datetime="{{ $date->toIso8601String() }}" class="shrink-0 text-xs text-muted tabular-nums">{{ $announcement->shownOn() }} · {{ $local->format('H:i') }}</time>
         </span>
     </a>
 </li>

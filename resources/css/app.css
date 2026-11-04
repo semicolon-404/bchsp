@@ -2318,4 +2318,99 @@ html.is-mourning {
         border-radius: 999px;
         background: rgb(0 0 0 / 0.45);
     }
+
+    /* The two ways to read the news on the home page (resources/js/news-view.js). */
+    .news-view-switch {
+        display: inline-flex;
+        padding: 2px;
+        border-radius: 999px;
+        background: color-mix(in srgb, var(--color-ink) 7%, transparent);
+    }
+
+    .news-view-switch button {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.3rem;
+        min-height: 2rem;
+        padding: 0 0.75rem;
+        border-radius: 999px;
+        font-size: 0.8125rem;
+        font-weight: 600;
+        color: var(--color-muted);
+        cursor: pointer;
+    }
+
+    .news-view-switch button[aria-pressed='true'] {
+        background: var(--color-page);
+        color: var(--color-ink);
+        box-shadow: 0 1px 2px color-mix(in srgb, var(--color-ink) 15%, transparent);
+    }
+
+    .news-detail {
+        display: contents;
+    }
+
+    .news-line {
+        display: none;
+    }
+
+    [data-news-view='detail'] .news-row:nth-child(n + 5) {
+        display: none;
+    }
+
+    [data-news-view='list'] .news-detail,
+    [data-news-view='list'] .news-cards {
+        display: none;
+    }
+
+    [data-news-view='list'] .news-line {
+        display: flex;
+        flex: 1;
+        min-width: 0;
+        align-items: baseline;
+        gap: 1rem;
+        font-size: 0.9375rem;
+        line-height: 1.7;
+    }
+
+    [data-news-view='list'] .news-row > a {
+        padding-block: 0.5rem;
+    }
+
+    [data-news-view='list'] .news-row.is-same-day {
+        border-top: 1px solid var(--color-line);
+    }
+
+    /* The hospital's logo on the cover of an announcement without a picture, on a white disc, its kind's symbol at its side. */
+    .cover-logo {
+        position: relative;
+        display: grid;
+        place-items: center;
+        width: 62% !important;
+        height: auto !important;
+        max-height: 60%;
+        padding: 0.6rem 0.9rem;
+        border-radius: 16px;
+        background: #fff;
+        box-shadow: 0 8px 24px -10px color-mix(in srgb, var(--tone) 60%, transparent);
+    }
+
+    .cover-logo img {
+        width: 100%;
+        max-height: 5rem;
+        object-fit: contain;
+    }
+
+    .cover-logo-kind {
+        position: absolute;
+        right: -0.6rem;
+        bottom: -0.6rem;
+        width: 1.9rem;
+        height: 1.9rem;
+        padding: 0.35rem;
+        border-radius: 999px;
+        color: #fff;
+        background: var(--tone);
+        box-shadow: 0 0 0 3px #fff;
+    }
 }

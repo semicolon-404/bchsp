@@ -4,6 +4,7 @@ import { startHero } from './hero';
 import { startLightbox } from './lightbox';
 import { startMenu } from './menu';
 import { startMotion } from './motion';
+import { startNewsView } from './news-view';
 import { startPopup } from './popup';
 import { startShare } from './share';
 import { startSlider } from './slider';
@@ -24,6 +25,7 @@ startFilter();
 startTop();
 startLightbox();
 startHero();
+startNewsView();
 
 // The small program that answers with the phone numbers when there is no connection (SeoController::worker).
 // Where a browser has none of that, or the page is not served securely, the site is simply as it was.

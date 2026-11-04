@@ -163,16 +163,24 @@
                     of each where the eye looks first; under them the next four as cards with their pictures.
                 --}}
                 @php([$beside, $below] = [$announcements->take(4), $announcements->slice(4)])
+                {{-- Two ways to read it, the visitor's choice (resources/js/news-view.js): with the details, or a plain list of titles and dates. --}}
+                <div data-news-view="detail">
                 <div @class(['mt-10 grid gap-6', 'lg:grid-cols-12' => $slides->isNotEmpty() && $beside->isNotEmpty()])>
                     @if ($slides->isNotEmpty())
                         <div class="min-w-0 lg:col-span-7"><x-site.banners part="stage" :banners="$slides" frame="aspect-[16/10]" /></div>
                     @endif
                     @if ($beside->isNotEmpty())
                         <div @class(['card flex flex-col p-0', 'lg:col-span-5' => $slides->isNotEmpty()])>
-                            <h3 class="news-month-head">{{ __('Latest') }}</h3>
+                            <div class="news-month-head justify-between">
+                                <h3>{{ __('Latest') }}</h3>
+                                <div class="news-view-switch" role="group" aria-label="{{ __('How to show') }}">
+                                    <button type="button" data-news-view-as="detail" aria-pressed="true"><x-heroicon-m-squares-2x2 class="size-4" aria-hidden="true" />{{ __('Details') }}</button>
+                                    <button type="button" data-news-view-as="list" aria-pressed="false"><x-heroicon-m-bars-3 class="size-4" aria-hidden="true" />{{ __('List') }}</button>
+                                </div>
+                            </div>
                             <ul class="flex-1">
-                                {{-- A day's date once, on its first announcement: those under it on the same day show only their time. --}}
-                                @foreach ($beside as $announcement)
+                                {{-- A day's date once, on its first announcement: those under it on the same day show only their time. As a list, all eight. --}}
+                                @foreach ($announcements as $announcement)
                                     @php($day = ($announcement->starts_at ?? $announcement->created_at)->toDateString())
                                     <x-site.announcement-row :announcement="$announcement" :same-day="$day === ($previous ?? null)" />
                                     @php($previous = $day)
@@ -183,12 +191,13 @@
                     @endif
                 </div>
                 @if ($below->isNotEmpty())
-                    <ul class="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+                    <ul class="news-cards mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
                         @foreach ($below as $announcement)
                             <li><x-site.announcement-card :announcement="$announcement" /></li>
                         @endforeach
                     </ul>
                 @endif
+                </div>
 
                 {{-- Each kind of announcement, one press away. --}}
                 @if ($types->isNotEmpty())
