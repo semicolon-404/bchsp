@@ -127,7 +127,7 @@ class SeoController extends Controller
 
         $script = <<<JS
         const OFFLINE = {$offline};
-        const KEPT = 'bchsp-offline-v1';
+        const KEPT = 'bchsp-offline-v2';
 
         self.addEventListener('install', (event) => {
             event.waitUntil(caches.open(KEPT).then((cache) => cache.add(new Request(OFFLINE, { cache: 'reload' }))).then(() => self.skipWaiting()));
