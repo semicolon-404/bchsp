@@ -1,7 +1,7 @@
 {{--
     One announcement in a list, compact so that many fit beside the posters: its date first as a leaf of a
-    calendar (the month on a band of colour, the day large under it), then its title and, in small type, the
-    time it was put out, its kind (a dot of its colour before it) and the marks "new" and "pinned".
+    calendar (the month on a band of colour, the day large under it), then its kind in its colour with the
+    time it was put out, and its title on one line.
     With same-day, the leaf is left out: the row above it already shows that day, and this one its time.
     The kind is always written out: never colour alone. Thai needs room above and below for its marks.
 --}}
@@ -22,23 +22,18 @@
                 <span class="news-leaf-day">{{ $local->day }}</span>
             </time>
         @endif
+        {{-- Little to read: the kind, clear in its colour, and the title on one line. The rest is one press away. --}}
         <span class="min-w-0 flex-1">
-            <span class="line-clamp-2 text-[0.9375rem] font-medium leading-[1.6] text-ink group-hover:text-brand">{{ $announcement->localTitle() }}</span>
-            <span class="news-meta mt-0.5">
-                <span class="inline-flex items-center gap-1 font-medium text-ink"><x-heroicon-m-clock class="size-3.5 text-muted" aria-hidden="true" />{{ $local->format('H:i') }} {{ app()->getLocale() === 'th' ? 'น.' : '' }}</span>
+            <span class="flex items-center gap-2">
                 @if ($announcement->type)
-                    <span class="news-kind">{{ $announcement->type->localName() }}</span>
+                    <span class="kind-pill">{{ $announcement->type->localName() }}</span>
                 @endif
                 @if ($announcement->isNew())
-                    <span class="font-semibold text-brand">{{ __('New') }}</span>
+                    <span class="text-xs font-semibold text-brand">{{ __('New') }}</span>
                 @endif
-                @if ($announcement->isPinnedNow())
-                    <span class="inline-flex items-center gap-1"><x-heroicon-s-bookmark class="size-3" aria-hidden="true" />{{ __('Pinned') }}</span>
-                @endif
-                @if ($announcement->hasDocuments())
-                    <span class="inline-flex items-center gap-1"><x-heroicon-m-paper-clip class="size-3" aria-hidden="true" /><span class="sr-only">{{ __('Has files attached') }}</span></span>
-                @endif
+                <span class="ml-auto shrink-0 text-xs text-muted">{{ $local->format('H:i') }}{{ app()->getLocale() === 'th' ? ' น.' : '' }}</span>
             </span>
+            <span class="mt-1 block truncate text-[0.9375rem] font-medium leading-[1.7] text-ink group-hover:text-brand" title="{{ $announcement->localTitle() }}">{{ $announcement->localTitle() }}</span>
         </span>
     </a>
 </li>
