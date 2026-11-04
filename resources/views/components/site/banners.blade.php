@@ -48,7 +48,7 @@
                                 @if ($banner->type)
                                     <span class="kind-pill">{{ $banner->type->localName() }}</span>
                                 @endif
-                                <span class="line-clamp-2 text-xl font-semibold leading-[1.6] text-ink">{{ $banner->localTitle() }}</span>
+                                <span class="line-clamp-2 text-base font-semibold leading-[1.65] text-ink">{{ $banner->localTitle() }}</span>
                             </a>
                         </li>
                     @endforeach
