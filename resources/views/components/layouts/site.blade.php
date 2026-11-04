@@ -284,29 +284,29 @@
             </div>
         @endif
 
-        {{-- 3. The year and name, the pages every site must have, and when it was last updated. --}}
+        {{--
+            3. On one line: the year and name, the pages every site must have, the day, and the pages opened
+            (plain totals: nothing is kept about who opened them, App\Support\Visits). It wraps on a narrow screen.
+        --}}
         <div class="border-t border-line">
-            <div class="wrap flex flex-col gap-3 py-5 text-sm text-muted md:flex-row md:items-center md:justify-between">
-                <p>{{ App\Support\Footer::copyright() }}</p>
-                <ul class="flex flex-wrap items-center gap-x-5 gap-y-2">
-                    @foreach ($pages as $page)
-                        <li><a href="{{ route('pages.show', $page) }}" class="foot-link">{{ $page->localTitle() }}</a></li>
-                    @endforeach
-                    <li><a href="{{ route('menu') }}" class="foot-link">{{ __('Everything on this website') }}</a></li>
-                    {{-- What changed on the site (/updates), by name: the numbers of releases are for the people who make it. --}}
-                    @if (App\Models\SiteUpdate::newest())
-                        <li><a href="{{ route('updates') }}" class="foot-link">{{ __('What is new on this website') }}</a></li>
-                    @endif
-                    @if ($day)
-                        <li class="inline-flex items-center gap-2 font-mono"><span class="day-dot" aria-hidden="true"></span>{{ now()->locale(app()->getLocale())->translatedFormat('D j M ').(now()->year + (app()->getLocale() === 'th' ? 543 : 0)) }}</li>
-                    @endif
-                </ul>
-            </div>
-            {{-- Pages opened, as plain totals: nothing is kept about who opened them (App\Support\Visits). --}}
-            @if (App\Support\Footer::showsVisits())
-                @php($visits = App\Support\Visits::totals())
-                <p class="wrap pb-5 font-mono text-xs text-muted">{{ __('Pages opened: today :today · this month :month · in all :all', ['today' => number_format($visits['today']), 'month' => number_format($visits['month']), 'all' => number_format($visits['all'])]) }}</p>
-            @endif
+            <ul class="wrap flex flex-wrap items-center gap-x-5 gap-y-2 py-4 text-xs text-muted">
+                <li class="mr-auto">{{ App\Support\Footer::copyright() }}</li>
+                @foreach ($pages as $page)
+                    <li><a href="{{ route('pages.show', $page) }}" class="foot-link">{{ $page->localTitle() }}</a></li>
+                @endforeach
+                <li><a href="{{ route('menu') }}" class="foot-link">{{ __('Everything on this website') }}</a></li>
+                {{-- What changed on the site (/updates), by name: the numbers of releases are for the people who make it. --}}
+                @if (App\Models\SiteUpdate::newest())
+                    <li><a href="{{ route('updates') }}" class="foot-link">{{ __('What is new on this website') }}</a></li>
+                @endif
+                @if (App\Support\Footer::showsVisits())
+                    @php($visits = App\Support\Visits::totals())
+                    <li class="font-mono">{{ __('Pages opened: today :today · this month :month · in all :all', ['today' => number_format($visits['today']), 'month' => number_format($visits['month']), 'all' => number_format($visits['all'])]) }}</li>
+                @endif
+                @if ($day)
+                    <li class="inline-flex items-center gap-2 font-mono"><span class="day-dot" aria-hidden="true"></span>{{ now()->locale(app()->getLocale())->translatedFormat('D j M ').(now()->year + (app()->getLocale() === 'th' ? 543 : 0)) }}</li>
+                @endif
+            </ul>
         </div>
     </footer>
 
