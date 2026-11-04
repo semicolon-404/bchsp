@@ -1,14 +1,14 @@
 /**
- * Looking at the photographs of an album one after another, large, without leaving the page.
+ * Looking at the photographs of an album without leaving the page, as a post opened on a social page.
  *
- *   <ul data-gallery> <a href="large.webp" data-lightbox><img alt="..."></a> ... </ul>
+ *   <ul data-gallery data-gallery-title="..." data-gallery-kind="..." data-gallery-date="..."> <a href="large.webp" data-lightbox><img alt="..."></a> ... </ul>
  *
- * Without this each link simply opens its picture, as it always did. With it, a press opens a window over
- * the page, as a Mac's: a bar with the round close button, the album's name and where in it the reader is,
- * the picture, and under it a strip of every photograph of the album, so a long album is seen to be long and
- * any of it is one press away. "All photographs" lays the whole album out at once in a grid; a press on one
- * opens it alone again. Escape closes it; the arrows, the arrow keys or a swipe move through it.
- * A link on its own, outside any [data-gallery], is a gallery of one.
+ * Without this each link simply opens its picture, as it always did. With it, a press opens a card over the
+ * page: on the left the photograph, whole, on its own colours blurred, with the way to the one before and
+ * after; on the right what it belongs to (its kind, its title, its day) and every photograph of the album as
+ * small tiles, the one shown marked, so a long album is seen to be long and any of it is one press away.
+ * On a phone the tiles go under the photograph. Escape, the round button or a press outside closes it; the
+ * arrows, the arrow keys or a swipe move through it. A link outside any [data-gallery] is an album of one.
  */
 export function startLightbox() {
     const links = [...document.querySelectorAll('a[data-lightbox]')];
@@ -18,77 +18,57 @@ export function startLightbox() {
     const dialog = document.createElement('dialog');
     dialog.className = 'lightbox';
     dialog.innerHTML = `
-        <div class="lightbox-window">
-            <div class="lightbox-bar">
-                <button type="button" class="lightbox-close" data-close></button>
-                <span class="lightbox-title"></span>
-                <span class="lightbox-count" aria-live="polite"></span>
-                <button type="button" class="lightbox-all" data-all aria-pressed="false"></button>
-            </div>
+        <div class="lightbox-card">
             <div class="lightbox-stage">
-                <button type="button" class="lightbox-button lightbox-prev" data-prev>&#8249;</button>
+                <button type="button" class="lightbox-round lightbox-close" data-close>&#10005;</button>
+                <button type="button" class="lightbox-round lightbox-prev" data-prev>&#8249;</button>
                 <img class="lightbox-picture" alt="">
-                <button type="button" class="lightbox-button lightbox-next" data-next>&#8250;</button>
+                <button type="button" class="lightbox-round lightbox-next" data-next>&#8250;</button>
             </div>
-            <div class="lightbox-grid" hidden></div>
-            <div class="lightbox-strip" role="list"></div>
+            <aside class="lightbox-side">
+                <p class="lightbox-kind"></p>
+                <h2 class="lightbox-title"></h2>
+                <p class="lightbox-date"></p>
+                <p class="lightbox-count" aria-live="polite"></p>
+                <div class="lightbox-tiles"></div>
+            </aside>
         </div>`;
     document.body.append(dialog);
 
-    const picture = dialog.querySelector('.lightbox-picture');
-    const stage = dialog.querySelector('.lightbox-stage');
-    const count = dialog.querySelector('.lightbox-count');
-    const title = dialog.querySelector('.lightbox-title');
-    const strip = dialog.querySelector('.lightbox-strip');
-    const grid = dialog.querySelector('.lightbox-grid');
-    const all = dialog.querySelector('[data-all]');
-    const [close, previous, next] = [dialog.querySelector('[data-close]'), dialog.querySelector('[data-prev]'), dialog.querySelector('[data-next]')];
+    const $ = (selector) => dialog.querySelector(selector);
+    const [picture, stage, side, kind, title, date, count, tiles] = ['.lightbox-picture', '.lightbox-stage', '.lightbox-side', '.lightbox-kind', '.lightbox-title', '.lightbox-date', '.lightbox-count', '.lightbox-tiles'].map($);
+    const [close, previous, next] = ['[data-close]', '[data-prev]', '[data-next]'].map($);
     // The words for the buttons come from the page, in the reader's language.
     const words = document.body.dataset;
     close.setAttribute('aria-label', words.lightboxClose || 'Close');
     previous.setAttribute('aria-label', words.lightboxPrevious || 'Previous');
     next.setAttribute('aria-label', words.lightboxNext || 'Next');
 
-    // The whole album at once, or one photograph at a time.
-    const lay = (whole) => {
-        dialog.classList.toggle('is-grid', whole);
-        all.setAttribute('aria-pressed', String(whole));
-        grid.hidden = !whole;
-    };
-
     let set = [];
     let at = 0;
 
     const show = (index) => {
-        lay(false);
         at = (index + set.length) % set.length;
         picture.classList.remove('is-in');
         picture.src = set[at].href;
-        // The stage behind it takes the photograph's own colours, out of focus and muted.
-        stage.style.setProperty('--photo', `url("${set[at].href}")`);
         picture.alt = set[at].querySelector('img')?.alt ?? '';
         requestAnimationFrame(() => picture.classList.add('is-in'));
+        // Behind the photograph, its own colours, out of focus.
+        stage.style.setProperty('--photo', `url("${set[at].href}")`);
         count.textContent = set.length > 1 ? `${at + 1} / ${set.length}` : '';
         previous.hidden = next.hidden = set.length < 2;
-        [...strip.children].forEach((thumb, i) => thumb.setAttribute('aria-current', String(i === at)));
-        strip.children[at]?.scrollIntoView({ block: 'nearest', inline: 'center', behavior: 'smooth' });
+        [...tiles.children].forEach((tile, i) => tile.setAttribute('aria-current', String(i === at)));
+        tiles.children[at]?.scrollIntoView({ block: 'nearest', inline: 'nearest' });
     };
 
     const fill = (gallery) => {
-        strip.replaceChildren(...set.map((link, i) => {
-            const thumb = document.createElement('button');
-            thumb.type = 'button';
-            thumb.setAttribute('role', 'listitem');
-            thumb.setAttribute('aria-label', link.querySelector('img')?.alt || `${i + 1}`);
-            thumb.innerHTML = `<img src="${link.querySelector('img')?.src ?? link.href}" alt="" loading="lazy">`;
-            thumb.addEventListener('click', () => show(i));
-            return thumb;
-        }));
-        strip.hidden = set.length < 2;
-        all.hidden = set.length < 2;
-        // Its words come with the album, in the reader's language.
-        all.textContent = gallery?.dataset.galleryAll || 'All';
-        grid.replaceChildren(...set.map((link, i) => {
+        const about = gallery?.dataset ?? {};
+        kind.textContent = about.galleryKind || '';
+        kind.style.color = about.galleryKindColour || '';
+        title.textContent = about.galleryTitle || document.querySelector('h1')?.textContent.trim() || '';
+        date.textContent = about.galleryDate || '';
+        side.hidden = !title.textContent && set.length < 2;
+        tiles.replaceChildren(...set.map((link, i) => {
             const tile = document.createElement('button');
             tile.type = 'button';
             tile.setAttribute('aria-label', link.querySelector('img')?.alt || `${i + 1}`);
@@ -96,7 +76,7 @@ export function startLightbox() {
             tile.addEventListener('click', () => show(i));
             return tile;
         }));
-        title.textContent = gallery?.dataset.galleryTitle || document.querySelector('h1')?.textContent.trim() || '';
+        tiles.hidden = set.length < 2;
     };
 
     links.forEach((link) => {
@@ -114,10 +94,9 @@ export function startLightbox() {
     });
 
     close.addEventListener('click', () => dialog.close());
-    all.addEventListener('click', () => lay(all.getAttribute('aria-pressed') !== 'true'));
     previous.addEventListener('click', () => show(at - 1));
     next.addEventListener('click', () => show(at + 1));
-    // A press on the dark around the window closes it.
+    // A press outside the card closes it.
     dialog.addEventListener('click', (event) => event.target === dialog && dialog.close());
     dialog.addEventListener('close', () => picture.removeAttribute('src'));
     dialog.addEventListener('keydown', (event) => {
