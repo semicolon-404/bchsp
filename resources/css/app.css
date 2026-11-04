@@ -2609,4 +2609,43 @@ html.is-mourning {
             transform: scale(1.12);
         }
     }
+
+    /* The first photographs of an album, in a row under a news title; the last tile says how many more. */
+    .album-strip {
+        display: flex;
+        gap: 0.25rem;
+        margin-top: 0.5rem;
+    }
+
+    .album-strip img,
+    .album-more {
+        width: 3rem;
+        height: 2.25rem;
+        flex-shrink: 0;
+        border-radius: 6px;
+        object-fit: cover;
+    }
+
+    .album-more {
+        display: grid;
+        place-items: center;
+        font-size: 0.75rem;
+        font-weight: 700;
+        color: var(--color-on-brand);
+        background: var(--color-brand);
+    }
+
+    @media (hover: hover) and (prefers-reduced-motion: no-preference) {
+        .album-strip img {
+            transition: transform 200ms ease;
+        }
+
+        a:hover .album-strip img:nth-child(odd) {
+            transform: translateY(-2px) rotate(-2deg);
+        }
+
+        a:hover .album-strip img:nth-child(even) {
+            transform: translateY(-2px) rotate(2deg);
+        }
+    }
 }
