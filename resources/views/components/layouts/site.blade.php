@@ -186,29 +186,7 @@
         $href = fn (string $place) => str_starts_with($place, 'http') ? $place : route($place);
     @endphp
     <footer @class(['site-foot', 'mt-16' => ! request()->routeIs('home', 'about', 'announcements.show')])>
-        @unless (request()->routeIs('home'))
-            {{-- 1. What people come to the foot of a page for. --}}
-            <div class="foot-band">
-                <div class="wrap grid gap-3 py-4 sm:grid-cols-3">
-                    @if ($phone)
-                        <a href="{{ $dial($phone) }}" class="foot-action">
-                            <span class="foot-action-mark" aria-hidden="true"><x-heroicon-s-phone class="size-5" /></span>
-                            <span class="min-w-0"><span class="block text-sm text-muted">{{ __('Call the hospital') }}</span><span class="block font-mono text-lg font-semibold">{{ $phone }}</span></span>
-                        </a>
-                    @endif
-                    @if ($emergency)
-                        <a href="{{ $dial($emergency) }}" class="foot-action is-danger">
-                            <span class="foot-action-mark" aria-hidden="true"><x-heroicon-s-bell-alert class="size-5" /></span>
-                            <span class="min-w-0"><span class="block text-sm text-muted">{{ __('Emergency, day and night') }}</span><span class="block font-mono text-lg font-semibold">{{ $emergency }}</span></span>
-                        </a>
-                    @endif
-                    <a href="{{ route('contact') }}" class="foot-action">
-                        <span class="foot-action-mark" aria-hidden="true"><x-heroicon-s-map-pin class="size-5" /></span>
-                        <span class="min-w-0"><span class="block text-sm text-muted">{{ __('Find us') }}</span><span class="block text-lg font-semibold">{{ __('Map and directions') }}</span></span>
-                    </a>
-                </div>
-            </div>
-        @endunless
+        {{-- The numbers to call are in the header (the emergency button) and on Contact us: not again here. --}}
 
         {{--
             2. The hospital, the site in columns, how to reach it: the columns as they always were, kept low,

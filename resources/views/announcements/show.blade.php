@@ -65,15 +65,21 @@
         @endif
 
         @if ($photos = $announcement->photos())
-            {{-- The album: every photograph whole, each opening at full size. --}}
+            {{--
+                The album as a mosaic: the first photograph large, the next ones beside and under it, and past nine the
+                last tile says how many more there are. Every photograph is in the gallery: a press opens the viewer
+                with the whole album in a strip (resources/js/lightbox.js); without scripts, each in a tab of its own.
+            --}}
             <section class="mt-10" aria-label="{{ __('Photographs') }}">
-                <h2 class="eyebrow">{{ trans_choice('{1} :count photograph|[2,*] :count photographs', count($photos), ['count' => count($photos)]) }}</h2>
-                {{-- A press opens the photograph large over the page, with the way to the next (resources/js/lightbox.js); without scripts, in a tab of its own. --}}
-                <ul class="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3" data-gallery>
+                <h2 class="flex items-center gap-2 text-lg"><x-heroicon-o-photo class="size-5 text-brand" aria-hidden="true" />{{ trans_choice('{1} :count photograph|[2,*] :count photographs', count($photos), ['count' => count($photos)]) }}</h2>
+                <ul @class(['album mt-4', 'is-one' => count($photos) === 1, 'is-two' => count($photos) === 2]) data-gallery data-gallery-title="{{ $announcement->localTitle() }}">
                     @foreach ($photos as $photo)
-                        <li>
-                            <a href="{{ $photo }}" target="_blank" rel="noopener" class="block overflow-hidden rounded-lg border border-line" data-lightbox>
-                                <img src="{{ $photo }}" alt="{{ __('Photograph :number of :count', ['number' => $loop->iteration, 'count' => $loop->count]) }}" loading="lazy" class="aspect-[4/3] w-full object-cover">
+                        <li @class(['is-hidden' => $loop->iteration > 9])>
+                            <a href="{{ $photo }}" target="_blank" rel="noopener" data-lightbox>
+                                <img src="{{ $photo }}" alt="{{ __('Photograph :number of :count', ['number' => $loop->iteration, 'count' => $loop->count]) }}" loading="lazy">
+                                @if ($loop->iteration === 9 && $loop->count > 9)
+                                    <span class="album-more-over" aria-hidden="true">+{{ $loop->count - 9 }}</span>
+                                @endif
                             </a>
                         </li>
                     @endforeach
