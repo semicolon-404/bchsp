@@ -21,7 +21,7 @@
     // What visitors most often phone to ask, beside the name: what is open today.
     $sessions = App\Models\ClinicSession::today();
     $openNow = $sessions->filter->isOpenNow()->count();
-    $announcements = $shows('announcements') ? App\Models\Announcement::current()->with('type')->inListOrder()->limit(5)->get() : collect();
+    $announcements = $shows('announcements') ? App\Models\Announcement::current()->with('type')->inListOrder()->limit(8)->get() : collect();
     // The slides sit beside the announcements, unless an administrator gave them a section of their own.
     $slides = $shows('announcements') && ! $shows('slides') ? App\Models\Announcement::slides() : collect();
     // The departments that posted most lately, newest first: a way in to their own pages.

@@ -2150,15 +2150,6 @@ html.is-mourning {
         display: flex;
         flex-direction: column;
     }
-
-    .news-list > li {
-        display: flex;
-        flex: 1;
-    }
-
-    .news-list > li > a {
-        flex: 1;
-    }
 }
 
 /* Shared by every width: what the kinds of announcements look like, in the news and the popup. */
@@ -2182,11 +2173,7 @@ html.is-mourning {
         border-top: 1px solid var(--color-line);
     }
 
-    /* Rows share the height of the posters beside them: each one's lines sit in its middle. */
     .news-row > a {
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
         transition: background 0.15s;
     }
 
@@ -2209,8 +2196,34 @@ html.is-mourning {
         display: inline-flex;
         align-items: center;
         gap: 0.4rem;
-        font-weight: 600;
+        font-weight: 500;
+    }
+
+    /* The date of a row, where the eye looks first: the day large, the month and year small under it. */
+    .news-date {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        width: 3.25rem;
+        flex-shrink: 0;
+        padding-top: 0.125rem;
+        line-height: 1.1;
+        text-align: center;
+    }
+
+    .news-day {
+        font-size: 1.375rem;
+        font-weight: 700;
         color: var(--color-ink);
+        font-variant-numeric: tabular-nums;
+    }
+
+    .news-month {
+        margin-top: 0.2rem;
+        font-size: 0.75rem;
+        font-weight: 500;
+        color: var(--color-muted);
+        white-space: nowrap;
     }
 
     .news-kind::before {
