@@ -2150,6 +2150,16 @@ html.is-mourning {
         display: flex;
         flex-direction: column;
     }
+
+    .news-list > li {
+        display: flex;
+        flex: 1;
+    }
+
+    .news-list > li > a {
+        flex: 1;
+        align-items: center;
+    }
 }
 
 /* Shared by every width: what the kinds of announcements look like, in the news and the popup. */
@@ -2381,36 +2391,32 @@ html.is-mourning {
         border-top: 1px solid var(--color-line);
     }
 
-    /* The hospital's logo on the cover of an announcement without a picture, on a white disc, its kind's symbol at its side. */
-    .cover-logo {
-        position: relative;
+    /* The badge of a kind of announcement, where it has no picture: its symbol in white on a tile of its colour,
+       lit from the top left, as an app's icon. --kind (or --tone on a cover) gives the colour. */
+    .kind-badge {
         display: grid;
         place-items: center;
-        width: 62% !important;
-        height: auto !important;
-        max-height: 60%;
-        padding: 0.6rem 0.9rem;
-        border-radius: 16px;
-        background: #fff;
-        box-shadow: 0 8px 24px -10px color-mix(in srgb, var(--tone) 60%, transparent);
-    }
-
-    .cover-logo img {
-        width: 100%;
-        max-height: 5rem;
-        object-fit: contain;
-    }
-
-    .cover-logo-kind {
-        position: absolute;
-        right: -0.6rem;
-        bottom: -0.6rem;
-        width: 1.9rem;
-        height: 1.9rem;
-        padding: 0.35rem;
-        border-radius: 999px;
         color: #fff;
-        background: var(--tone);
-        box-shadow: 0 0 0 3px #fff;
+        background:
+            radial-gradient(120% 120% at 20% 10%, rgb(255 255 255 / 0.35), transparent 55%),
+            linear-gradient(145deg, color-mix(in srgb, var(--kind, var(--tone, var(--color-brand))) 80%, #fff), var(--kind, var(--tone, var(--color-brand))));
+        border-radius: 22%;
+        box-shadow:
+            inset 0 1px 0 rgb(255 255 255 / 0.4),
+            0 6px 16px -8px color-mix(in srgb, var(--kind, var(--tone, var(--color-brand))) 70%, transparent);
     }
+
+    .cover-badge {
+        border-radius: 28%;
+    }
+
+    /* The small picture at the end of a row of news, or the hospital's logo where it has none. */
+    .news-thumb {
+        width: 3.5rem;
+        height: 3.5rem;
+        flex-shrink: 0;
+        border: 1px solid var(--color-line);
+        border-radius: 10px;
+    }
+
 }

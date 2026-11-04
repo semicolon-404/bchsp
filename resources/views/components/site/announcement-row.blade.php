@@ -1,46 +1,35 @@
 {{--
-    One announcement in a list, compact so that many fit beside the posters: its date first as a leaf of a
-    calendar (the month on a band of colour, the day large under it), then its kind in its colour with the
-    time it was put out, and its title on one line.
-    With same-day, the leaf is left out: the row above it already shows that day, and this one its time.
-    The kind is always written out: never colour alone. Thai needs room above and below for its marks.
+    One announcement in a list: the mark of its type (a symbol in a colour, so the kind is known at a glance),
+    then its title with marks for "pinned" and "has files", its type by name, and its date.
 --}}
-@props(['announcement', 'sameDay' => false])
-@php
-    $date = $announcement->starts_at ?? $announcement->created_at;
-    $local = $date->copy()->locale(app()->getLocale());
-    $year = app()->getLocale() === 'th' ? $date->year + 543 : $date->year;
-@endphp
+@props(['announcement'])
 
-<li @class(['news-row', 'is-same-day' => $sameDay]) @if ($announcement->type) style="--kind: {{ $announcement->type->colour() }}" @endif>
-    <a href="{{ route('announcements.show', $announcement) }}" class="group flex items-start gap-4 px-4 py-3 no-underline sm:px-5">
-        <span class="news-detail">
-        @if ($sameDay)
-            <span class="news-leaf-gap" aria-hidden="true"></span>
-        @else
-            <time datetime="{{ $date->toDateString() }}" class="news-leaf" title="{{ $announcement->shownOn() }}">
-                <span class="news-leaf-month">{{ $local->translatedFormat('M') }} {{ substr((string) $year, -2) }}</span>
-                <span class="news-leaf-day">{{ $local->day }}</span>
-            </time>
-        @endif
-        {{-- Little to read: the kind, clear in its colour, and the title on one line. The rest is one press away. --}}
+<li class="border-b border-line last:border-b-0">
+    <a href="{{ route('announcements.show', $announcement) }}" class="group flex items-start gap-3 px-4 py-3 no-underline">
+        <x-site.type-mark :type="$announcement->type" class="mt-0.5" />
         <span class="min-w-0 flex-1">
-            <span class="flex items-center gap-2">
-                @if ($announcement->type)
-                    <span class="kind-pill">{{ $announcement->type->localName() }}</span>
-                @endif
+            <span class="block text-ink group-hover:text-brand">
                 @if ($announcement->isNew())
-                    <span class="text-xs font-semibold text-brand">{{ __('New') }}</span>
+                    <span class="mr-1 inline-flex items-center rounded bg-brand px-1.5 font-sans text-xs font-semibold text-on-brand">{{ __('New') }}</span>
                 @endif
-                <span class="ml-auto shrink-0 text-xs text-muted">{{ $local->format('H:i') }}{{ app()->getLocale() === 'th' ? ' น.' : '' }}</span>
+                @if ($announcement->isPinnedNow())
+                    <span class="mr-1 inline-flex items-center gap-1 rounded border border-brand px-1.5 text-xs font-semibold text-brand"><x-heroicon-s-bookmark class="size-3" aria-hidden="true" />{{ __('Pinned') }}</span>
+                @endif
+                {{ $announcement->localTitle() }}
+                @if ($announcement->hasDocuments())
+                    <x-heroicon-m-paper-clip class="ml-1 inline size-4 text-muted" aria-hidden="true" /><span class="sr-only">{{ __('Has files attached') }}</span>
+                @endif
             </span>
-            <span class="mt-1 block truncate text-[0.9375rem] font-medium leading-[1.7] text-ink group-hover:text-brand" title="{{ $announcement->localTitle() }}">{{ $announcement->localTitle() }}</span>
+            <span class="mt-1 flex flex-wrap items-center gap-x-3 gap-y-0.5 font-mono text-xs text-muted">
+                @if ($announcement->type)
+                    <span style="color: {{ $announcement->type->colour() }}">{{ $announcement->type->localName() }}</span>
+                @endif
+                <time datetime="{{ ($announcement->starts_at ?? $announcement->created_at)->toDateString() }}">{{ $announcement->shownOn() }}</time>
+            </span>
         </span>
-        </span>
-        {{-- As a list: the title and when, nothing else. --}}
-        <span class="news-line">
-            <span class="min-w-0 flex-1 truncate text-ink group-hover:text-brand">{{ $announcement->localTitle() }}</span>
-            <time datetime="{{ $date->toIso8601String() }}" class="shrink-0 text-xs text-muted tabular-nums">{{ $announcement->shownOn() }} · {{ $local->format('H:i') }}</time>
-        </span>
+        {{-- Its "one page" picture, small: a list of announcements with pictures is easier to scan. --}}
+        @if ($image = $announcement->imageUrl())
+            <img src="{{ $image }}" alt="" loading="lazy" class="size-14 shrink-0 rounded-md border border-line object-cover">
+        @endif
     </a>
 </li>

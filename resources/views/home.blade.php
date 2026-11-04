@@ -21,7 +21,7 @@
     // What visitors most often phone to ask, beside the name: what is open today.
     $sessions = App\Models\ClinicSession::today();
     $openNow = $sessions->filter->isOpenNow()->count();
-    $announcements = $shows('announcements') ? App\Models\Announcement::current()->with('type')->inListOrder()->limit(8)->get() : collect();
+    $announcements = $shows('announcements') ? App\Models\Announcement::current()->with('type')->inListOrder()->limit(5)->get() : collect();
     // The slides sit beside the announcements, unless an administrator gave them a section of their own.
     $slides = $shows('announcements') && ! $shows('slides') ? App\Models\Announcement::slides() : collect();
     // The departments that posted most lately, newest first: a way in to their own pages.
@@ -158,45 +158,18 @@
                     <a href="{{ route('announcements.index') }}" class="btn btn-line">{{ __('All announcements') }} &rarr;</a>
                 </div>
 
-                {{--
-                    As a newsroom's front page: the posters large on the left with the four newest beside them, the date
-                    of each where the eye looks first; under them the next four as cards with their pictures.
-                --}}
-                @php([$beside, $below] = [$announcements->take(4), $announcements->slice(4)])
-                {{-- Two ways to read it, the visitor's choice (resources/js/news-view.js): with the details, or a plain list of titles and dates. --}}
-                <div data-news-view="detail">
-                <div @class(['mt-10 grid gap-6', 'lg:grid-cols-12' => $slides->isNotEmpty() && $beside->isNotEmpty()])>
+                <div @class(['mt-10 grid gap-8', 'lg:grid-cols-12' => $slides->isNotEmpty() && $announcements->isNotEmpty()])>
                     @if ($slides->isNotEmpty())
-                        <div class="min-w-0 lg:col-span-7"><x-site.banners part="stage" :banners="$slides" frame="aspect-[16/10]" /></div>
+                        {{-- The pictures are mostly posters, upright: an upright frame shows them whole, as tall as the list beside it. --}}
+                        <div class="min-w-0 lg:col-span-5"><x-site.banners part="stage" :banners="$slides" frame="aspect-[4/5]" /></div>
                     @endif
-                    @if ($beside->isNotEmpty())
-                        <div @class(['card flex flex-col p-0', 'lg:col-span-5' => $slides->isNotEmpty()])>
-                            <div class="news-month-head justify-between">
-                                <h3>{{ __('Latest') }}</h3>
-                                <div class="news-view-switch" role="group" aria-label="{{ __('How to show') }}">
-                                    <button type="button" data-news-view-as="detail" aria-pressed="true"><x-heroicon-m-squares-2x2 class="size-4" aria-hidden="true" />{{ __('Details') }}</button>
-                                    <button type="button" data-news-view-as="list" aria-pressed="false"><x-heroicon-m-bars-3 class="size-4" aria-hidden="true" />{{ __('List') }}</button>
-                                </div>
-                            </div>
-                            <ul class="flex-1">
-                                {{-- A day's date once, on its first announcement: those under it on the same day show only their time. As a list, all eight. --}}
-                                @foreach ($announcements as $announcement)
-                                    @php($day = ($announcement->starts_at ?? $announcement->created_at)->toDateString())
-                                    <x-site.announcement-row :announcement="$announcement" :same-day="$day === ($previous ?? null)" />
-                                    @php($previous = $day)
-                                @endforeach
-                            </ul>
-                            <a href="{{ route('announcements.index') }}" class="border-t border-line px-5 py-3 text-sm font-semibold text-brand no-underline hover:underline">{{ __('All announcements') }} &rarr;</a>
-                        </div>
+                    @if ($announcements->isNotEmpty())
+                        <ul @class(['card news-list p-0', 'lg:col-span-7' => $slides->isNotEmpty(), 'mx-auto w-full max-w-4xl' => $slides->isEmpty()])>
+                            @foreach ($announcements as $announcement)
+                                <x-site.announcement-row :announcement="$announcement" />
+                            @endforeach
+                        </ul>
                     @endif
-                </div>
-                @if ($below->isNotEmpty())
-                    <ul class="news-cards mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-                        @foreach ($below as $announcement)
-                            <li><x-site.announcement-card :announcement="$announcement" /></li>
-                        @endforeach
-                    </ul>
-                @endif
                 </div>
 
                 {{-- Each kind of announcement, one press away. --}}
