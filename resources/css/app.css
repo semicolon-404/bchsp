@@ -606,7 +606,14 @@ html.is-mourning {
         box-shadow:
             0 1px 2px color-mix(in srgb, var(--color-ink) 6%, transparent),
             0 12px 32px -18px color-mix(in srgb, var(--color-ink) 22%, transparent);
-        transition: border-color 200ms, box-shadow 250ms ease;
+        transition: border-color 200ms, box-shadow 250ms ease, transform 250ms ease;
+    }
+
+    /* A card that leads somewhere rises a little under the pointer, as a Mac's do; not for those who ask for less motion. */
+    @media (hover: hover) and (prefers-reduced-motion: no-preference) {
+        a.card:hover {
+            transform: translateY(-2px);
+        }
     }
 
     :root:not([data-theme='light']) .card {

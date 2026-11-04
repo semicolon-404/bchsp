@@ -90,7 +90,8 @@
 
     <x-site.alert />
 
-    <header class="sticky top-0 z-40 border-b border-line bg-page/90 backdrop-blur">
+    {{-- Frosted glass, as a Mac's menu bar: the page shows faintly through it as it scrolls under. --}}
+    <header class="sticky top-0 z-40 border-b border-line/70 bg-page/70 backdrop-blur-xl backdrop-saturate-150">
         @if ($day)
             <div class="day-line" aria-hidden="true"></div>
         @endif
