@@ -445,6 +445,14 @@ class AnnouncementResource extends Resource
             ]);
     }
 
+    /** Under the post being edited: what the staff write to each other about it. */
+    public static function getRelations(): array
+    {
+        return [
+            RelationManagers\CommentsRelationManager::class,
+        ];
+    }
+
     public static function getPages(): array
     {
         return [

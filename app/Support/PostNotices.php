@@ -5,6 +5,7 @@ namespace App\Support;
 use App\Enums\Role;
 use App\Filament\Resources\Announcements\AnnouncementResource;
 use App\Models\Announcement;
+use App\Models\AnnouncementComment;
 use App\Models\User;
 use Filament\Actions\Action;
 use Filament\Notifications\Notification;
@@ -45,6 +46,23 @@ class PostNotices
             ),
             default => null,
         };
+    }
+
+    /**
+     * A comment under a post: those taking part are told, the department it belongs to, the administrators and
+     * whoever commented on it before; not the one who wrote it.
+     */
+    public static function tellOfComment(AnnouncementComment $comment): void
+    {
+        $post = $comment->announcement;
+        $earlier = User::whereIn('id', $post->comments()->whereKeyNot($comment->getKey())->whereNotNull('user_id')->pluck('user_id'))->get();
+
+        self::send(
+            self::of($post)->merge(self::admins())->merge($earlier)->unique('id'),
+            __(':name commented on a post', ['name' => $comment->user?->name ?? __('Someone')]),
+            $post->title.(filled($comment->body) ? ': '.Str::limit((string) $comment->body, 120) : ''),
+            'heroicon-o-chat-bubble-left-right', 'info', $post, __('Open the post'),
+        );
     }
 
     /** A department changed a post already showing ('updated'), or deleted one ('deleted'): the administrators are told. */

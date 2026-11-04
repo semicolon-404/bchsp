@@ -177,6 +177,12 @@ class Announcement extends Model
         return $this->belongsTo(AnnouncementType::class, 'announcement_type_id');
     }
 
+    /** What the staff wrote to each other under it in the panel, oldest first. */
+    public function comments(): HasMany
+    {
+        return $this->hasMany(AnnouncementComment::class)->oldest();
+    }
+
     /** The unit of the hospital that put it out, when one did: it is then on that unit's board. */
     public function department(): BelongsTo
     {
