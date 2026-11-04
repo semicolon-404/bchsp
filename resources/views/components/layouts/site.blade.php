@@ -189,7 +189,7 @@
         @unless (request()->routeIs('home'))
             {{-- 1. What people come to the foot of a page for. --}}
             <div class="foot-band">
-                <div class="wrap grid gap-3 py-6 sm:grid-cols-3">
+                <div class="wrap grid gap-3 py-4 sm:grid-cols-3">
                     @if ($phone)
                         <a href="{{ $dial($phone) }}" class="foot-action">
                             <span class="foot-action-mark" aria-hidden="true"><x-heroicon-s-phone class="size-5" /></span>
@@ -211,50 +211,61 @@
         @endunless
 
         {{--
-            2. Kept short: on one line the hospital and how to reach it; under it every part of the site as one
-            row of links (the columns' headings are kept for screen readers, as the names of the lists).
+            2. The hospital, the site in columns, how to reach it: the columns as they always were, kept low,
+            small type and close lines, so the foot of the page is read at a glance and does not tower.
         --}}
-        <div class="wrap py-8">
-            <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+        <div class="wrap grid grid-cols-2 gap-x-6 gap-y-6 py-8 sm:gap-x-8 lg:grid-cols-12">
+            <div class="col-span-2 lg:col-span-3">
                 <p class="flex items-center gap-3 font-semibold">
                     @if ($logo)
                         <img src="{{ $logo }}" alt="" class="h-9 w-auto shrink-0">
+                    @else
+                        <span class="flex size-9 shrink-0 items-center justify-center rounded-lg bg-brand text-on-brand" aria-hidden="true"><x-heroicon-s-plus class="size-5" /></span>
                     @endif
                     <span class="leading-snug">{{ $name }}</span>
-                    @if ($address)
-                        <span class="hidden font-normal text-sm text-muted xl:inline">· {{ preg_replace('/\s*\R\s*/', ' ', $address) }}</span>
-                    @endif
                 </p>
-                <ul class="flex flex-wrap items-center gap-x-5 gap-y-2 text-sm">
+                @if ($about = App\Support\Footer::about())
+                    <p class="mt-2 max-w-sm whitespace-pre-line text-sm text-muted">{{ $about }}</p>
+                @elseif ($motto = SiteSettings::get('site.motto'))
+                    <p class="mt-2 max-w-sm text-sm text-muted">“{{ $motto }}”</p>
+                @endif
+                @if ($address)
+                    <p class="mt-2 flex max-w-sm items-start gap-1.5 text-sm text-muted"><x-heroicon-m-map-pin class="mt-0.5 size-4 shrink-0 text-brand" aria-hidden="true" /><span class="whitespace-pre-line">{{ $address }}</span></p>
+                @endif
+                @if ($social)
+                    <ul class="mt-3 flex flex-wrap gap-2" aria-label="{{ __('Follow us') }}">
+                        @foreach ($social as $network => $url)
+                            <li><a href="{{ $url }}" target="_blank" rel="noopener noreferrer" class="foot-social">{{ $network }}<span class="sr-only"> {{ __('(opens in a new tab)') }}</span></a></li>
+                        @endforeach
+                    </ul>
+                @endif
+            </div>
+
+            @foreach ($columns as $heading => $links)
+                <nav class="lg:col-span-2" aria-label="{{ __($heading) }}">
+                    <h2 class="foot-heading">{{ __($heading) }}</h2>
+                    <ul class="mt-2.5 space-y-1 text-sm">
+                        @foreach (array_filter($links) as [$place, $label])
+                            <li><a href="{{ $href($place) }}" class="foot-link">{{ $label }}</a></li>
+                        @endforeach
+                    </ul>
+                </nav>
+            @endforeach
+
+            <div class="col-span-2 sm:col-span-1 lg:col-span-3">
+                <h2 class="foot-heading">{{ __('Contact us') }}</h2>
+                <ul class="mt-2.5 space-y-1 text-sm">
                     @if ($phone)
-                        <li><a href="{{ $dial($phone) }}" class="foot-link inline-flex items-center gap-1.5 font-mono"><x-heroicon-m-phone class="size-4 text-brand" aria-hidden="true" />{{ $phone }}</a></li>
+                        <li><a href="{{ $dial($phone) }}" class="foot-link font-mono">{{ $phone }}</a></li>
                     @endif
                     @if ($email)
-                        <li><a href="mailto:{{ $email }}" class="foot-link inline-flex items-center gap-1.5"><x-heroicon-m-envelope class="size-4 text-brand" aria-hidden="true" />{{ $email }}</a></li>
+                        <li><a href="mailto:{{ $email }}" class="foot-link break-all">{{ $email }}</a></li>
                     @endif
-                    @foreach ($social as $network => $url)
-                        <li><a href="{{ $url }}" target="_blank" rel="noopener noreferrer" class="foot-social">{{ $network }}<span class="sr-only"> {{ __('(opens in a new tab)') }}</span></a></li>
-                    @endforeach
+                    @if ($hours !== '')
+                        <li class="whitespace-pre-line pt-1 text-xs text-muted">{{ $hours }}</li>
+                    @endif
                 </ul>
             </div>
-            <div class="mt-6 flex flex-wrap gap-x-8 gap-y-3 border-t border-line pt-5">
-                @foreach ($columns as $heading => $links)
-                    <nav aria-label="{{ __($heading) }}">
-                        <ul class="flex flex-wrap gap-x-5 gap-y-2 text-sm">
-                            @foreach (array_filter($links) as [$place, $label])
-                                <li><a href="{{ $href($place) }}" class="foot-link">{{ $label }}</a></li>
-                            @endforeach
-                        </ul>
-                    </nav>
-                @endforeach
-            </div>
-            @if ($hours !== '')
-                <p class="mt-4 text-xs text-muted">{{ preg_replace('/\s*\R\s*/', ' · ', $hours) }}</p>
-            @endif
-            {{-- The administrator's own words about the hospital (Site settings > Footer), small, under the rest. --}}
-            @if ($about = App\Support\Footer::about())
-                <p class="mt-2 max-w-3xl whitespace-pre-line text-xs text-muted">{{ $about }}</p>
-            @endif
         </div>
 
         @if ($groups = App\Support\Footer::groups())
