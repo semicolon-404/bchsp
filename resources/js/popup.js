@@ -1,9 +1,10 @@
 /**
- * The poster that opens over the home page (components/site/banners, part "popup").
+ * The posters that open over the home page (components/site/banners, part "popup"), in one window.
  *
- * It opens once the page has loaded. A visitor who closes it does not see that
- * poster again in that browser; a different poster, put up later, opens as usual.
- * What was closed is kept in the visitor's browser and nowhere else.
+ * It opens once the page has loaded. A visitor who closes it does not see those posters again in
+ * that browser; when a poster is added that they have not closed, the window opens as usual.
+ * What was closed is kept in the visitor's browser and nowhere else. With several posters the
+ * arrow keys move between them, as the arrows on screen do (resources/js/slider.js).
  */
 const KEY = 'popups-closed';
 
@@ -20,14 +21,14 @@ export function startPopup() {
 
     if (!dialog || typeof dialog.showModal !== 'function') return;
 
-    const id = Number(dialog.dataset.popup);
+    const ids = dialog.dataset.popup.split(',').map(Number).filter(Number.isInteger);
 
-    if (closed().includes(id)) return;
+    if (ids.every((id) => closed().includes(id))) return;
 
     dialog.addEventListener('close', () => {
         try {
             // The last twenty are plenty: older posters are long gone.
-            localStorage.setItem(KEY, JSON.stringify([...closed(), id].slice(-20)));
+            localStorage.setItem(KEY, JSON.stringify([...new Set([...closed(), ...ids])].slice(-20)));
         } catch {
             // Not remembered: it will open again on the next visit.
         }
@@ -36,6 +37,11 @@ export function startPopup() {
     // A press outside the poster closes it too.
     dialog.addEventListener('click', (event) => {
         if (event.target === dialog) dialog.close();
+    });
+
+    dialog.addEventListener('keydown', (event) => {
+        if (event.key === 'ArrowLeft') dialog.querySelector('[data-slider-prev]')?.click();
+        if (event.key === 'ArrowRight') dialog.querySelector('[data-slider-next]')?.click();
     });
 
     dialog.showModal();

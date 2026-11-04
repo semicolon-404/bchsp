@@ -26,7 +26,8 @@ export function startSlider() {
         track.addEventListener('scroll', () => requestAnimationFrame(mark), { passive: true });
         mark();
 
-        if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+        // The posters in the popup wait for the visitor: they are read, not watched go by.
+        if (slider.hasAttribute('data-slider-still') || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
 
         let paused = false;
 

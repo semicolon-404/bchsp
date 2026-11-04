@@ -48,7 +48,7 @@
                                 @if ($banner->type)
                                     <span class="kind-pill">{{ $banner->type->localName() }}</span>
                                 @endif
-                                <span class="line-clamp-2 text-lg font-semibold leading-snug text-ink">{{ $banner->localTitle() }}</span>
+                                <span class="line-clamp-2 text-xl font-semibold leading-[1.6] text-ink">{{ $banner->localTitle() }}</span>
                             </a>
                         </li>
                     @endforeach
@@ -65,26 +65,49 @@
                 @endif
             </div>
 @elseif ($part === 'popup')
-    @php($popup = Announcement::popup())
-    @if ($popup)
+    @php($popups = Announcement::popups())
+    @if ($popups->isNotEmpty())
         {{--
-            Opened by resources/js/popup.js once the page has loaded, unless this visitor has closed this very
-            poster before (remembered in their browser). A <dialog>: Escape closes it and the page behind is inert.
+            Opened by resources/js/popup.js once the page has loaded, unless this visitor has closed these very
+            posters before (remembered in their browser). A <dialog>: Escape closes it and the page behind is inert.
+            More than one: swiped, or moved through with the arrows (on screen or on the keyboard) and the dots.
         --}}
-        <dialog data-popup="{{ $popup->id }}" aria-labelledby="popup-title" class="popup">
+        <dialog data-popup="{{ $popups->pluck('id')->implode(',') }}" aria-label="{{ $popups->first()->localTitle() }}" class="popup">
             <form method="dialog" class="popup-close-x">
                 <button aria-label="{{ __('Close') }}"><x-heroicon-m-x-mark class="size-6" aria-hidden="true" /></button>
             </form>
-            <a href="{{ route('announcements.show', $popup) }}" class="popup-picture"><img src="{{ $popup->imageUrl() }}" alt="{{ $popup->localTitle() }}" loading="lazy"></a>
-            <div class="popup-body">
-                @if ($popup->type)
-                    <p class="kind-pill" style="--kind: {{ $popup->type->colour() }}">{{ $popup->type->localName() }}</p>
+            <div class="relative" @if ($popups->count() > 1) data-slider data-slider-still aria-roledescription="carousel" @endif>
+                <ul class="slider-track" data-slider-track>
+                    @foreach ($popups as $popup)
+                        <li class="w-full shrink-0 snap-center" @if ($loop->count > 1) aria-roledescription="slide" aria-label="{{ $loop->iteration }} / {{ $loop->count }}" @endif>
+                            <a href="{{ route('announcements.show', $popup) }}" class="popup-picture"><img src="{{ $popup->imageUrl() }}" alt="{{ $popup->localTitle() }}" @unless ($loop->first) loading="lazy" @endunless></a>
+                            <div class="popup-body">
+                                <p class="flex flex-wrap items-center gap-2">
+                                    @if ($popup->type)
+                                        <span class="kind-pill" style="--kind: {{ $popup->type->colour() }}">{{ $popup->type->localName() }}</span>
+                                    @endif
+                                    @if ($loop->count > 1)
+                                        <span class="text-sm text-muted">{{ $loop->iteration }} / {{ $loop->count }}</span>
+                                    @endif
+                                </p>
+                                <h2 class="popup-title">{{ $popup->localTitle() }}</h2>
+                                <form method="dialog" class="popup-actions">
+                                    <a href="{{ route('announcements.show', $popup) }}" class="btn btn-brand popup-main">{{ __('Read the details') }} &rarr;</a>
+                                    <button class="btn btn-line" @if ($loop->first) autofocus @endif>{{ __('Close') }}</button>
+                                </form>
+                            </div>
+                        </li>
+                    @endforeach
+                </ul>
+                @if ($popups->count() > 1)
+                    <button type="button" class="slider-arrow popup-arrow left-3" data-slider-prev aria-label="{{ __('Previous slide') }}"><x-heroicon-m-chevron-left class="size-7" aria-hidden="true" /></button>
+                    <button type="button" class="slider-arrow popup-arrow right-3" data-slider-next aria-label="{{ __('Next slide') }}"><x-heroicon-m-chevron-right class="size-7" aria-hidden="true" /></button>
+                    <div class="popup-dots">
+                        @foreach ($popups as $popup)
+                            <button type="button" class="slider-dot" data-slider-dot aria-current="{{ $loop->first ? 'true' : 'false' }}" aria-label="{{ __('Slide :number', ['number' => $loop->iteration]) }}"></button>
+                        @endforeach
+                    </div>
                 @endif
-                <h2 id="popup-title" class="popup-title">{{ $popup->localTitle() }}</h2>
-                <form method="dialog" class="popup-actions">
-                    <a href="{{ route('announcements.show', $popup) }}" class="btn btn-brand popup-main">{{ __('Read the details') }} &rarr;</a>
-                    <button class="btn btn-line popup-later" autofocus>{{ __('Close') }}</button>
-                </form>
             </div>
         </dialog>
     @endif

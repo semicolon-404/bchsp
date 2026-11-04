@@ -349,10 +349,20 @@ class Announcement extends Model
         return static::current()->where('in_slider', true)->whereNotNull('image_path')->inListOrder()->limit(self::SLIDES)->get();
     }
 
-    /** The one whose picture opens over the page: the first of those marked for it. One at a time: two windows in a row are a nuisance. */
+    /** The first of the posters that open over the page. */
     public static function popup(): ?Announcement
     {
-        return static::current()->where('is_popup', true)->whereNotNull('image_path')->inListOrder()->first();
+        return static::popups()->first();
+    }
+
+    /**
+     * The posters that open over the home page, in one window, swiped through: up to five, in the list's order.
+     *
+     * @return Collection<int, Announcement>
+     */
+    public static function popups(): Collection
+    {
+        return static::current()->with('type')->where('is_popup', true)->whereNotNull('image_path')->inListOrder()->limit(5)->get();
     }
 
     /**

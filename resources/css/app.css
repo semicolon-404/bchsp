@@ -317,8 +317,9 @@ html.is-mourning {
     /* The poster that opens over the home page (components/site/banners): centred, never larger than the screen. */
     /* The poster over the home page: large, the picture whole, its title in big letters and two plain buttons. */
     .popup {
-        position: fixed;
-        width: min(56rem, calc(100vw - 2rem));
+        inset: 0;
+        width: calc(100% - 2rem);
+        max-width: 56rem;
         max-height: calc(100dvh - 2rem);
         margin: auto;
         padding: 0;
@@ -345,6 +346,11 @@ html.is-mourning {
 
     @media (prefers-reduced-motion: reduce) {
         .popup[open] { animation: none; }
+    }
+
+    .popup .slider-track > li,
+    .poster-stage > li {
+        min-width: 0;
     }
 
     .popup-picture {
@@ -391,9 +397,10 @@ html.is-mourning {
 
     .popup-title {
         margin-top: 0.25rem;
-        font-size: clamp(1.25rem, 2.4vw, 1.625rem);
+        font-size: clamp(1.375rem, 2.4vw, 1.75rem);
         font-weight: 700;
-        line-height: 1.4;
+        line-height: 1.5;
+        text-wrap: balance;
     }
 
     .popup-actions {
@@ -2146,7 +2153,10 @@ html.is-mourning {
         flex: 1;
         align-items: center;
     }
+}
 
+/* Shared by every width: what the kinds of announcements look like, in the news and the popup. */
+@layer components {
     /* The kind of an announcement in its own colour (App\Models\AnnouncementType::colour), as a small pill: --kind on it or a parent. */
     .kind-pill {
         display: inline-flex;
@@ -2154,20 +2164,37 @@ html.is-mourning {
         width: fit-content;
         padding: 0.125rem 0.625rem;
         border-radius: 999px;
-        font-size: 0.8125rem;
+        font-size: 0.875rem;
         font-weight: 600;
+        line-height: 1.6;
         color: var(--kind, var(--color-brand));
         background: color-mix(in srgb, var(--kind, var(--color-brand)) 14%, transparent);
     }
 
-    /* A row of the news: a stripe of its kind's colour down the left, so kinds are told apart going down the list. */
-    .news-row {
-        box-shadow: inset 4px 0 0 var(--kind, transparent);
+    /* A row of the news: rows apart with room between them, its date in a tile of its kind's colour. */
+    .news-row + .news-row {
+        border-top: 1px solid color-mix(in srgb, var(--color-line) 70%, transparent);
+    }
+
+    .news-row > a {
         transition: background 0.15s;
     }
 
-    .news-row:hover {
-        background: color-mix(in srgb, var(--kind, var(--color-brand)) 6%, transparent);
+    .news-row > a:hover {
+        background: color-mix(in srgb, var(--kind, var(--color-brand)) 7%, transparent);
+    }
+
+    .news-date {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        width: 3.75rem;
+        height: 3.75rem;
+        flex-shrink: 0;
+        border-radius: 14px;
+        color: var(--kind, var(--color-brand));
+        background: color-mix(in srgb, var(--kind, var(--color-brand)) 13%, transparent);
     }
 
     /* The posters on the home page: one card, the picture and what it is about under it. */
@@ -2194,5 +2221,23 @@ html.is-mourning {
         display: flex;
         justify-content: center;
         gap: 0.25rem;
+    }
+
+    /* The arrows and dots of several posters in the popup: on the picture, large enough to press. */
+    .popup-arrow {
+        top: 35%;
+        width: 3rem;
+        height: 3rem;
+    }
+
+    .popup-dots {
+        position: absolute;
+        top: 0.9rem;
+        left: 1rem;
+        display: flex;
+        gap: 0.25rem;
+        padding: 0.25rem 0.5rem;
+        border-radius: 999px;
+        background: rgb(0 0 0 / 0.45);
     }
 }
