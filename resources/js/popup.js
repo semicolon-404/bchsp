@@ -45,4 +45,6 @@ export function startPopup() {
     });
 
     dialog.showModal();
+    // The window itself holds the focus at first, so no button is ringed before anyone touches it.
+    dialog.focus();
 }

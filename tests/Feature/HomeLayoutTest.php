@@ -143,7 +143,7 @@ A - Agility'])
         Announcement::factory()->create(['title' => 'Words only', 'is_popup' => true, 'is_pinned' => true]);
         SiteSettings::save(['home.layout' => [['key' => 'announcements', 'shown' => false], ['key' => 'slides', 'shown' => false]]]);
 
-        $this->get('/')->assertSee('<dialog data-popup="'.$poster->id.'"', false)->assertSee('closed.webp', false);
+        $this->get('/')->assertSee('data-popup="'.$poster->id.'"', false)->assertSee('closed.webp', false);
 
         // It closes with the announcement.
         $poster->update(['ends_at' => now()->subMinute()]);

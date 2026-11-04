@@ -80,7 +80,7 @@
             posters before (remembered in their browser). A <dialog>: Escape closes it and the page behind is inert.
             More than one: swiped, or moved through with the arrows (on screen or on the keyboard) and the dots.
         --}}
-        <dialog data-popup="{{ $popups->pluck('id')->implode(',') }}" aria-label="{{ $popups->first()->localTitle() }}" class="popup">
+        <dialog autofocus tabindex="-1" data-popup="{{ $popups->pluck('id')->implode(',') }}" aria-label="{{ $popups->first()->localTitle() }}" class="popup">
             <form method="dialog" class="popup-close-x">
                 <button aria-label="{{ __('Close') }}"><x-heroicon-m-x-mark class="size-6" aria-hidden="true" /></button>
             </form>
@@ -101,7 +101,7 @@
                                 <h2 class="popup-title">{{ $popup->localTitle() }}</h2>
                                 <form method="dialog" class="popup-actions">
                                     <a href="{{ route('announcements.show', $popup) }}" class="btn btn-brand popup-main">{{ __('Read the details') }} &rarr;</a>
-                                    <button class="btn btn-line" @if ($loop->first) autofocus @endif>{{ __('Close') }}</button>
+                                    <button class="btn btn-line">{{ __('Close') }}</button>
                                 </form>
                             </div>
                         </li>

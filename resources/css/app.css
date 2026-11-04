@@ -419,6 +419,38 @@ html.is-mourning {
 
     .popup-main { flex: 1 1 14rem; justify-content: center; }
 
+    /* The dialog itself takes the focus when it opens, so no button is ringed before anyone touches it. */
+    .popup:focus { outline: none; }
+
+    /* On a phone it is a sheet risen from the bottom edge, as an app's: the thumb is already there. */
+    @media (max-width: 39.99rem) {
+        .popup {
+            width: 100%;
+            max-width: none;
+            max-height: 94dvh;
+            margin: auto 0 0;
+            border-radius: 22px 22px 0 0;
+        }
+
+        .popup[open] { animation: sheet-in 0.32s cubic-bezier(0.2, 0.9, 0.3, 1); }
+
+        .popup-body { padding: 1rem 1.25rem calc(1.25rem + env(safe-area-inset-bottom)); }
+
+        .popup-actions { flex-wrap: nowrap; }
+
+        .popup-actions .btn { flex: 1 1 0; padding-inline: 1rem; white-space: nowrap; }
+
+        .popup-main { flex-grow: 2; }
+    }
+
+    @keyframes sheet-in {
+        from { transform: translateY(100%); }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .popup[open] { animation: none; }
+    }
+
     /* A photograph opened large over the page (resources/js/lightbox.js): the picture whole, on the dark, with the way to the next. */
     /* "Back to the top": a round button at the corner, above the dock where there is one (resources/js/top.js shows it). */
     .to-top {
