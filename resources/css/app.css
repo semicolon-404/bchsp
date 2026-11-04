@@ -2498,23 +2498,6 @@ html.is-mourning {
             box-shadow: 0 8px 18px -10px color-mix(in srgb, var(--color-ink) 35%, transparent);
         }
 
-        /* The most read: the number grows and the row lights up, as a chart's top entries do. */
-        .rank-list a {
-            transition: background 200ms ease;
-        }
-
-        .rank-list a:hover {
-            background: color-mix(in srgb, var(--color-brand) 5%, transparent);
-        }
-
-        .rank-list a > span:first-child {
-            transition: transform 250ms cubic-bezier(0.3, 1.6, 0.5, 1);
-        }
-
-        .rank-list a:hover > span:first-child {
-            transform: scale(1.35);
-        }
-
         .foot-link {
             background: linear-gradient(currentColor, currentColor) 0 100% / 0 1px no-repeat;
             transition: background-size 250ms ease, color 150ms;
@@ -2523,6 +2506,107 @@ html.is-mourning {
         .foot-link:hover {
             background-size: 100% 1px;
             text-decoration: none;
+        }
+    }
+
+    /* The kinds of announcements as a shelf of tiles under the news. */
+    .kind-shelf {
+        display: grid;
+        gap: 0.75rem;
+        grid-template-columns: repeat(auto-fill, minmax(13rem, 1fr));
+    }
+
+    .kind-tile,
+    .rank-item,
+    .dept-tile {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        border: 1px solid var(--color-line);
+        border-radius: 16px;
+        background: var(--color-page);
+        color: var(--color-ink);
+        text-decoration: none;
+        transition: transform 200ms ease, box-shadow 200ms ease, border-color 200ms ease;
+    }
+
+    .kind-tile {
+        padding: 0.75rem 1rem 0.75rem 0.75rem;
+    }
+
+    .kind-tile-go {
+        color: var(--color-muted);
+        transition: transform 200ms ease, color 200ms ease;
+    }
+
+    .kind-tile:hover {
+        border-color: color-mix(in srgb, var(--kind) 45%, var(--color-line));
+        box-shadow: 0 12px 28px -16px color-mix(in srgb, var(--kind) 70%, transparent);
+    }
+
+    .kind-tile:hover .kind-tile-go {
+        color: var(--kind);
+        transform: translate(2px, -2px);
+    }
+
+    /* The most read, numbered large in outline; filled in under the pointer. */
+    .rank-item {
+        gap: 1rem;
+        padding: 0.75rem 1rem;
+    }
+
+    .rank-item:hover {
+        border-color: color-mix(in srgb, var(--color-brand) 40%, var(--color-line));
+        box-shadow: 0 12px 28px -18px color-mix(in srgb, var(--color-brand) 60%, transparent);
+    }
+
+    .rank-number {
+        width: 2.5rem;
+        flex-shrink: 0;
+        font-size: 2.5rem;
+        font-weight: 800;
+        line-height: 1;
+        text-align: center;
+        color: transparent;
+        -webkit-text-stroke: 1.5px var(--color-brand);
+        font-variant-numeric: tabular-nums;
+        transition: color 200ms ease, transform 250ms cubic-bezier(0.3, 1.6, 0.5, 1);
+    }
+
+    .rank-item:hover .rank-number {
+        color: var(--color-brand);
+    }
+
+    /* The departments that posted lately, as cards; the last one, in the brand's colour, leads to the feed. */
+    .dept-shelf {
+        display: grid;
+        gap: 0.75rem;
+        grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr));
+    }
+
+    .dept-tile {
+        height: 100%;
+        padding: 0.75rem;
+    }
+
+    .dept-tile:hover {
+        box-shadow: 0 12px 28px -16px color-mix(in srgb, var(--color-ink) 35%, transparent);
+    }
+
+    .dept-tile.is-feed {
+        border-color: transparent;
+        background: linear-gradient(135deg, var(--color-brand), color-mix(in srgb, var(--color-brand) 70%, #000));
+        color: var(--color-on-brand);
+    }
+
+    @media (hover: hover) and (prefers-reduced-motion: no-preference) {
+        .kind-tile:hover,
+        .dept-tile:hover {
+            transform: translateY(-3px);
+        }
+
+        .rank-item:hover .rank-number {
+            transform: scale(1.12);
         }
     }
 }

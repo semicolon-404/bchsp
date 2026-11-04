@@ -181,11 +181,15 @@
                     @endif
                 </div>
 
-                {{-- Each kind of announcement, one press away. --}}
+                {{-- Each kind of announcement, one press away: a tile each, its badge in its colour, as on a shelf of apps. --}}
                 @if ($types->isNotEmpty())
-                    <nav class="mt-8 flex flex-wrap gap-2" aria-label="{{ __('Types') }}">
+                    <nav class="kind-shelf mt-10" aria-label="{{ __('Types') }}">
                         @foreach ($types as $one)
-                            <a href="{{ route('announcements.index', ['type' => $one->slug]) }}" class="chip gap-2"><x-site.type-mark :type="$one" bare />{{ $one->localName() }}</a>
+                            <a href="{{ route('announcements.index', ['type' => $one->slug]) }}" class="kind-tile" style="--kind: {{ $one->colour() }}">
+                                <span class="kind-badge size-11 shrink-0" aria-hidden="true"><x-dynamic-component :component="'heroicon-s-'.$one->icon()" class="size-5" /></span>
+                                <span class="min-w-0 flex-1 text-sm font-medium leading-snug">{{ $one->localName() }}</span>
+                                <x-heroicon-m-arrow-up-right class="kind-tile-go size-4 shrink-0" aria-hidden="true" />
+                            </a>
                         @endforeach
                     </nav>
                 @endif
@@ -215,12 +219,18 @@
                         @if ($mostRead->isNotEmpty())
                             <div>
                                 <h3 class="flex items-center gap-2 text-xl"><x-heroicon-o-fire class="size-5 text-brand" aria-hidden="true" />{{ __('Most read') }}</h3>
-                                <ol class="card rank-list mt-3 p-0">
+                                {{-- Numbered large and in outline, as the top of a chart: the eye goes down them by number. --}}
+                                <ol @class(["mt-3 grid gap-2", "lg:grid-cols-2" => $coming->isEmpty()])>
                                     @foreach ($mostRead as $one)
-                                        <li class="border-b border-line last:border-b-0">
-                                            <a href="{{ route('announcements.show', $one) }}" class="group flex items-start gap-3 px-4 py-3 no-underline">
-                                                <span class="w-6 shrink-0 text-center font-mono text-xl font-semibold text-brand" aria-hidden="true">{{ $loop->iteration }}</span>
-                                                <span class="line-clamp-2 min-w-0 flex-1 text-ink group-hover:text-brand">{{ $one->localTitle() }}</span>
+                                        <li>
+                                            <a href="{{ route('announcements.show', $one) }}" class="rank-item group no-underline">
+                                                <span class="rank-number" aria-hidden="true">{{ $loop->iteration }}</span>
+                                                <span class="min-w-0 flex-1">
+                                                    <span class="line-clamp-2 font-medium text-ink group-hover:text-brand">{{ $one->localTitle() }}</span>
+                                                    @if ($one->type)
+                                                        <span class="mt-0.5 block text-xs" style="color: {{ $one->type->colour() }}">{{ $one->type->localName() }}</span>
+                                                    @endif
+                                                </span>
                                             </a>
                                         </li>
                                     @endforeach
@@ -233,15 +243,25 @@
                 @if ($posting->isNotEmpty())
                     <div class="mt-10">
                         <h3 class="eyebrow">{{ __('From the departments') }}</h3>
-                        <ul class="mt-4 flex flex-wrap gap-3">
+                        {{-- The departments that posted lately, each a card with its picture, then the way to all their posts. --}}
+                        <ul class="dept-shelf mt-4">
                             @foreach ($posting as $one)
                                 <li>
-                                    <a href="{{ route('departments.show', $one) }}" class="chip min-h-12 gap-2 py-1 pl-1 pr-4 text-ink">
-                                        <x-site.department-avatar :department="$one" class="size-9 text-sm" />{{ $one->localName() }}
+                                    <a href="{{ route('departments.show', $one) }}" class="dept-tile no-underline">
+                                        <x-site.department-avatar :department="$one" class="size-12 text-base" />
+                                        <span class="min-w-0 flex-1">
+                                            <span class="block truncate font-medium text-ink">{{ $one->localName() }}</span>
+                                            <span class="block text-xs text-muted">{{ __('See the profile') }} &rarr;</span>
+                                        </span>
                                     </a>
                                 </li>
                             @endforeach
-                            <li><a href="{{ route('posts') }}" class="chip min-h-12 gap-2 border-brand text-brand"><x-heroicon-m-newspaper class="size-4" aria-hidden="true" />{{ __('Read the feed') }} &rarr;</a></li>
+                            <li>
+                                <a href="{{ route('posts') }}" class="dept-tile is-feed no-underline">
+                                    <span class="grid size-12 shrink-0 place-items-center rounded-full bg-white/15" aria-hidden="true"><x-heroicon-s-newspaper class="size-6" /></span>
+                                    <span class="min-w-0 flex-1 font-semibold">{{ __('Read the feed') }} &rarr;</span>
+                                </a>
+                            </li>
                         </ul>
                     </div>
                 @endif
