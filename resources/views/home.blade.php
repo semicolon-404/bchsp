@@ -217,15 +217,22 @@
                             </div>
                         @endif
                         @if ($mostRead->isNotEmpty())
-                            <div class="min-w-0">
-                                <div class="flex items-center justify-between gap-3">
+                            {{-- Its own choice of how to read it, apart from the news above (resources/js/news-view.js). --}}
+                            <div class="min-w-0" data-news-view="detail" data-news-view-key="most-read-view">
+                                <div class="flex flex-wrap items-center justify-between gap-3">
                                     <h3 class="flex items-center gap-2 text-xl"><x-heroicon-o-fire class="size-5 text-brand" aria-hidden="true" />{{ __('Most read') }}</h3>
+                                    <div class="flex items-center gap-2">
+                                        <div class="news-view-switch" role="group" aria-label="{{ __('How to show') }}">
+                                            <button type="button" data-news-view-as="detail" aria-pressed="true"><x-heroicon-m-squares-2x2 class="size-4" aria-hidden="true" />{{ __('Details') }}</button>
+                                            <button type="button" data-news-view-as="list" aria-pressed="false"><x-heroicon-m-bars-3 class="size-4" aria-hidden="true" />{{ __('List') }}</button>
+                                        </div>
                                     @if ($mostRead->count() > 2)
-                                        <div class="flex gap-2">
+                                        <div class="most-read-arrows flex gap-2">
                                             <button type="button" class="rail-arrow" data-rail-prev aria-label="{{ __('Previous slide') }}"><x-heroicon-m-chevron-left class="size-5" aria-hidden="true" /></button>
                                             <button type="button" class="rail-arrow" data-rail-next aria-label="{{ __('Next slide') }}"><x-heroicon-m-chevron-right class="size-5" aria-hidden="true" /></button>
                                         </div>
                                     @endif
+                                    </div>
                                 </div>
                                 {{--
                                     As a newspaper's "most read": the ten, a card each with its picture (or the cover drawn from its
@@ -251,6 +258,15 @@
                                                     <span class="mt-1 line-clamp-2 flex-1 text-sm font-medium leading-relaxed text-ink group-hover:text-brand">{{ $one->localTitle() }}</span>
                                                     <span class="mt-2 inline-flex items-center gap-1 text-xs text-muted"><x-heroicon-m-eye class="size-3.5" aria-hidden="true" />{{ number_format($one->views) }}</span>
                                                 </span>
+                                            </a>
+                                            {{-- As a list: the rank, the title on one line, how many opened it. --}}
+                                            <a href="{{ route('announcements.show', $one) }}" class="rank-line group no-underline">
+                                                <span class="rank-line-number" aria-hidden="true">{{ $loop->iteration }}</span>
+                                                <span class="min-w-0 flex-1 truncate font-medium text-ink group-hover:text-brand">{{ $one->localTitle() }}</span>
+                                                @if ($one->type)
+                                                    <span class="hidden shrink-0 text-xs sm:inline" style="color: {{ $one->type->colour() }}">{{ $one->type->localName() }}</span>
+                                                @endif
+                                                <span class="inline-flex shrink-0 items-center gap-1 text-xs text-muted tabular-nums"><x-heroicon-m-eye class="size-3.5" aria-hidden="true" />{{ number_format($one->views) }}</span>
                                             </a>
                                         </li>
                                     @endforeach

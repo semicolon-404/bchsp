@@ -2513,7 +2513,7 @@ html.is-mourning {
     .kind-shelf {
         display: grid;
         gap: 0.75rem;
-        grid-template-columns: repeat(auto-fill, minmax(min(10rem, 45%), 1fr));
+        grid-template-columns: repeat(auto-fill, minmax(min(13rem, 45%), 1fr));
     }
 
     .kind-tile,
@@ -2769,5 +2769,65 @@ html.is-mourning {
             margin-left: 0.15rem;
             transform: none;
         }
+    }
+
+    /* The most read as a list (its own choice of view): ranked rows in one card, the arrows put away. */
+    .rank-line {
+        display: none;
+    }
+
+    [data-news-view='list'] > .most-read {
+        display: block;
+        overflow: visible;
+        padding: 0;
+        margin: 1rem 0 0;
+        border: 1px solid var(--color-line);
+        border-radius: 16px;
+        background: var(--color-page);
+        cursor: auto;
+    }
+
+    [data-news-view='list'] > .most-read .most-read-card {
+        display: none;
+    }
+
+    /* Over the utilities' "flex" on the same element. */
+    [data-news-view-key][data-news-view='list'] .most-read-arrows {
+        display: none !important;
+    }
+
+    [data-news-view='list'] > .most-read .rank-line {
+        display: flex;
+        align-items: center;
+        gap: 0.9rem;
+        padding: 0.7rem 1.1rem;
+        transition: background 150ms;
+    }
+
+    [data-news-view='list'] > .most-read li + li .rank-line {
+        border-top: 1px solid var(--color-line);
+    }
+
+    .rank-line:hover {
+        background: color-mix(in srgb, var(--color-brand) 5%, transparent);
+    }
+
+    .rank-line-number {
+        display: grid;
+        place-items: center;
+        width: 1.75rem;
+        height: 1.75rem;
+        flex-shrink: 0;
+        border-radius: 8px;
+        font-size: 0.875rem;
+        font-weight: 800;
+        color: var(--color-brand);
+        background: color-mix(in srgb, var(--color-brand) 12%, transparent);
+        font-variant-numeric: tabular-nums;
+    }
+
+    .most-read li:first-child .rank-line-number {
+        color: #fff;
+        background: #d4a017;
     }
 }
