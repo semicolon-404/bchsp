@@ -210,64 +210,56 @@
             </div>
         @endunless
 
-        {{-- 2. The hospital, the site in columns, how to reach it. --}}
-        <div class="wrap grid grid-cols-2 gap-x-6 gap-y-10 py-12 sm:gap-x-8 lg:grid-cols-12">
-            <div class="col-span-2 lg:col-span-4">
-                <p class="flex items-center gap-3 text-lg font-semibold">
+        {{--
+            2. Kept short: on one line the hospital and how to reach it; under it every part of the site as one
+            row of links (the columns' headings are kept for screen readers, as the names of the lists).
+        --}}
+        <div class="wrap py-8">
+            <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+                <p class="flex items-center gap-3 font-semibold">
                     @if ($logo)
-                        <img src="{{ $logo }}" alt="" class="h-12 w-auto shrink-0">
-                    @else
-                        <span class="flex size-11 shrink-0 items-center justify-center rounded-lg bg-brand text-on-brand" aria-hidden="true"><x-heroicon-s-plus class="size-6" /></span>
+                        <img src="{{ $logo }}" alt="" class="h-9 w-auto shrink-0">
                     @endif
                     <span class="leading-snug">{{ $name }}</span>
+                    @if ($address)
+                        <span class="hidden font-normal text-sm text-muted xl:inline">· {{ preg_replace('/\s*\R\s*/', ' ', $address) }}</span>
+                    @endif
                 </p>
-                @if ($about = App\Support\Footer::about())
-                    <p class="mt-4 max-w-sm whitespace-pre-line text-muted">{{ $about }}</p>
-                @elseif ($motto = SiteSettings::get('site.motto'))
-                    <p class="mt-4 max-w-sm text-muted">“{{ $motto }}”</p>
-                @endif
-                @if ($address)
-                    <p class="mt-4 flex max-w-sm items-start gap-2 text-muted"><x-heroicon-m-map-pin class="mt-0.5 size-5 shrink-0 text-brand" aria-hidden="true" /><span class="whitespace-pre-line">{{ $address }}</span></p>
-                @endif
-                @if ($social)
-                    <ul class="mt-5 flex flex-wrap gap-2" aria-label="{{ __('Follow us') }}">
-                        @foreach ($social as $network => $url)
-                            <li><a href="{{ $url }}" target="_blank" rel="noopener noreferrer" class="foot-social">{{ $network }}<span class="sr-only"> {{ __('(opens in a new tab)') }}</span></a></li>
-                        @endforeach
-                    </ul>
-                @endif
-            </div>
-
-            @foreach ($columns as $heading => $links)
-                <nav class="lg:col-span-2" aria-label="{{ __($heading) }}">
-                    <h2 class="foot-heading">{{ __($heading) }}</h2>
-                    <ul class="mt-4 space-y-2.5">
-                        @foreach (array_filter($links) as [$place, $label])
-                            <li><a href="{{ $href($place) }}" class="foot-link">{{ $label }}</a></li>
-                        @endforeach
-                    </ul>
-                </nav>
-            @endforeach
-
-            <div class="col-span-2 sm:col-span-1 lg:col-span-2">
-                <h2 class="foot-heading">{{ __('Contact us') }}</h2>
-                <ul class="mt-4 space-y-2.5">
+                <ul class="flex flex-wrap items-center gap-x-5 gap-y-2 text-sm">
                     @if ($phone)
-                        <li><a href="{{ $dial($phone) }}" class="foot-link font-mono">{{ $phone }}</a></li>
+                        <li><a href="{{ $dial($phone) }}" class="foot-link inline-flex items-center gap-1.5 font-mono"><x-heroicon-m-phone class="size-4 text-brand" aria-hidden="true" />{{ $phone }}</a></li>
                     @endif
                     @if ($email)
-                        <li><a href="mailto:{{ $email }}" class="foot-link break-all">{{ $email }}</a></li>
+                        <li><a href="mailto:{{ $email }}" class="foot-link inline-flex items-center gap-1.5"><x-heroicon-m-envelope class="size-4 text-brand" aria-hidden="true" />{{ $email }}</a></li>
                     @endif
-                    @if ($hours !== '')
-                        <li class="whitespace-pre-line text-sm text-muted">{{ $hours }}</li>
-                    @endif
+                    @foreach ($social as $network => $url)
+                        <li><a href="{{ $url }}" target="_blank" rel="noopener noreferrer" class="foot-social">{{ $network }}<span class="sr-only"> {{ __('(opens in a new tab)') }}</span></a></li>
+                    @endforeach
                 </ul>
             </div>
+            <div class="mt-6 flex flex-wrap gap-x-8 gap-y-3 border-t border-line pt-5">
+                @foreach ($columns as $heading => $links)
+                    <nav aria-label="{{ __($heading) }}">
+                        <ul class="flex flex-wrap gap-x-5 gap-y-2 text-sm">
+                            @foreach (array_filter($links) as [$place, $label])
+                                <li><a href="{{ $href($place) }}" class="foot-link">{{ $label }}</a></li>
+                            @endforeach
+                        </ul>
+                    </nav>
+                @endforeach
+            </div>
+            @if ($hours !== '')
+                <p class="mt-4 text-xs text-muted">{{ preg_replace('/\s*\R\s*/', ' · ', $hours) }}</p>
+            @endif
+            {{-- The administrator's own words about the hospital (Site settings > Footer), small, under the rest. --}}
+            @if ($about = App\Support\Footer::about())
+                <p class="mt-2 max-w-3xl whitespace-pre-line text-xs text-muted">{{ $about }}</p>
+            @endif
         </div>
 
         @if ($groups = App\Support\Footer::groups())
             {{-- The administrator's own groups of links (Site settings > Footer), in a row of their own. --}}
-            <div class="wrap grid gap-x-8 gap-y-8 border-t border-line py-10 sm:grid-cols-2 lg:grid-cols-4">
+            <div class="wrap grid gap-x-8 gap-y-6 border-t border-line py-6 sm:grid-cols-2 lg:grid-cols-4">
                 @foreach ($groups as $heading => $links)
                     <nav aria-label="{{ $heading }}">
                         <h2 class="foot-heading">{{ $heading }}</h2>

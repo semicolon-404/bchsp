@@ -10,13 +10,12 @@
 @php
     use App\Models\Announcement;
 
-    // A picture of any shape, whole, in a frame of one shape: what the picture leaves empty is filled with the
-    // same picture out of focus, so upright and wide ones sit side by side without gaps or cropping.
+    // A picture of any shape fills the frame, edge to edge: what does not fit is cut at the sides (or at the foot
+    // of an upright poster, which keeps its heading at the top). The whole of it is on its announcement's page.
     $framed = function (Announcement $one, string $frame) {
-        $inside = '<img src="'.e($one->imageUrl()).'" alt="" aria-hidden="true" loading="lazy" class="absolute inset-0 size-full scale-110 object-cover opacity-40 blur-2xl">'
-            .'<img src="'.e($one->imageUrl()).'" alt="'.e($one->localTitle()).'" loading="lazy" class="relative size-full object-contain">';
-
-        return '<a href="'.e(route('announcements.show', $one)).'" class="relative block overflow-hidden bg-raised '.$frame.'">'.$inside.'</a>';
+        return '<a href="'.e(route('announcements.show', $one)).'" class="relative block overflow-hidden bg-raised '.$frame.'">'
+            .'<img src="'.e($one->imageUrl()).'" alt="'.e($one->localTitle()).'" loading="lazy" class="size-full object-cover object-top">'
+            .'</a>';
     };
 @endphp
 
