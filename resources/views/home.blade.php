@@ -158,30 +158,34 @@
                     <a href="{{ route('announcements.index') }}" class="btn btn-line">{{ __('All announcements') }} &rarr;</a>
                 </div>
 
-                <div @class(['mt-10 grid gap-8', 'lg:grid-cols-12' => $slides->isNotEmpty() && $announcements->isNotEmpty()])>
+                {{--
+                    As a newsroom's front page: the posters large on the left with the four newest beside them, the date
+                    of each where the eye looks first; under them the next four as cards with their pictures.
+                --}}
+                @php([$beside, $below] = [$announcements->take(4), $announcements->slice(4)])
+                <div @class(['mt-10 grid gap-6', 'lg:grid-cols-12' => $slides->isNotEmpty() && $beside->isNotEmpty()])>
                     @if ($slides->isNotEmpty())
-                        {{-- The pictures are mostly posters, upright: an upright frame shows them whole, as tall as the list beside it. --}}
-                        <div class="min-w-0 lg:col-span-5"><x-site.banners part="stage" :banners="$slides" frame="aspect-[4/5]" /></div>
+                        <div class="min-w-0 lg:col-span-7"><x-site.banners part="stage" :banners="$slides" frame="aspect-[16/10]" /></div>
                     @endif
-                    @if ($announcements->isNotEmpty())
-                        <ul @class(['card news-list p-0', 'lg:col-span-7' => $slides->isNotEmpty(), 'mx-auto w-full max-w-4xl' => $slides->isEmpty()])>
-                            {{-- Under a heading of their own: the pinned first, then the rest month by month. --}}
-                            @foreach ($announcements->groupBy(fn ($one) => $one->isPinnedNow() ? 'pinned' : ($one->starts_at ?? $one->created_at)->format('Y-m')) as $group => $ones)
-                                <li class="news-month-head">
-                                    @if ($group === 'pinned')
-                                        <x-heroicon-s-bookmark class="size-3.5" aria-hidden="true" />{{ __('Pinned') }}
-                                    @else
-                                        @php($month = Illuminate\Support\Carbon::parse($group.'-01')->locale(app()->getLocale()))
-                                        {{ $month->translatedFormat('F') }} {{ app()->getLocale() === 'th' ? $month->year + 543 : $month->year }}
-                                    @endif
-                                </li>
-                                @foreach ($ones as $announcement)
+                    @if ($beside->isNotEmpty())
+                        <div @class(['card flex flex-col p-0', 'lg:col-span-5' => $slides->isNotEmpty()])>
+                            <h3 class="news-month-head">{{ __('Latest') }}</h3>
+                            <ul class="flex-1">
+                                @foreach ($beside as $announcement)
                                     <x-site.announcement-row :announcement="$announcement" />
                                 @endforeach
-                            @endforeach
-                        </ul>
+                            </ul>
+                            <a href="{{ route('announcements.index') }}" class="border-t border-line px-5 py-3 text-sm font-semibold text-brand no-underline hover:underline">{{ __('All announcements') }} &rarr;</a>
+                        </div>
                     @endif
                 </div>
+                @if ($below->isNotEmpty())
+                    <ul class="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+                        @foreach ($below as $announcement)
+                            <li><x-site.announcement-card :announcement="$announcement" /></li>
+                        @endforeach
+                    </ul>
+                @endif
 
                 {{-- Each kind of announcement, one press away. --}}
                 @if ($types->isNotEmpty())
