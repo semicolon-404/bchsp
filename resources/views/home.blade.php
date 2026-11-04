@@ -30,7 +30,7 @@
         : collect();
     // Beside the news as the page is read on: what has been given a day that is still to come, and what is read most.
     $coming = $shows('announcements') ? App\Models\Announcement::published()->whereDate('event_on', '>=', now()->toDateString())->orderBy('event_on')->orderBy('id')->limit(3)->get() : collect();
-    $mostRead = $shows('announcements') ? App\Models\Announcement::mostRead(4) : collect();
+    $mostRead = $shows('announcements') ? App\Models\Announcement::mostRead(10) : collect();
     $types = $shows('announcements') ? App\Models\AnnouncementType::orderBy('sort_order')->orderBy('name')->get() : collect();
 
     // What people most often come to do, as large tiles under the first screen. A place is offered once it has something in it.
@@ -217,13 +217,22 @@
                             </div>
                         @endif
                         @if ($mostRead->isNotEmpty())
-                            <div>
-                                <h3 class="flex items-center gap-2 text-xl"><x-heroicon-o-fire class="size-5 text-brand" aria-hidden="true" />{{ __('Most read') }}</h3>
+                            <div class="min-w-0">
+                                <div class="flex items-center justify-between gap-3">
+                                    <h3 class="flex items-center gap-2 text-xl"><x-heroicon-o-fire class="size-5 text-brand" aria-hidden="true" />{{ __('Most read') }}</h3>
+                                    @if ($mostRead->count() > 2)
+                                        <div class="flex gap-2">
+                                            <button type="button" class="rail-arrow" data-rail-prev aria-label="{{ __('Previous slide') }}"><x-heroicon-m-chevron-left class="size-5" aria-hidden="true" /></button>
+                                            <button type="button" class="rail-arrow" data-rail-next aria-label="{{ __('Next slide') }}"><x-heroicon-m-chevron-right class="size-5" aria-hidden="true" /></button>
+                                        </div>
+                                    @endif
+                                </div>
                                 {{--
-                                    As a newspaper's "most read": a card each with its picture (or the cover drawn from its kind),
-                                    the rank set into the picture's corner, then the title and how many have opened it.
+                                    As a newspaper's "most read": the ten, a card each with its picture (or the cover drawn from its
+                                    kind), the rank set into the picture's corner, then the title and how many have opened it. They sit
+                                    in a row that is swiped, dragged or moved with the arrows (resources/js/rail.js).
                                 --}}
-                                <ol @class(['most-read mt-4', 'is-wide' => $coming->isEmpty()])>
+                                <ol class="most-read mt-4" data-rail>
                                     @foreach ($mostRead as $one)
                                         <li>
                                             <a href="{{ route('announcements.show', $one) }}" class="most-read-card group no-underline">
