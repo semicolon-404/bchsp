@@ -2920,4 +2920,23 @@ html.is-mourning {
     [data-news-view='list'] > .most-read:not(.is-open) > li:nth-child(n + 6) {
         display: none;
     }
+
+    /* On a wide screen the posters stretch to the height of the list beside them: the picture takes what is left. */
+    @media (min-width: 64rem) {
+        .news-poster > [data-slider],
+        .news-poster .slider-track {
+            height: 100%;
+        }
+
+        .news-poster .slider-track > li {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .news-poster .slider-track > li > a:first-child {
+            flex: 1;
+            aspect-ratio: auto;
+            min-height: 18rem;
+        }
+    }
 }

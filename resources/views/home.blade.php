@@ -170,7 +170,8 @@
                 <div @class(['mt-10 grid gap-8', 'lg:grid-cols-12' => $slides->isNotEmpty() && $announcements->isNotEmpty()])>
                     @if ($slides->isNotEmpty())
                         {{-- The posters are mostly wide: a wide frame, the larger part of the row, so they stand out. --}}
-                        <div class="min-w-0 lg:col-span-7"><x-site.banners part="stage" :banners="$slides" frame="aspect-[16/10]" /></div>
+                        {{-- As tall as the list beside it on a wide screen: the two end on one line. --}}
+                        <div class="news-poster min-w-0 lg:col-span-7"><x-site.banners part="stage" :banners="$slides" frame="aspect-[16/10]" /></div>
                     @endif
                     @if ($announcements->isNotEmpty())
                         <ul @class(['card news-list min-w-0 p-0', 'lg:col-span-5' => $slides->isNotEmpty(), 'mx-auto w-full max-w-4xl' => $slides->isEmpty()])>
