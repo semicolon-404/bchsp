@@ -149,13 +149,22 @@
             What is new, in one place: the pictures staff put up, one at a time in a frame of one size, beside
             the newest few announcements. The whole list, with its kinds and years, is a page of its own.
         --}}
-        <section id="news" class="scroll-mt-16">
+        {{-- Read two ways, the visitor's choice (resources/js/news-view.js): with the details, or a plain list. --}}
+        <section id="news" class="scroll-mt-16" data-news-view="detail">
             <div class="wrap py-16 sm:py-24">
                 <div class="flex flex-wrap items-end justify-between gap-3">
                     <div>
                         <h2 class="mt-2 text-3xl sm:text-4xl">{{ __('News') }}</h2>
                     </div>
-                    <a href="{{ route('announcements.index') }}" class="btn btn-line">{{ __('All announcements') }} &rarr;</a>
+                    <div class="flex flex-wrap items-center gap-3">
+                        @if ($announcements->isNotEmpty())
+                            <div class="news-view-switch" role="group" aria-label="{{ __('How to show') }}">
+                                <button type="button" data-news-view-as="detail" aria-pressed="true"><x-heroicon-m-squares-2x2 class="size-4" aria-hidden="true" />{{ __('Details') }}</button>
+                                <button type="button" data-news-view-as="list" aria-pressed="false"><x-heroicon-m-bars-3 class="size-4" aria-hidden="true" />{{ __('List') }}</button>
+                            </div>
+                        @endif
+                        <a href="{{ route('announcements.index') }}" class="btn btn-line">{{ __('All announcements') }} &rarr;</a>
+                    </div>
                 </div>
 
                 <div @class(['mt-10 grid gap-8', 'lg:grid-cols-12' => $slides->isNotEmpty() && $announcements->isNotEmpty()])>
