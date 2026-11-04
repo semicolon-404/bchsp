@@ -315,21 +315,102 @@ html.is-mourning {
     }
 
     /* The poster that opens over the home page (components/site/banners): centred, never larger than the screen. */
+    /* The poster over the home page: large, the picture whole, its title in big letters and two plain buttons. */
     .popup {
-        width: min(36rem, calc(100vw - 2rem));
-        max-height: calc(100vh - 2rem);
+        position: fixed;
+        width: min(56rem, calc(100vw - 2rem));
+        max-height: calc(100dvh - 2rem);
         margin: auto;
         padding: 0;
         overflow: auto;
-        border: 1px solid var(--color-line);
-        border-radius: 12px;
+        border: 0;
+        border-radius: 20px;
         background: var(--color-surface);
         color: var(--color-ink);
+        box-shadow: 0 30px 80px -20px rgb(0 0 0 / 0.55);
+    }
+
+    .popup[open] {
+        animation: popup-in 0.28s cubic-bezier(0.2, 0.9, 0.3, 1.1);
     }
 
     .popup::backdrop {
-        background: rgb(0 0 0 / 0.7);
+        background: rgb(10 15 12 / 0.65);
+        backdrop-filter: blur(6px);
     }
+
+    @keyframes popup-in {
+        from { opacity: 0; transform: translateY(16px) scale(0.96); }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .popup[open] { animation: none; }
+    }
+
+    .popup-picture {
+        display: block;
+        background: var(--color-line);
+    }
+
+    .popup-picture img {
+        display: block;
+        width: 100%;
+        max-height: calc(100dvh - 16rem);
+        object-fit: contain;
+    }
+
+    .popup-close-x {
+        position: absolute;
+        top: 0.75rem;
+        right: 0.75rem;
+        z-index: 1;
+    }
+
+    .popup-close-x button {
+        display: grid;
+        place-items: center;
+        width: 2.75rem;
+        height: 2.75rem;
+        border-radius: 999px;
+        background: rgb(0 0 0 / 0.55);
+        color: #fff;
+        cursor: pointer;
+    }
+
+    .popup-close-x button:hover { background: rgb(0 0 0 / 0.75); }
+
+    .popup-body {
+        padding: 1.25rem 1.5rem 1.5rem;
+    }
+
+    .popup-kind {
+        color: var(--color-brand);
+        font-size: 0.95rem;
+        font-weight: 600;
+    }
+
+    .popup-title {
+        margin-top: 0.25rem;
+        font-size: clamp(1.25rem, 2.4vw, 1.625rem);
+        font-weight: 700;
+        line-height: 1.4;
+    }
+
+    .popup-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+        margin-top: 1.25rem;
+    }
+
+    .popup-actions .btn {
+        min-height: 3.25rem;
+        padding-inline: 1.5rem;
+        font-size: 1.0625rem;
+        border-radius: 12px;
+    }
+
+    .popup-main { flex: 1 1 14rem; justify-content: center; }
 
     /* A photograph opened large over the page (resources/js/lightbox.js): the picture whole, on the dark, with the way to the next. */
     .lightbox {
@@ -2064,5 +2145,54 @@ html.is-mourning {
     .news-list > li > a {
         flex: 1;
         align-items: center;
+    }
+
+    /* The kind of an announcement in its own colour (App\Models\AnnouncementType::colour), as a small pill: --kind on it or a parent. */
+    .kind-pill {
+        display: inline-flex;
+        align-items: center;
+        width: fit-content;
+        padding: 0.125rem 0.625rem;
+        border-radius: 999px;
+        font-size: 0.8125rem;
+        font-weight: 600;
+        color: var(--kind, var(--color-brand));
+        background: color-mix(in srgb, var(--kind, var(--color-brand)) 14%, transparent);
+    }
+
+    /* A row of the news: a stripe of its kind's colour down the left, so kinds are told apart going down the list. */
+    .news-row {
+        box-shadow: inset 4px 0 0 var(--kind, transparent);
+        transition: background 0.15s;
+    }
+
+    .news-row:hover {
+        background: color-mix(in srgb, var(--kind, var(--color-brand)) 6%, transparent);
+    }
+
+    /* The posters on the home page: one card, the picture and what it is about under it. */
+    .poster-stage {
+        border: 1px solid var(--color-line);
+        border-radius: 20px;
+        background: var(--color-surface);
+        box-shadow: 0 20px 50px -24px rgb(0 0 0 / 0.35);
+    }
+
+    .poster-caption {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        padding: 1rem 1.25rem 2.5rem;
+        border-top: 4px solid var(--kind, var(--color-brand));
+        text-decoration: none;
+    }
+
+    .slider-dots {
+        position: absolute;
+        inset-inline: 0;
+        bottom: 0.5rem;
+        display: flex;
+        justify-content: center;
+        gap: 0.25rem;
     }
 }
