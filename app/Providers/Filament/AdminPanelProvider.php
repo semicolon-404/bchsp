@@ -26,6 +26,7 @@ use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
+use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\Vite;
 use Illuminate\Support\HtmlString;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
@@ -57,7 +58,7 @@ class AdminPanelProvider extends PanelProvider
             ->maxContentWidth(Width::Full)
             // The bell: a post waiting for approval, approved, or sent back (App\Support\PostNotices).
             ->databaseNotifications()
-            ->databaseNotificationsPolling('60s')
+            ->databaseNotificationsPolling('15s')
             // The site opens light unless the person chose otherwise; both share the same saved choice.
             ->defaultThemeMode(ThemeMode::Light)
             // Each group is found by its English name (what the resources carry) and shown in the reader's language.
@@ -72,6 +73,8 @@ class AdminPanelProvider extends PanelProvider
             // and on the sign-in page, whom it is for and the way out of it.
             ->renderHook(PanelsRenderHook::USER_MENU_BEFORE, fn () => view('filament.hooks.site-link'))
             ->renderHook(PanelsRenderHook::SIDEBAR_FOOTER, fn () => view('filament.hooks.version'))
+            // What arrives for this account while the panel is open, shown at the bottom left as it comes (App\Livewire\NoticePopups).
+            ->renderHook(PanelsRenderHook::BODY_END, fn () => Blade::render('@livewire(\App\Livewire\NoticePopups::class)'))
             ->renderHook(PanelsRenderHook::AUTH_LOGIN_FORM_BEFORE, fn () => view('filament.hooks.signin-note'))
             ->renderHook(PanelsRenderHook::AUTH_LOGIN_FORM_AFTER, fn () => view('filament.hooks.signin-back'))
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\Filament\Resources')
