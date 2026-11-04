@@ -219,17 +219,28 @@
                         @if ($mostRead->isNotEmpty())
                             <div>
                                 <h3 class="flex items-center gap-2 text-xl"><x-heroicon-o-fire class="size-5 text-brand" aria-hidden="true" />{{ __('Most read') }}</h3>
-                                {{-- Numbered large and in outline, as the top of a chart: the eye goes down them by number. --}}
-                                <ol @class(["mt-3 grid gap-2", "lg:grid-cols-2" => $coming->isEmpty()])>
+                                {{--
+                                    As a newspaper's "most read": a card each with its picture (or the cover drawn from its kind),
+                                    the rank set into the picture's corner, then the title and how many have opened it.
+                                --}}
+                                <ol @class(['most-read mt-4', 'is-wide' => $coming->isEmpty()])>
                                     @foreach ($mostRead as $one)
                                         <li>
-                                            <a href="{{ route('announcements.show', $one) }}" class="rank-item group no-underline">
-                                                <span class="rank-number" aria-hidden="true">{{ $loop->iteration }}</span>
-                                                <span class="min-w-0 flex-1">
-                                                    <span class="line-clamp-2 font-medium text-ink group-hover:text-brand">{{ $one->localTitle() }}</span>
-                                                    @if ($one->type)
-                                                        <span class="mt-0.5 block text-xs" style="color: {{ $one->type->colour() }}">{{ $one->type->localName() }}</span>
+                                            <a href="{{ route('announcements.show', $one) }}" class="most-read-card group no-underline">
+                                                <span class="most-read-picture">
+                                                    @if ($image = $one->imageUrl())
+                                                        <img src="{{ $image }}" alt="" loading="lazy">
+                                                    @else
+                                                        <x-site.cover :announcement="$one" class="absolute inset-0" plain />
                                                     @endif
+                                                    <span class="most-read-rank" aria-hidden="true">{{ $loop->iteration }}</span>
+                                                </span>
+                                                <span class="flex flex-1 flex-col p-3">
+                                                    @if ($one->type)
+                                                        <span class="text-xs font-semibold" style="color: {{ $one->type->colour() }}">{{ $one->type->localName() }}</span>
+                                                    @endif
+                                                    <span class="mt-1 line-clamp-2 flex-1 text-sm font-medium leading-relaxed text-ink group-hover:text-brand">{{ $one->localTitle() }}</span>
+                                                    <span class="mt-2 inline-flex items-center gap-1 text-xs text-muted"><x-heroicon-m-eye class="size-3.5" aria-hidden="true" />{{ number_format($one->views) }}</span>
                                                 </span>
                                             </a>
                                         </li>
