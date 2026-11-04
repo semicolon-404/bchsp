@@ -587,7 +587,7 @@ html.is-mourning {
         height: 2.75rem;
         border: 0;
         border-radius: 999px;
-        background: rgb(255 255 255 / 0.12);
+        background: rgb(0 0 0 / 0.42);
         backdrop-filter: blur(10px);
         color: #ffffff;
         font-size: 1.75rem;
@@ -598,7 +598,7 @@ html.is-mourning {
     }
 
     .lightbox-button:hover {
-        background: rgb(255 255 255 / 0.25);
+        background: rgb(0 0 0 / 0.6);
     }
 
     .lightbox-prev {
@@ -3251,5 +3251,104 @@ html.is-mourning {
 
     .lightbox-grid button:hover img {
         transform: scale(1.06);
+    }
+
+    /*
+     * No white bars in the viewer: the photograph is the whole window, and its name, count, buttons and
+     * strip float over it on frosted glass, light on dark, fading into the picture.
+     */
+    .lightbox-window {
+        position: relative;
+        background: #1a1d1b;
+        color: #fff;
+    }
+
+    .lightbox-stage {
+        position: absolute;
+        inset: 0;
+    }
+
+    .lightbox-bar {
+        position: absolute;
+        inset: 0 0 auto;
+        z-index: 2;
+        height: auto;
+        padding: 0.9rem 0.9rem 2.5rem 1.25rem;
+        border: 0;
+        background: none;
+        color: #fff;
+    }
+
+    /* The name on a glass pill of its own, like the buttons: nothing else lies over the photograph. */
+    .lightbox-title {
+        flex: 0 1 auto;
+        margin-right: auto;
+        padding: 0.3rem 0.8rem;
+        border-radius: 999px;
+        background: rgb(0 0 0 / 0.35);
+        backdrop-filter: blur(10px);
+    }
+
+    .lightbox-count {
+        color: #fff;
+        background: rgb(0 0 0 / 0.42);
+        backdrop-filter: blur(10px);
+    }
+
+    .lightbox-all {
+        border-color: rgb(255 255 255 / 0.2);
+        background: rgb(0 0 0 / 0.42);
+        color: #fff;
+        backdrop-filter: blur(10px);
+    }
+
+    .lightbox-all[aria-pressed='true'] {
+        border-color: transparent;
+        background: #fff;
+        color: #111;
+    }
+
+    .lightbox-close {
+        background: rgb(0 0 0 / 0.42);
+        color: #fff;
+        backdrop-filter: blur(10px);
+    }
+
+    .lightbox-close:hover {
+        background: rgb(0 0 0 / 0.6);
+    }
+
+    .lightbox-strip {
+        position: absolute;
+        inset: auto 0 0;
+        z-index: 2;
+        justify-content: center;
+        padding: 2.5rem 1rem 0.9rem;
+        border: 0;
+        background: none;
+    }
+
+    .lightbox-strip {
+        pointer-events: none;
+    }
+
+    .lightbox-strip button {
+        pointer-events: auto;
+        box-shadow: 0 4px 12px rgb(0 0 0 / 0.35);
+        border-color: rgb(255 255 255 / 0.2);
+        opacity: 0.6;
+    }
+
+    .lightbox-strip button[aria-current='true'] {
+        border-color: #fff;
+        opacity: 1;
+    }
+
+    .lightbox-grid {
+        position: absolute;
+        inset: 0;
+        padding-top: 4.5rem;
+        background: rgb(20 23 21 / 0.82);
+        backdrop-filter: blur(20px);
     }
 }
