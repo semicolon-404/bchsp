@@ -19,7 +19,7 @@ use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Model;
 
 /**
- * Under a post in the panel: what the staff write to each other about it, words and pictures, oldest first.
+ * Under an activity's post in the panel: what the staff write to each other about it, words and pictures, oldest first.
  * Only the panel shows them. Whoever can open the post can comment; each takes back only their own, and an
  * administrator any. The department, the administrators and those who commented before hear of a new one.
  */
@@ -30,6 +30,12 @@ class CommentsRelationManager extends RelationManager
     public static function getTitle(Model $ownerRecord, string $pageClass): string
     {
         return __('Comments');
+    }
+
+    /** Only activities are talked over: an announcement or a tender is said once and stands. */
+    public static function canViewForRecord(Model $ownerRecord, string $pageClass): bool
+    {
+        return $ownerRecord->type?->slug === 'activities';
     }
 
     public function isReadOnly(): bool

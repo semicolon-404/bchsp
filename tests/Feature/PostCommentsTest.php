@@ -7,6 +7,7 @@ use App\Filament\Resources\Announcements\Pages\EditAnnouncement;
 use App\Filament\Resources\Announcements\RelationManagers\CommentsRelationManager;
 use App\Models\Announcement;
 use App\Models\AnnouncementComment;
+use App\Models\AnnouncementType;
 use App\Models\Department;
 use App\Models\User;
 use Filament\Actions\CreateAction;
@@ -29,7 +30,7 @@ class PostCommentsTest extends TestCase
         $dental = Department::factory()->create();
         $department = User::factory()->create(['role' => Role::Author, 'department_id' => $dental->id]);
         $admin = User::factory()->create(['role' => Role::Admin]);
-        $post = Announcement::factory()->create(['department_id' => $dental->id, 'title' => 'Dental day']);
+        $post = Announcement::factory()->create(['department_id' => $dental->id, 'title' => 'Dental day', 'announcement_type_id' => AnnouncementType::where('slug', 'activities')->value('id')]);
 
         $this->actingAs($admin);
         Livewire::test(CommentsRelationManager::class, ['ownerRecord' => $post, 'pageClass' => EditAnnouncement::class])
@@ -69,5 +70,14 @@ class PostCommentsTest extends TestCase
         Livewire::test(CommentsRelationManager::class, ['ownerRecord' => $post, 'pageClass' => EditAnnouncement::class])
             ->callAction(TestAction::make(DeleteAction::class)->table($comment));
         Storage::disk('public')->assertMissing($comment->images[0]);
+    }
+
+    public function test_only_activities_have_comments(): void
+    {
+        $activity = Announcement::factory()->create(['announcement_type_id' => AnnouncementType::where('slug', 'activities')->value('id')]);
+        $tender = Announcement::factory()->create(['announcement_type_id' => AnnouncementType::where('slug', 'procurement')->value('id')]);
+
+        $this->assertTrue(CommentsRelationManager::canViewForRecord($activity, EditAnnouncement::class));
+        $this->assertFalse(CommentsRelationManager::canViewForRecord($tender, EditAnnouncement::class));
     }
 }
