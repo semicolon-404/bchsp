@@ -13,8 +13,11 @@ use App\Models\User;
 use App\Support\LinkChecks;
 use App\Support\PostNotices;
 use App\Support\Reports;
+use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\ForceDeleteAction;
+use Filament\Actions\ForceDeleteBulkAction;
 use Filament\Actions\RestoreAction;
+use Filament\Actions\RestoreBulkAction;
 use Filament\Actions\Testing\TestAction;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
@@ -103,6 +106,37 @@ class KeepingAnnouncementsTest extends TestCase
         // The account of a department has no such button.
         $this->actingAs($account);
         Livewire::test(ListAnnouncements::class)->assertActionHidden(TestAction::make('approveMany')->table()->bulk());
+    }
+
+    public function test_several_posts_go_to_the_bin_at_once_and_come_back_or_go_for_good(): void
+    {
+        $this->actingAs(User::factory()->create(['role' => Role::Admin]));
+        $chosen = Announcement::factory()->count(2)->create();
+        $other = Announcement::factory()->create();
+
+        Livewire::test(ListAnnouncements::class)
+            ->selectTableRecords($chosen->all())
+            ->callAction(TestAction::make(DeleteBulkAction::class)->table()->bulk());
+
+        $this->assertSame(2, Announcement::onlyTrashed()->count());
+        $this->assertNotNull($other->fresh());
+
+        Livewire::test(ListAnnouncements::class)
+            ->filterTable('trashed', false)
+            ->selectTableRecords([$chosen[0]])
+            ->callAction(TestAction::make(RestoreBulkAction::class)->table()->bulk());
+        $this->assertFalse($chosen[0]->fresh()->trashed());
+
+        Livewire::test(ListAnnouncements::class)
+            ->filterTable('trashed', false)
+            ->selectTableRecords([$chosen[1]])
+            ->callAction(TestAction::make(ForceDeleteBulkAction::class)->table()->bulk());
+        $this->assertNull(Announcement::withTrashed()->find($chosen[1]->id));
+
+        // The account of a department empties nothing for good.
+        $dental = Department::factory()->create();
+        $this->actingAs(User::factory()->create(['role' => Role::Author, 'department_id' => $dental->id]));
+        Livewire::test(ListAnnouncements::class)->assertActionHidden(TestAction::make(ForceDeleteBulkAction::class)->table()->bulk());
     }
 
     public function test_links_to_files_kept_elsewhere_are_looked_at_and_the_broken_ones_said(): void

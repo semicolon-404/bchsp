@@ -13,10 +13,13 @@ use BackedEnum;
 use Filament\Actions\Action;
 use Filament\Actions\BulkAction;
 use Filament\Actions\DeleteAction;
+use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Actions\ForceDeleteAction;
+use Filament\Actions\ForceDeleteBulkAction;
 use Filament\Actions\ReplicateAction;
 use Filament\Actions\RestoreAction;
+use Filament\Actions\RestoreBulkAction;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\FileUpload;
@@ -425,6 +428,13 @@ class AnnouncementResource extends Resource
 
                         Notification::make()->success()->title(trans_choice('{0} None of them was waiting for approval|{1} :count post approved|[2,*] :count posts approved', $waiting->count(), ['count' => $waiting->count()]))->send();
                     }),
+                // Several at once, as one at a time: to the bin first; gone for good only from the bin, and only by those who post for the whole hospital.
+                DeleteBulkAction::make()
+                    ->modalDescription(__('They go to the bin and can be brought back within 30 days.')),
+                RestoreBulkAction::make(),
+                ForceDeleteBulkAction::make()
+                    ->visible(fn () => self::forTheWholeHospital())
+                    ->modalDescription(__('They will be gone for good, with their pictures and files.')),
             ]);
     }
 
