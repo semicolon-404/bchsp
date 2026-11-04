@@ -6,7 +6,8 @@
  * Without this each link simply opens its picture, as it always did. With it, a press opens a window over
  * the page, as a Mac's: a bar with the round close button, the album's name and where in it the reader is,
  * the picture, and under it a strip of every photograph of the album, so a long album is seen to be long and
- * any of it is one press away. Escape closes it; the arrows, the arrow keys or a swipe move through it.
+ * any of it is one press away. "All photographs" lays the whole album out at once in a grid; a press on one
+ * opens it alone again. Escape closes it; the arrows, the arrow keys or a swipe move through it.
  * A link on its own, outside any [data-gallery], is a gallery of one.
  */
 export function startLightbox() {
@@ -22,12 +23,14 @@ export function startLightbox() {
                 <button type="button" class="lightbox-close" data-close></button>
                 <span class="lightbox-title"></span>
                 <span class="lightbox-count" aria-live="polite"></span>
+                <button type="button" class="lightbox-all" data-all aria-pressed="false"></button>
             </div>
             <div class="lightbox-stage">
                 <button type="button" class="lightbox-button lightbox-prev" data-prev>&#8249;</button>
                 <img class="lightbox-picture" alt="">
                 <button type="button" class="lightbox-button lightbox-next" data-next>&#8250;</button>
             </div>
+            <div class="lightbox-grid" hidden></div>
             <div class="lightbox-strip" role="list"></div>
         </div>`;
     document.body.append(dialog);
@@ -36,17 +39,28 @@ export function startLightbox() {
     const count = dialog.querySelector('.lightbox-count');
     const title = dialog.querySelector('.lightbox-title');
     const strip = dialog.querySelector('.lightbox-strip');
+    const grid = dialog.querySelector('.lightbox-grid');
+    const all = dialog.querySelector('[data-all]');
     const [close, previous, next] = [dialog.querySelector('[data-close]'), dialog.querySelector('[data-prev]'), dialog.querySelector('[data-next]')];
     // The words for the buttons come from the page, in the reader's language.
     const words = document.body.dataset;
     close.setAttribute('aria-label', words.lightboxClose || 'Close');
     previous.setAttribute('aria-label', words.lightboxPrevious || 'Previous');
     next.setAttribute('aria-label', words.lightboxNext || 'Next');
+    all.textContent = words.lightboxAll || 'All photographs';
+
+    // The whole album at once, or one photograph at a time.
+    const lay = (whole) => {
+        dialog.classList.toggle('is-grid', whole);
+        all.setAttribute('aria-pressed', String(whole));
+        grid.hidden = !whole;
+    };
 
     let set = [];
     let at = 0;
 
     const show = (index) => {
+        lay(false);
         at = (index + set.length) % set.length;
         picture.classList.remove('is-in');
         picture.src = set[at].href;
@@ -69,6 +83,15 @@ export function startLightbox() {
             return thumb;
         }));
         strip.hidden = set.length < 2;
+        all.hidden = set.length < 2;
+        grid.replaceChildren(...set.map((link, i) => {
+            const tile = document.createElement('button');
+            tile.type = 'button';
+            tile.setAttribute('aria-label', link.querySelector('img')?.alt || `${i + 1}`);
+            tile.innerHTML = `<img src="${link.querySelector('img')?.src ?? link.href}" alt="" loading="lazy">`;
+            tile.addEventListener('click', () => show(i));
+            return tile;
+        }));
         title.textContent = gallery?.dataset.galleryTitle || document.querySelector('h1')?.textContent.trim() || '';
     };
 
@@ -87,6 +110,7 @@ export function startLightbox() {
     });
 
     close.addEventListener('click', () => dialog.close());
+    all.addEventListener('click', () => lay(all.getAttribute('aria-pressed') !== 'true'));
     previous.addEventListener('click', () => show(at - 1));
     next.addEventListener('click', () => show(at + 1));
     // A press on the dark around the window closes it.
