@@ -313,14 +313,17 @@ class AnnouncementResource extends Resource
                     ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('fiscal_year')
                     ->label(__('Fiscal year'))
-                    ->state(fn (Announcement $record) => Announcement::fiscalYearOf($record->starts_at ?? $record->created_at)),
+                    ->state(fn (Announcement $record) => Announcement::fiscalYearOf($record->starts_at ?? $record->created_at))
+                    ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('attachments')
                     ->label(__('Files'))
                     ->state(fn (Announcement $record) => (count($record->attachments ?? []) + count($record->documentLinks())) ?: null)
-                    ->placeholder('—'),
+                    ->placeholder('—')
+                    ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('starts_at')
                     ->label(__('Show from'))
-                    ->dateTime('j M Y H:i'),
+                    ->date('j M Y')
+                    ->toggleable(),
                 TextColumn::make('ends_at')
                     ->label(__('Show until'))
                     ->dateTime('j M Y H:i')

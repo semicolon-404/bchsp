@@ -19,6 +19,7 @@ use Filament\Pages\Dashboard;
 use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
+use Filament\Support\Enums\Width;
 use Filament\View\PanelsRenderHook;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
@@ -52,6 +53,8 @@ class AdminPanelProvider extends PanelProvider
             // The site's typeface and the panel's own look (resources/css/panel.css), from this server and no other.
             ->font('IBM Plex Sans Thai', url: fn () => Vite::asset('resources/css/panel.css'), provider: LocalFontProvider::class)
             ->sidebarCollapsibleOnDesktop()
+            // Lists of posts are wide: they use the whole screen rather than a column in its middle.
+            ->maxContentWidth(Width::Full)
             // The bell: a post waiting for approval, approved, or sent back (App\Support\PostNotices).
             ->databaseNotifications()
             ->databaseNotificationsPolling('60s')
