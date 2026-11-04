@@ -165,8 +165,19 @@
                     @endif
                     @if ($announcements->isNotEmpty())
                         <ul @class(['card news-list p-0', 'lg:col-span-7' => $slides->isNotEmpty(), 'mx-auto w-full max-w-4xl' => $slides->isEmpty()])>
-                            @foreach ($announcements as $announcement)
-                                <x-site.announcement-row :announcement="$announcement" />
+                            {{-- Under a heading of their own: the pinned first, then the rest month by month. --}}
+                            @foreach ($announcements->groupBy(fn ($one) => $one->isPinnedNow() ? 'pinned' : ($one->starts_at ?? $one->created_at)->format('Y-m')) as $group => $ones)
+                                <li class="news-month-head">
+                                    @if ($group === 'pinned')
+                                        <x-heroicon-s-bookmark class="size-3.5" aria-hidden="true" />{{ __('Pinned') }}
+                                    @else
+                                        @php($month = Illuminate\Support\Carbon::parse($group.'-01')->locale(app()->getLocale()))
+                                        {{ $month->translatedFormat('F') }} {{ app()->getLocale() === 'th' ? $month->year + 543 : $month->year }}
+                                    @endif
+                                </li>
+                                @foreach ($ones as $announcement)
+                                    <x-site.announcement-row :announcement="$announcement" />
+                                @endforeach
                             @endforeach
                         </ul>
                     @endif
