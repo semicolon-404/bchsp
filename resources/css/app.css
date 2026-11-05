@@ -3915,6 +3915,9 @@ html.is-mourning {
 
     /* The sign: hung on two thick twisted ropes coming down from above, each wound into a knot and passed through a
        hole near the sign's upper edge; it swings in, then stirs. */
+    /* The swinging sign never pushes the page wider than the screen. */
+    .home-screen:has(.sign) { overflow-x: clip; }
+
     .sign {
         position: relative;
         padding-top: 5.5rem;
@@ -4172,5 +4175,77 @@ html.is-mourning {
     @media (prefers-reduced-motion: reduce) {
         .hero-rise > *, .hero-shine::after, .hero-crosses > span { animation: none; }
         .hero-crosses { display: none; }
+    }
+}
+
+@layer components {
+    /* The way-signs under the first screen (home.blade.php): the symbol in a ring of the sign's own colour, an arrow
+       in the corner that moves on as it is pointed at, a faint wash of the colour from the corner. */
+    .way-sign {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+        height: 100%;
+        padding: 1rem;
+        border-radius: 16px;
+        background: radial-gradient(14rem 8rem at 0% 0%, color-mix(in srgb, var(--sign) 9%, transparent), transparent 70%), var(--color-page);
+        color: var(--color-ink);
+        text-decoration: none;
+        box-shadow: 0 1px 2px rgb(0 0 0 / 0.08), 0 0 0 1px color-mix(in srgb, var(--color-line) 60%, transparent);
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    /* Each its own colour, as the lines on a corridor's floor. */
+    .way-sign { --sign: var(--color-brand); }
+    .way-sign.is-calendar-days { --sign: #16a34a; }
+    .way-sign.is-phone { --sign: #0284c7; }
+    .way-sign.is-megaphone { --sign: #ea580c; }
+    .way-sign.is-building-office-2 { --sign: #7c3aed; }
+    .way-sign.is-computer-desktop { --sign: #0d9488; }
+    .way-sign.is-question-mark-circle { --sign: #ca8a04; }
+    .way-sign.is-calendar { --sign: #db2777; }
+    .way-sign.is-map-pin { --sign: #dc2626; }
+
+    .way-sign:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 14px 30px -16px var(--sign), 0 0 0 1px color-mix(in srgb, var(--sign) 40%, transparent);
+    }
+
+    .way-sign-mark {
+        display: grid;
+        flex: none;
+        place-items: center;
+        width: 2.75rem;
+        height: 2.75rem;
+        border-radius: 999px;
+        background: color-mix(in srgb, var(--sign) 14%, transparent);
+        color: var(--sign);
+    }
+
+    .way-sign-arrow {
+        width: 1.1rem;
+        height: 1.1rem;
+        flex: none;
+        color: var(--sign);
+        transition: transform 0.2s ease;
+    }
+
+    .way-sign:hover .way-sign-arrow { transform: translateX(4px); }
+
+    .way-sign-now {
+        display: inline-block;
+        margin-top: 0.35rem;
+        padding: 0.1rem 0.55rem;
+        border-radius: 999px;
+        background: color-mix(in srgb, var(--sign) 12%, transparent);
+        color: color-mix(in srgb, var(--sign) 75%, var(--color-ink));
+        font-size: 0.8rem;
+        font-weight: 600;
+        white-space: nowrap;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .way-sign, .way-sign:hover, .way-sign:hover .way-sign-arrow { transition: none; transform: none; }
     }
 }

@@ -153,17 +153,27 @@
         </svg>
     </section>
 
-    {{-- What people most often come to do: a tile each, in reach before any scrolling on a wide screen. --}}
+    {{-- What people most often come to do, as the way-signs along a hospital's corridors: each its own colour, an
+         arrow pointing on, and a line of what is true now where there is one. --}}
+    @php($newToday ??= App\Models\Announcement::published()->where('starts_at', '>=', now()->startOfDay())->count())
+    @php($signNow = ['calendar-days' => $openNow ? trans_choice('{1} :count open now|[2,*] :count open now', $openNow, ['count' => $openNow]) : null, 'phone' => $phone ? __('Call :number', ['number' => $phone]) : null, 'megaphone' => $newToday ? trans_choice('{1} :count new announcement today|[2,*] :count new announcements today', $newToday, ['count' => $newToday]) : null, 'map-pin' => __('See the way')])
     <section class="border-y border-line bg-surface" aria-label="{{ __('What would you like to do?') }}">
         <ul @class(['wrap grid grid-cols-2 gap-3 py-6 sm:grid-cols-3', 'lg:grid-cols-5' => count($actions) === 5, 'lg:grid-cols-6' => count($actions) >= 6])>
             @foreach (array_slice($actions, 0, 6) as [$to, $label, $about, $mark])
                 {{-- On a phone, two to a row: an odd one out takes the whole of the last row. --}}
                 <li @class(['max-sm:col-span-2' => $loop->last && $loop->count % 2 === 1])>
-                    <a href="{{ $to }}" class="card group flex h-full flex-col items-start gap-3 bg-page px-4 py-4 text-ink no-underline">
-                        <span class="door-mark" aria-hidden="true"><x-dynamic-component :component="'heroicon-o-'.$mark" class="size-5" /></span>
-                        <span>
-                            <span class="block font-medium leading-snug group-hover:text-brand">{{ __($label) }}</span>
-                            <span class="mt-0.5 block text-sm text-muted">{{ __($about) }}</span>
+                    <a href="{{ $to }}" class="way-sign is-{{ $mark }}">
+                        <span class="flex items-start justify-between">
+                            <span class="way-sign-mark" aria-hidden="true"><x-dynamic-component :component="'heroicon-o-'.$mark" class="size-6" /></span>
+                            <x-heroicon-m-arrow-right class="way-sign-arrow" aria-hidden="true" />
+                        </span>
+                        <span class="min-w-0">
+                            <span class="block font-semibold leading-snug">{{ __($label) }}</span>
+                            @if ($now = $signNow[$mark] ?? null)
+                                <span class="way-sign-now">{{ $now }}</span>
+                            @else
+                                <span class="mt-0.5 block text-sm text-muted">{{ __($about) }}</span>
+                            @endif
                         </span>
                     </a>
                 </li>
