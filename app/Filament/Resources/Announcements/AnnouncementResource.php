@@ -334,6 +334,10 @@ class AnnouncementResource extends Resource
                     ->placeholder('—')
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
+            // Seven filters: two to a row, the panel never taller than the screen (what does not fit scrolls in it).
+            ->filtersFormColumns(2)
+            ->filtersFormWidth('2xl')
+            ->filtersFormMaxHeight('70vh')
             ->filters([
                 TrashedFilter::make()
                     ->label(__('Bin'))
