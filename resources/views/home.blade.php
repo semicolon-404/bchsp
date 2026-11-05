@@ -21,6 +21,13 @@
     // What visitors most often phone to ask, beside the name: what is open today.
     $sessions = App\Models\ClinicSession::today();
     $openNow = $sessions->filter->isOpenNow()->count();
+    // The part of the day: the greeting says it, and the light of the first screen follows it.
+    $daypart = match (true) {
+        now()->hour >= 5 && now()->hour < 11 => 'morning',
+        now()->hour >= 11 && now()->hour < 16 => 'day',
+        now()->hour >= 16 && now()->hour < 19 => 'evening',
+        default => 'night',
+    };
     $announcements = $shows('announcements') ? App\Models\Announcement::current()->with('type')->inListOrder()->limit(8)->get() : collect();
     // The slides sit beside the announcements, unless an administrator gave them a section of their own.
     $slides = $shows('announcements') && ! $shows('slides') ? App\Models\Announcement::slides() : collect();
@@ -62,21 +69,25 @@
     --}}
     @php($photos = SiteSettings::heroSlides())
     {{-- It says which of them is showing (data-kind, data-show), and the styles follow: resources/js/hero.js keeps the two up to date. --}}
-    <section class="home-screen" data-kind="{{ $photos[0]['kind'] }}" data-show="{{ $photos[0]['show'] }}" @if (count($photos) > 1) data-hero @endif>
+    <section class="home-screen" data-kind="{{ $photos[0]['kind'] }}" data-show="{{ $photos[0]['show'] }}" data-daypart="{{ $daypart }}" @if (count($photos) > 1) data-hero @endif>
+        {{-- Two soft lights drifting slowly behind the words, in the colours of the part of the day. --}}
+        <span class="hero-aurora" aria-hidden="true"><span></span><span></span></span>
+        {{-- Small crosses, the sign of care, rising slowly behind the words. --}}
+        <span class="hero-crosses" aria-hidden="true"><span style="left: 6%; --size: 1.4rem; --time: 18s; --wait: 0s">+</span><span style="left: 18%; --size: 0.9rem; --time: 14s; --wait: 4s">+</span><span style="left: 31%; --size: 1.8rem; --time: 22s; --wait: 8s">+</span><span style="left: 47%; --size: 1.1rem; --time: 16s; --wait: 2s">+</span><span style="left: 58%; --size: 0.8rem; --time: 13s; --wait: 10s">+</span><span style="left: 69%; --size: 1.5rem; --time: 20s; --wait: 5s">+</span><span style="left: 82%; --size: 1rem; --time: 15s; --wait: 7s">+</span><span style="left: 93%; --size: 1.3rem; --time: 19s; --wait: 12s">+</span></span>
         {{-- The site's own drawing with the welcome, then the hospital's photographs, one after another (Site settings > The hospital). --}}
         <x-site.hero-photos :slides="$photos" />
         <div @class(['hero-front wrap grid items-center gap-12 py-14 sm:py-20', 'lg:grid-cols-2' => $sessions->isNotEmpty()])>
             {{-- Beside today's clinics the words keep to the left; under the hospital's emblem they are centred, the emblem over their middle. --}}
             @php($logo = SiteSettings::logoUrl())
             @php($aside = $sessions->isNotEmpty() && ! $logo)
-            <div @class(['text-center', 'lg:text-left' => $aside, 'hero-glass' => collect($photos)->contains('kind', 'photo')])>
+            <div @class(['hero-rise text-center', 'lg:text-left' => $aside, 'hero-glass' => collect($photos)->contains('kind', 'photo')])>
                 @if ($logo)
                     {{-- The hospital's emblem, large, over the middle of the words it belongs to. --}}
                     <img src="{{ $logo }}" alt="" class="hero-logo">
                 @endif
-                <p class="text-lg text-muted">{{ __('Welcome to') }}</p>
-                <h1 class="hero-name mt-4 text-4xl leading-tight sm:text-5xl md:text-6xl">{{ $name }}</h1>
-                <p @class(['mx-auto mt-6 max-w-xl text-lg text-muted sm:text-xl', 'lg:mx-0' => $aside])>{{ $motto ? '“'.$motto.'”' : __('News, announcements and services of the hospital, in one place.') }}</p>
+                <p class="text-lg text-muted">{{ __(['morning' => 'Good morning', 'day' => 'Good afternoon', 'evening' => 'Good evening', 'night' => 'Good night'][$daypart]) }} · {{ __('Welcome to') }}</p>
+                <h1 class="hero-name hero-shine mt-4 text-4xl leading-tight sm:text-5xl md:text-6xl">{{ $name }}</h1>
+                <p @class(['mx-auto mt-6 max-w-xl text-lg text-muted sm:text-xl lg:max-w-none lg:whitespace-nowrap lg:text-base xl:text-xl', 'lg:mx-0' => $aside])>{{ $motto ? '“'.$motto.'”' : __('News, announcements and services of the hospital, in one place.') }}</p>
 
                 @if ($phone || $emergency)
                     <div @class(['mt-8 flex flex-wrap justify-center gap-3', 'lg:justify-start' => $aside])>
@@ -89,38 +100,59 @@
                     </div>
                 @endif
 
-                {{-- One line, as a status bar: is anything open this minute. --}}
-                @if ($openNow)
-                    <p class="mt-6 font-mono text-sm text-muted">
-                        <span class="mr-2 inline-block size-2 animate-pulse-dot rounded-full bg-syn-function align-middle" aria-hidden="true"></span>{{ trans_choice('{1} :count clinic or service is open now|[2,*] :count clinics and services are open now', $openNow, ['count' => $openNow]) }}
-                    </p>
-                @endif
+                {{-- A row of live signs, as a status bar: what is open this minute, what came out today. --}}
+                @php($newToday = App\Models\Announcement::published()->where('starts_at', '>=', now()->startOfDay())->count())
+                <ul @class(['hero-live mt-7 justify-center', 'lg:justify-start' => $aside])>
+                    @if ($openNow)
+                        <li><span class="hero-live-dot" aria-hidden="true"></span>{{ trans_choice('{1} :count clinic or service is open now|[2,*] :count clinics and services are open now', $openNow, ['count' => $openNow]) }}</li>
+                    @endif
+                    @if ($newToday)
+                        <li><a href="{{ route('announcements.index') }}"><x-heroicon-m-megaphone class="size-4" aria-hidden="true" />{{ trans_choice('{1} :count new announcement today|[2,*] :count new announcements today', $newToday, ['count' => $newToday]) }}</a></li>
+                    @endif
+                </ul>
             </div>
 
             @if ($sessions->isNotEmpty())
-                <section class="code-block" aria-labelledby="today-heading">
-                    <div class="code-header">
+                {{-- A sign hung by a cord from a nail, swinging in as the page opens, then stirring as in a breeze. --}}
+                <div class="sign">
+                <span class="sign-nail" aria-hidden="true"></span>
+                <svg class="sign-cord" viewBox="0 0 100 40" preserveAspectRatio="none" fill="none" aria-hidden="true">
+                    <path d="M50 1 L10 39 M50 1 L90 39" stroke="currentColor" stroke-width="2" stroke-linecap="round" vector-effect="non-scaling-stroke" />
+                </svg>
+                <section class="board" aria-labelledby="today-heading">
+                    <div class="board-head">
                         <h2 id="today-heading" class="text-sm font-semibold">{{ __('Open today') }} · <span @class(['day-chip' => App\Support\Theme::touchOfTheDay()])>{{ __(App\Models\ClinicSession::DAYS[now()->dayOfWeek]) }}</span></h2>
+                        {{-- The time this minute (resources/js/clock.js keeps it going). --}}
+                        <time class="board-clock" data-clock datetime="{{ now()->toIso8601String() }}">{{ now()->format('H:i') }}</time>
                     </div>
-                    <ul class="px-4 py-2">
+                    <ul class="board-rows">
                         @foreach ($sessions->take(7) as $session)
-                            <li class="flex items-baseline gap-3 border-b border-line py-2 last:border-b-0">
-                                <span class="w-28 shrink-0 font-mono text-sm font-semibold text-ink">{{ $session->hours() }}</span>
-                                <span class="min-w-0 flex-1">{{ $session->localName() }}</span>
-                                @if ($session->isOpenNow())
-                                    <span class="shrink-0 font-mono text-xs font-semibold text-syn-function">{{ __('Open now') }}</span>
+                            @php($state = $session->stateNow())
+                            <li class="board-row is-{{ $state }}">
+                                <span class="board-time">{{ $session->hours() }}</span>
+                                <span class="board-name">{{ $session->localName() }}</span>
+                                <span class="board-state">{{ match ($state) {
+                                    'open' => __('Open now'),
+                                    'later' => __('Opens :time', ['time' => str_replace(':', '.', $session->starts_at)]),
+                                    default => __('Closed'),
+                                } }}</span>
+                                @if (($done = $session->doneShare()) !== null)
+                                    <span class="board-bar" style="--done: {{ round($done * 100) }}%" aria-hidden="true"></span>
                                 @endif
                             </li>
                         @endforeach
                     </ul>
-                    <p class="border-t border-line px-4 py-3 text-sm"><a href="{{ route('schedule') }}" class="font-semibold text-brand underline">{{ __('The whole week') }} &rarr;</a></p>
+                    <p class="board-foot"><a href="{{ route('schedule') }}">{{ __('The whole week') }} &rarr;</a></p>
                 </section>
+                </div>
             @endif
         </div>
 
-        {{-- A pulse across the first screen, in the colour of the day, drawn once as the page opens. --}}
+        {{-- A pulse across the first screen, in the colour of the day: drawn as the page opens, then a light runs along it. --}}
         <svg class="hero-pulse" viewBox="0 0 1200 120" preserveAspectRatio="none" fill="none" aria-hidden="true">
             <path d="M0 60H520l18-22 16 22h40l14-50 22 100 18-78 12 28h40l16-14 14 14H1200" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke" />
+            {{-- A light running along the line, as a heartbeat on a monitor. --}}
+            <path class="hero-pulse-blip" pathLength="1000" d="M0 60H520l18-22 16 22h40l14-50 22 100 18-78 12 28h40l16-14 14 14H1200" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke" />
         </svg>
     </section>
 

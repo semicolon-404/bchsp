@@ -86,6 +86,33 @@ class ClinicSession extends Model
         return str_replace(':', '.', $this->starts_at).'–'.str_replace(':', '.', $this->ends_at);
     }
 
+    /** Where today's session stands this minute, for the board on the home page: 'open', 'later' or 'done'. */
+    public function stateNow(): string
+    {
+        if ($this->isOpenNow()) {
+            return 'open';
+        }
+
+        return now()->format('H:i') < $this->starts_at ? 'later' : 'done';
+    }
+
+    /**
+     * How far through its hours an open session is, 0 to 1, for the bar under it; null when it is not open or runs
+     * the whole day, where there is nothing to fill.
+     */
+    public function doneShare(): ?float
+    {
+        if (! $this->isOpenNow() || $this->hours() === __('24 hours')) {
+            return null;
+        }
+
+        $minutes = fn (string $time) => ((int) substr($time, 0, 2)) * 60 + (int) substr($time, 3, 2);
+        $end = $this->ends_at === '00:00' ? 24 * 60 : $minutes($this->ends_at);
+        $length = max(1, $end - $minutes($this->starts_at));
+
+        return min(1, max(0, (now()->hour * 60 + now()->minute - $minutes($this->starts_at)) / $length));
+    }
+
     /** Whether it is going on at this moment (for the mark beside today's sessions). */
     public function isOpenNow(): bool
     {

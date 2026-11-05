@@ -1,4 +1,5 @@
 import './bootstrap';
+import { startClock } from './clock';
 import { startFilter } from './filter';
 import { startHero } from './hero';
 import { startLightbox } from './lightbox';
@@ -17,6 +18,7 @@ import { startFeedMore, startToc } from './toc';
 import { startTop } from './top';
 
 startTheme();
+startClock();
 startPopup();
 startMenu();
 startSlider();
