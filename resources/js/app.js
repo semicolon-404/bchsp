@@ -13,6 +13,7 @@ import { startSlider } from './slider';
 import { startSpot } from './spot';
 import { startSwipe } from './swipe';
 import { startTheme } from './theme';
+import { startToc } from './toc';
 import { startTop } from './top';
 
 startTheme();
@@ -25,6 +26,7 @@ startShare();
 startMotion();
 startFilter();
 startTop();
+startToc();
 startLightbox();
 startHero();
 startNewsView();

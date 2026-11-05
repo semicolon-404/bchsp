@@ -246,7 +246,7 @@
                             };
                             $groups = $announcements->getCollection()->groupBy(fn ($one) => $heading($one->starts_at ?? $one->created_at));
                         @endphp
-                        <div class="toc mt-4">
+                        <div class="toc mt-4" data-toc>
                             @foreach ($groups as $title => $ones)
                                 <section aria-label="{{ $title }}">
                                     <h3 class="toc-head"><span>{{ $title }}</span><span class="font-mono text-xs font-normal text-muted">{{ trans_choice('{1} :count announcement|[2,*] :count announcements', $ones->count(), ['count' => $ones->count()]) }}</span></h3>
@@ -280,7 +280,19 @@
                         </ul>
                     @endif
 
-                    <div class="mt-10">{{ $announcements->links('components.site.pagination') }}</div>
+                    @if ($look === 'index')
+                        {{-- The next titles fetched onto this page (resources/js/toc.js); without the script, a link to them. --}}
+                        @if ($announcements->hasMorePages())
+                            <p class="mt-6 text-center">
+                                <a href="{{ $announcements->nextPageUrl() }}" class="btn btn-line" data-toc-more>
+                                    <x-heroicon-m-chevron-down class="size-5" aria-hidden="true" />{{ __('Show more') }}
+                                    <span class="font-mono text-sm text-muted">({{ number_format($announcements->total() - $announcements->lastItem()) }})</span>
+                                </a>
+                            </p>
+                        @endif
+                    @else
+                        <div class="mt-10">{{ $announcements->links('components.site.pagination') }}</div>
+                    @endif
                 @else
                     <x-site.empty class="mt-3" icon="magnifying-glass">{{ __('Nothing matches. Try another word, or clear the filters.') }}</x-site.empty>
                 @endif

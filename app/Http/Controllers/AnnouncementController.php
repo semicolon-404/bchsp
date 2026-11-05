@@ -28,8 +28,8 @@ class AnnouncementController extends Controller
     /** How the index (?view=index) gathers its titles => what the switch calls it. */
     public const GROUPS = ['day' => 'Day', 'week' => 'Week', 'month' => 'Month', 'year' => 'Year', 'fiscal' => 'Fiscal year'];
 
-    /** Titles alone take little room: the index holds this many to a page. */
-    private const PER_INDEX_PAGE = 100;
+    /** The index brings this many titles at a time; "Show more" brings the next as many, on the same page. */
+    private const PER_INDEX_PAGE = 30;
 
     /** What "when" can be besides a fiscal year => what the list calls it. */
     public const PERIODS = ['today' => 'Today', 'week' => 'This week', 'month' => 'This month', 'custom' => 'Choose the dates'];

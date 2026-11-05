@@ -40,4 +40,18 @@ class NewsIndexTest extends TestCase
         $this->get('/admin/announcements')->assertOk()
             ->assertSee(e(route('announcements.index', ['department' => $dental->slug, 'view' => 'index'])), false);
     }
+
+    public function test_thirty_at_a_time_and_show_more_brings_the_rest(): void
+    {
+        Announcement::factory()->count(35)->create();
+
+        $this->get('/announcements?view=index')->assertOk()
+            ->assertSee('data-toc-more', false)->assertSee('(5)')
+            ->assertDontSee('rel="next"', false);
+        $this->assertSame(30, substr_count($this->get('/announcements?view=index')->getContent(), 'class="toc-row"'));
+
+        // The next five, and no more to show.
+        $next = $this->get('/announcements?view=index&page=2')->assertOk()->assertDontSee('data-toc-more', false)->getContent();
+        $this->assertSame(5, substr_count($next, 'class="toc-row"'));
+    }
 }
