@@ -99,10 +99,9 @@
                                     @endif
                                 </p>
                                 <h2 class="popup-title">{{ $popup->localTitle() }}</h2>
-                                <form method="dialog" class="popup-actions">
+                                <p class="popup-actions">
                                     <a href="{{ route('announcements.show', $popup) }}" class="btn btn-brand popup-main">{{ __('Read the details') }} &rarr;</a>
-                                    <button class="btn btn-line">{{ __('Close') }}</button>
-                                </form>
+                                </p>
                             </div>
                         </li>
                     @endforeach

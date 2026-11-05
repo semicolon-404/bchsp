@@ -4888,23 +4888,30 @@ html.is-mourning {
 
     .has-dock .site-popup.is-corner { bottom: 6rem; }
 
+    /* The one way to close: top right, over everything in the window, large enough for a thumb. */
     .site-popup-x {
         position: absolute;
-        top: 0.6rem;
-        right: 0.6rem;
-        z-index: 1;
+        top: 0.75rem;
+        right: 0.75rem;
+        z-index: 5;
     }
 
     .site-popup-x button {
         display: grid;
         place-items: center;
-        width: 2.25rem;
-        height: 2.25rem;
+        width: 2.75rem;
+        height: 2.75rem;
         border-radius: 999px;
-        background: rgb(0 0 0 / 0.45);
+        background: rgb(0 0 0 / 0.55);
         color: #fff;
+        box-shadow: 0 0 0 2px rgb(255 255 255 / 0.6);
         cursor: pointer;
     }
+
+    .site-popup-x button:hover { background: rgb(0 0 0 / 0.75); }
+    .site-popup.is-corner .site-popup-x button { width: 2.25rem; height: 2.25rem; }
+    .site-popup .slider-track > li { min-width: 0; }
+    .site-popup .popup-arrow { z-index: 4; }
 
     .site-popup-picture { display: block; width: 100%; max-height: 60dvh; object-fit: contain; background: var(--color-raised); }
     .site-popup-band { display: block; height: 0.5rem; background: var(--accent); }
@@ -4917,6 +4924,7 @@ html.is-mourning {
     .site-popup-text > :first-child { margin-top: 0; }
 
     .site-popup-actions { display: flex; flex-wrap: wrap; gap: 0.6rem; margin-top: 1.1rem; }
+    .site-popup-title { padding-right: 2.75rem; }
 
     .site-popup-main {
         display: inline-flex;

@@ -1,8 +1,9 @@
 {{--
-    The popups set up on their own (App\Models\SitePopup), on the home page or every page. Each its own card: in the
-    middle of the screen over the page, or in the lower corner, not covering it. Opened by resources/js/site-popup.js,
-    one after another, each as often as it was set to (once, once a day, every visit), remembered in the visitor's
-    browser. Staff signed in see one at once with ?popup=id ("Preview" in the panel).
+    The popups set up on their own (App\Models\SitePopup), on the home page or every page. Those for the middle of the
+    screen open together in one window, swiped or moved with the arrows (resources/js/slider.js), the size of the
+    first; one ✕ closes them all. Each in the corner is a card of its own that does not cover the page. Each is shown
+    as often as it was set to (resources/js/site-popup.js leaves out what this visitor has seen). Staff signed in see
+    one at once with ?popup=id ("Preview" in the panel).
 
     <x-site.site-popups :home="true" />
 --}}
@@ -10,30 +11,39 @@
 @php
     $preview = auth()->check() && is_numeric(request()->query('popup')) ? App\Models\SitePopup::find((int) request()->query('popup')) : null;
     $popups = $preview ? collect([$preview]) : App\Models\SitePopup::forPage($home);
+    [$corner, $middle] = $popups->partition(fn ($popup) => $popup->placement === 'corner');
+    $many = $middle->count() > 1;
 @endphp
 
-@foreach ($popups as $popup)
-    <dialog class="site-popup is-{{ $popup->size }} is-{{ $popup->placement }}" tabindex="-1" data-site-popup="{{ $popup->seenKey() }}" data-frequency="{{ $preview ? 'always' : $popup->frequency }}" aria-labelledby="site-popup-{{ $popup->id }}" @if ($popup->accent) style="--accent: {{ $popup->accent }}" @endif>
+@if ($middle->isNotEmpty())
+    <dialog class="site-popup is-{{ $middle->first()->size }} is-center" tabindex="-1" data-site-popups aria-label="{{ $middle->first()->title }}">
         <form method="dialog" class="site-popup-x"><button aria-label="{{ __('Close') }}"><x-heroicon-m-x-mark class="size-5" aria-hidden="true" /></button></form>
-        @if ($image = $popup->imageUrl())
-            <img src="{{ $image }}" alt="" class="site-popup-picture" loading="lazy">
-        @else
-            <span class="site-popup-band" aria-hidden="true"></span>
-        @endif
-        <div class="site-popup-body">
-            <h2 id="site-popup-{{ $popup->id }}" class="site-popup-title">{{ $popup->title }}</h2>
-            @if (filled($popup->body))
-                <div class="rich site-popup-text mt-2">{!! $popup->renderedBody() !!}</div>
+        <div class="relative" @if ($many) data-slider data-slider-still aria-roledescription="carousel" @endif>
+            <ul class="slider-track" data-slider-track>
+                @foreach ($middle as $popup)
+                    <li class="w-full shrink-0 snap-center" data-site-popup="{{ $popup->seenKey() }}" data-frequency="{{ $preview ? 'always' : $popup->frequency }}" @if ($popup->accent) style="--accent: {{ $popup->accent }}" @endif @if ($many) aria-roledescription="slide" @endif>
+                        @include('components.site.site-popup-card', ['popup' => $popup])
+                    </li>
+                @endforeach
+            </ul>
+            @if ($many)
+                <button type="button" class="slider-arrow popup-arrow left-3" data-slider-prev aria-label="{{ __('Previous slide') }}"><x-heroicon-m-chevron-left class="size-7" aria-hidden="true" /></button>
+                <button type="button" class="slider-arrow popup-arrow right-3" data-slider-next aria-label="{{ __('Next slide') }}"><x-heroicon-m-chevron-right class="size-7" aria-hidden="true" /></button>
+                <div class="popup-dots">
+                    @foreach ($middle as $popup)
+                        <button type="button" class="slider-dot" data-slider-dot aria-current="{{ $loop->first ? 'true' : 'false' }}" aria-label="{{ __('Slide :number', ['number' => $loop->iteration]) }}"></button>
+                    @endforeach
+                </div>
             @endif
-            <form method="dialog" class="site-popup-actions">
-                @if ($popup->button_label && $popup->button_url)
-                    <a href="{{ $popup->button_url }}" class="site-popup-main" @if (str_starts_with($popup->button_url, 'http')) target="_blank" rel="noopener" @endif>{{ $popup->button_label }}</a>
-                @endif
-                @if ($popup->second_label && $popup->second_url)
-                    <a href="{{ $popup->second_url }}" class="btn btn-line" @if (str_starts_with($popup->second_url, 'http')) target="_blank" rel="noopener" @endif>{{ $popup->second_label }}</a>
-                @endif
-                <button class="btn btn-line">{{ __('Close') }}</button>
-            </form>
+        </div>
+    </dialog>
+@endif
+
+@foreach ($corner as $popup)
+    <dialog class="site-popup is-{{ $popup->size }} is-corner" tabindex="-1" data-site-popups aria-label="{{ $popup->title }}">
+        <form method="dialog" class="site-popup-x"><button aria-label="{{ __('Close') }}"><x-heroicon-m-x-mark class="size-5" aria-hidden="true" /></button></form>
+        <div data-site-popup="{{ $popup->seenKey() }}" data-frequency="{{ $preview ? 'always' : $popup->frequency }}" @if ($popup->accent) style="--accent: {{ $popup->accent }}" @endif>
+            @include('components.site.site-popup-card', ['popup' => $popup])
         </div>
     </dialog>
 @endforeach
