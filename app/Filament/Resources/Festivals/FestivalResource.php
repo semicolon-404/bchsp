@@ -4,6 +4,7 @@ namespace App\Filament\Resources\Festivals;
 
 use App\Filament\Concerns\NotForDepartments;
 use App\Filament\Resources\Festivals\Pages\ManageFestivals;
+use App\Filament\Resources\Krathongs\KrathongResource;
 use App\Models\Festival;
 use App\Filament\Pages\SiteSettings;
 use BackedEnum;
@@ -120,6 +121,13 @@ class FestivalResource extends Resource
                     ->color('gray')
                     ->url(fn (Festival $record) => route('home', ['festival' => $record->id]))
                     ->openUrlInNewTab(),
+                // Loy Krathong's krathongs: to read, and to take one off the river.
+                Action::make('krathongs')
+                    ->label(__('Krathongs'))
+                    ->icon(Heroicon::OutlinedHeart)
+                    ->color('gray')
+                    ->visible(fn (Festival $record) => $record->theme === 'loykrathong')
+                    ->url(fn () => KrathongResource::getUrl()),
                 EditAction::make(),
                 DeleteAction::make(),
             ]);
