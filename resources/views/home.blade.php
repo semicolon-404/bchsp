@@ -333,17 +333,23 @@
                 @endif
 
                 @if ($posting->isNotEmpty())
-                    <div class="mt-10">
+                    {{-- Two ways, the visitor's choice (resources/js/news-view.js): story cards with each one's latest picture,
+                         or the plain tiles with their round picture and name. --}}
+                    <div class="mt-10" data-news-view="detail" data-news-view-key="departments-view">
                         <div class="flex items-center justify-between gap-3">
                             <h3 class="eyebrow">{{ __('From the departments') }}</h3>
-                            <div class="flex gap-2">
+                            <div class="flex items-center gap-2">
+                                <div class="news-view-switch" role="group" aria-label="{{ __('How to show') }}">
+                                    <button type="button" data-news-view-as="detail" aria-pressed="true"><x-heroicon-m-photo class="size-4" aria-hidden="true" />{{ __('Pictures') }}</button>
+                                    <button type="button" data-news-view-as="list" aria-pressed="false"><x-heroicon-m-bars-3 class="size-4" aria-hidden="true" />{{ __('Names') }}</button>
+                                </div>
                                 <button type="button" class="rail-arrow" data-rail-prev aria-label="{{ __('Previous slide') }}"><x-heroicon-m-chevron-left class="size-5" aria-hidden="true" /></button>
                                 <button type="button" class="rail-arrow" data-rail-next aria-label="{{ __('Next slide') }}"><x-heroicon-m-chevron-right class="size-5" aria-hidden="true" /></button>
                             </div>
                         </div>
                         {{-- The departments that posted lately, each a card with its picture, then the way to all their posts:
                              one row, swiped, dragged or moved with the arrows (resources/js/rail.js). --}}
-                        <ul class="mt-4 flex gap-2.5 overflow-x-auto pb-2 [scrollbar-width:none]" data-rail>
+                        <ul class="dept-as-stories mt-4 flex gap-2.5 overflow-x-auto pb-2 [scrollbar-width:none]" data-rail>
                             @foreach ($posting as $one)
                                 <li class="shrink-0">
                                     <a href="{{ route('posts', ['department' => $one->slug]) }}" class="story-card">
@@ -361,6 +367,19 @@
                                     <span class="story-card-name">{{ __('Read the feed') }} &rarr;</span>
                                 </a>
                             </li>
+                        </ul>
+                        <ul class="dept-shelf dept-as-tiles mt-4" data-rail>
+                            @foreach ($posting as $one)
+                                <li>
+                                    <a href="{{ route('posts', ['department' => $one->slug]) }}" class="dept-tile no-underline">
+                                        <x-site.department-avatar :department="$one" class="size-12 text-base" />
+                                        <span class="min-w-0 flex-1">
+                                            <span class="block truncate font-medium text-ink">{{ $one->localName() }}</span>
+                                            <span class="block text-xs text-muted">{{ __('See their posts') }} &rarr;</span>
+                                        </span>
+                                    </a>
+                                </li>
+                            @endforeach
                         </ul>
                     </div>
                 @endif

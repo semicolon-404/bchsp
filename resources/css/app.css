@@ -4441,3 +4441,9 @@ html.is-mourning {
         .siren-toggle { display: none; }
     }
 }
+
+@layer components {
+    /* The departments on the home page, shown one way or the other (resources/js/news-view.js). */
+    [data-news-view='detail'] > .dept-as-tiles,
+    [data-news-view='list'] > .dept-as-stories { display: none !important; }
+}
