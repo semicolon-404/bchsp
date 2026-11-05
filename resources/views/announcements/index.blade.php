@@ -46,37 +46,18 @@
                 </label>
             </form>
 
-            {{-- The fiscal years, newest first, one press each: what an office looks for most after the kind. The rest are under Period below. --}}
-            @if (count($years) > 0)
-                <nav class="mt-5 flex flex-wrap items-center gap-2" aria-label="{{ __('Fiscal year') }}">
-                    <span class="mr-1 inline-flex items-center gap-1.5 text-sm font-semibold text-ink"><x-heroicon-o-calendar class="size-5 text-brand" aria-hidden="true" />{{ __('Fiscal year') }}</span>
-                    <a href="{{ $with(['year' => null, 'from' => null, 'to' => null]) }}" @class(['chip', 'is-on' => ! $year]) aria-current="{{ $year ? 'false' : 'true' }}">{{ __('All') }}</a>
-                    @foreach (array_slice($years, 0, 5, true) as $one => $count)
-                        <a href="{{ $with(['year' => $one, 'from' => null, 'to' => null]) }}" @class(['chip gap-1.5', 'is-on' => $one === $year]) aria-current="{{ $one === $year ? 'true' : 'false' }}">{{ $one }}<span class="font-mono text-xs opacity-60">{{ number_format($count) }}</span></a>
-                    @endforeach
-                </nav>
-            @endif
-
-            {{-- What the list is narrowed by, each with its own way off. --}}
+            {{-- What the list is narrowed by, said in words: the ways to change it are all in one place below. --}}
             @if ($narrowed)
-                <div class="mt-4 flex flex-wrap items-center gap-2 text-sm">
-                    <span class="text-muted">{{ __('Showing') }}</span>
-                    @if ($type)
-                        <a href="{{ $with(['type' => null]) }}" class="news-pill">{{ $type->localName() }}<x-heroicon-m-x-mark class="size-4" aria-hidden="true" /><span class="sr-only">{{ __('Remove') }}</span></a>
-                    @endif
-                    @if ($department)
-                        <a href="{{ $with(['department' => null]) }}" class="news-pill">{{ $department->localName() }}<x-heroicon-m-x-mark class="size-4" aria-hidden="true" /><span class="sr-only">{{ __('Remove') }}</span></a>
-                    @endif
-                    @if ($year)
-                        <a href="{{ $with(['year' => null]) }}" class="news-pill">{{ __('Fiscal year :year', ['year' => $year]) }}<x-heroicon-m-x-mark class="size-4" aria-hidden="true" /><span class="sr-only">{{ __('Remove') }}</span></a>
-                    @elseif ($period)
-                        <a href="{{ $with(['year' => null, 'from' => null, 'to' => null]) }}" class="news-pill">{{ __(App\Http\Controllers\AnnouncementController::PERIODS[$period]) }}<x-heroicon-m-x-mark class="size-4" aria-hidden="true" /><span class="sr-only">{{ __('Remove') }}</span></a>
-                    @endif
-                    @if ($term !== '')
-                        <a href="{{ $with(['q' => null]) }}" class="news-pill">&ldquo;{{ $term }}&rdquo;<x-heroicon-m-x-mark class="size-4" aria-hidden="true" /><span class="sr-only">{{ __('Remove') }}</span></a>
-                    @endif
-                    <a href="{{ $with(['type' => null, 'department' => null, 'year' => null, 'from' => null, 'to' => null, 'q' => null]) }}" class="ml-1 font-semibold text-brand underline">{{ __('Clear') }}</a>
-                </div>
+                <p class="mt-4 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-muted" role="status">
+                    <x-heroicon-o-funnel class="size-4 text-brand" aria-hidden="true" />
+                    <span>{{ __('Showing') }}</span>
+                    <span class="font-semibold text-ink">{{ collect([
+                        $type?->localName(),
+                        $department?->localName(),
+                        $year ? __('Fiscal year :year', ['year' => $year]) : ($period ? __(App\Http\Controllers\AnnouncementController::PERIODS[$period]) : null),
+                        $term !== '' ? '“'.$term.'”' : null,
+                    ])->filter()->implode(' · ') }}</span>
+                </p>
             @endif
 
             </div>
@@ -174,6 +155,17 @@
             <div @class(['min-w-0', 'lg:col-span-2' => $aside])>
                 {{-- Narrowing the list: by who put it out and by when. The word is kept from the search above. --}}
                 <form action="{{ route('announcements.index') }}" method="get" class="card group flex flex-wrap items-end gap-3 px-4 py-4">
+                {{-- The fiscal years, newest first, one press each: what an office looks for most after the kind. --}}
+                @if (count($years) > 0)
+                    <nav class="flex w-full flex-wrap items-center gap-2" aria-label="{{ __('Fiscal year') }}">
+                        <span class="mr-1 inline-flex items-center gap-1.5 text-sm font-semibold text-ink"><x-heroicon-o-calendar class="size-5 text-brand" aria-hidden="true" />{{ __('Fiscal year') }}</span>
+                        <a href="{{ $with(['year' => null, 'from' => null, 'to' => null]) }}" @class(['chip', 'is-on' => ! $year]) aria-current="{{ $year ? 'false' : 'true' }}">{{ __('All') }}</a>
+                        @foreach (array_slice($years, 0, 5, true) as $one => $count)
+                            <a href="{{ $with(['year' => $one, 'from' => null, 'to' => null]) }}" @class(['chip gap-1.5', 'is-on' => $one === $year]) aria-current="{{ $one === $year ? 'true' : 'false' }}">{{ $one }}<span class="font-mono text-xs opacity-60">{{ number_format($count) }}</span></a>
+                        @endforeach
+                    </nav>
+                @endif
+
                     @foreach (array_filter(['type' => $type?->slug, 'q' => $term, 'view' => $look !== 'list' ? $look : null, 'by' => $look === 'index' && $by !== $byDefault ? $by : null]) as $kept => $value)
                         <input type="hidden" name="{{ $kept }}" value="{{ $value }}">
                     @endforeach
@@ -191,16 +183,14 @@
                     <label class="block">
                         <span class="mb-1 block text-sm text-muted">{{ __('Period') }}</span>
                         <select name="year" class="min-h-11 rounded-md border border-line bg-page px-3 text-ink">
-                            <option value="">{{ __('Any time') }}</option>
+                            <option value="{{ $year }}">{{ $year ? __('Fiscal year :year', ['year' => $year]) : __('Any time') }}</option>
+                            @if ($year)
+                                <option value="">{{ __('Any time') }}</option>
+                            @endif
                             @foreach (App\Http\Controllers\AnnouncementController::PERIODS as $one => $label)
                                 @continue($one === 'custom')
                                 <option value="{{ $one }}" @selected($one === $period)>{{ __($label) }}</option>
                             @endforeach
-                            <optgroup label="{{ __('Fiscal year') }}">
-                                @foreach ($years as $one => $count)
-                                    <option value="{{ $one }}" @selected($one === $year)>{{ $one }} ({{ number_format($count) }})</option>
-                                @endforeach
-                            </optgroup>
                             <option value="custom" @selected($period === 'custom')>{{ __('Choose the dates') }}…</option>
                         </select>
                     </label>
@@ -224,7 +214,7 @@
                 <div class="mt-6 flex flex-wrap items-center justify-between gap-3">
                     <p class="text-sm text-muted" role="status">{{ trans_choice('{0} No announcements match.|{1} :count announcement|[2,*] :count announcements', $announcements->total(), ['count' => number_format($announcements->total())]) }}</p>
                     <nav class="flex gap-2" aria-label="{{ __('Way of looking') }}">
-                        <a href="{{ $with(['view' => null, 'page' => $announcements->currentPage() > 1 ? $announcements->currentPage() : null]) }}" @class(['chip gap-2', 'is-on' => $look === 'list']) aria-current="{{ $look === 'list' ? 'true' : 'false' }}"><x-heroicon-m-list-bullet class="size-4" aria-hidden="true" />{{ __('Rows') }}</a>
+                        <a href="{{ $with(['view' => 'list', 'by' => null, 'page' => $announcements->currentPage() > 1 ? $announcements->currentPage() : null]) }}" @class(['chip gap-2', 'is-on' => $look === 'list']) aria-current="{{ $look === 'list' ? 'true' : 'false' }}"><x-heroicon-m-list-bullet class="size-4" aria-hidden="true" />{{ __('Rows') }}</a>
                         <a href="{{ $with(['view' => 'cards', 'by' => null, 'page' => $announcements->currentPage() > 1 ? $announcements->currentPage() : null]) }}" @class(['chip gap-2', 'is-on' => $look === 'cards']) aria-current="{{ $look === 'cards' ? 'true' : 'false' }}"><x-heroicon-m-squares-2x2 class="size-4" aria-hidden="true" />{{ __('Cards') }}</a>
                         <a href="{{ $with(['view' => 'index', 'by' => null, 'page' => null]) }}" @class(['chip gap-2', 'is-on' => $look === 'index']) aria-current="{{ $look === 'index' ? 'true' : 'false' }}"><x-heroicon-m-bars-3-bottom-left class="size-4" aria-hidden="true" />{{ __('Index') }}</a>
                     </nav>

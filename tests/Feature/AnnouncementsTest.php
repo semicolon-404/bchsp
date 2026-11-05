@@ -86,7 +86,7 @@ class AnnouncementsTest extends TestCase
         Announcement::factory()->create(['title' => 'Early this month', 'starts_at' => '2026-11-02 09:00']);
         Announcement::factory()->create(['title' => 'In October', 'starts_at' => '2026-10-20 09:00']);
 
-        $this->get('/announcements')->assertSeeInOrder(['Any time', 'Today', 'This week', 'This month', 'Fiscal year', 'Choose the dates'])->assertSee('4 announcements');
+        $this->get('/announcements')->assertSeeInOrder(['Fiscal year', 'Any time', 'Today', 'This week', 'This month', 'Choose the dates'])->assertSee('4 announcements');
 
         $this->get('/announcements?year=today')->assertSee('1 announcement')->assertSee('This morning')->assertDontSee('On Tuesday');
         $this->get('/announcements?year=week')->assertSee('2 announcements')->assertSee('On Tuesday')->assertDontSee('Early this month');
@@ -117,7 +117,8 @@ class AnnouncementsTest extends TestCase
 
         $this->assertSame([2570 => 1, 2569 => 2, 2568 => 1], Announcement::fiscalYears());
 
-        $this->get('/announcements')->assertSeeInOrder(['2570 (1)', '2569 (2)', '2568 (1)'])->assertSee('4 announcements');
+        // Each fiscal year a button with how many it holds, newest first.
+        $this->get('/announcements')->assertSeeInOrder(['>2570<span class="font-mono text-xs opacity-60">1<', '>2569<span class="font-mono text-xs opacity-60">2<', '>2568<span class="font-mono text-xs opacity-60">1<'], false)->assertSee('4 announcements');
 
         $this->get('/announcements?year=2569')
             ->assertOk()
@@ -361,7 +362,7 @@ class AnnouncementsTest extends TestCase
             ->assertSee('<input type="hidden" name="view" value="cards">', false)
             ->assertSee('view=cards&amp;page=2', false)
             // And the way back to rows.
-            ->assertSee('href="'.route('announcements.index').'" class="chip gap-2"', false);
+            ->assertSee('href="'.route('announcements.index', ['view' => 'list']).'" class="chip gap-2"', false);
     }
 
     public function test_the_home_page_shows_the_eight_at_the_top_of_the_list_and_the_way_to_the_rest(): void

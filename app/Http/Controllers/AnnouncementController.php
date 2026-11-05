@@ -9,6 +9,7 @@ use App\Support\Menus;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Cookie;
 use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 
@@ -50,7 +51,12 @@ class AnnouncementController extends Controller
             'custom' => self::dates($request->query('from'), $request->query('to')),
             default => [null, null],
         };
-        $look = in_array($request->query('view'), self::VIEWS, true) ? $request->query('view') : self::VIEWS[0];
+        // The way of looking: from the address when it says; otherwise as this reader last chose, kept a year in a cookie.
+        $look = in_array($request->query('view'), self::VIEWS, true) ? $request->query('view')
+            : (in_array($request->cookie('news_view'), self::VIEWS, true) ? $request->cookie('news_view') : self::VIEWS[0]);
+        if ($request->query('view') === $look && $request->cookie('news_view') !== $look) {
+            Cookie::queue('news_view', $look, 60 * 24 * 365);
+        }
         // Tenders are looked for by fiscal year; everything else by month, unless the reader picks.
         $byDefault = $type?->slug === Menus::PROCUREMENT ? 'fiscal' : 'month';
         $by = is_string($request->query('by')) && isset(self::GROUPS[$request->query('by')]) ? $request->query('by') : $byDefault;
