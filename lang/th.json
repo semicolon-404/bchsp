@@ -699,6 +699,7 @@
     "On": "เปิดอยู่",
     "On the calendar this month": "กิจกรรมในเดือนนี้",
     "On the slides: :count": "อยู่ในสไลด์: :count",
+    "On, it shows on the home page by itself from the first day to the last. Off, not even then. To see it before its days, press Preview in the list.": "เปิดไว้ ธีมจะขึ้นหน้าแรกเองตั้งแต่วันเริ่มถึงวันจบ ปิดไว้จะไม่ขึ้นแม้อยู่ในช่วงวัน อยากดูก่อนถึงวัน กด \"ดูตัวอย่าง\" ในรายการ",
     "One at a time: pinning this lets go of the one pinned before.": "ปักได้ครั้งละหนึ่งเรื่อง เมื่อปักเรื่องนี้ เรื่องที่ปักไว้ก่อนจะถูกปลด",
     "One at a time: the first in order. A visitor who closes it does not see it again.": "แสดงครั้งละหนึ่งรูป คือรูปแรกตามลำดับ ผู้เข้าชมที่กดปิดแล้วจะไม่เห็นรูปนี้อีก",
     "One at a time: when several are marked, the pinned or newest one opens. A visitor who closes it is not shown it again.": "แสดงครั้งละหนึ่งภาพ หากเลือกไว้หลายเรื่อง ระบบจะแสดงเรื่องที่ปักหมุดหรือเรื่องใหม่ที่สุด ผู้เข้าชมที่กดปิดแล้วจะไม่เห็นภาพเดิมซ้ำ",

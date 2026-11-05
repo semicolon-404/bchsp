@@ -6,6 +6,7 @@ use App\Filament\Concerns\NotForDepartments;
 use App\Filament\Resources\Festivals\Pages\ManageFestivals;
 use App\Models\Festival;
 use BackedEnum;
+use Filament\Actions\Action;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\EditAction;
 use Filament\Forms\Components\DatePicker;
@@ -86,7 +87,7 @@ class FestivalResource extends Resource
                     ->native(false),
                 Toggle::make('is_active')
                     ->label(__('On'))
-                    ->helperText(__('Off, the home page stays as it is even within the days.'))
+                    ->helperText(__('On, it shows on the home page by itself from the first day to the last. Off, not even then. To see it before its days, press Preview in the list.'))
                     ->default(true)
                     ->inline(false),
             ]);
@@ -105,6 +106,13 @@ class FestivalResource extends Resource
                 ToggleColumn::make('is_active')->label(__('On')),
             ])
             ->recordActions([
+                // The home page as it will look on its days, now: for staff signed in only.
+                Action::make('preview')
+                    ->label(__('Preview'))
+                    ->icon(Heroicon::OutlinedEye)
+                    ->color('gray')
+                    ->url(fn (Festival $record) => route('home', ['festival' => $record->id]))
+                    ->openUrlInNewTab(),
                 EditAction::make(),
                 DeleteAction::make(),
             ]);

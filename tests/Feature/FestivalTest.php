@@ -56,4 +56,12 @@ class FestivalTest extends TestCase
         // The festivals themselves are the administrators'.
         $this->assertFalse(FestivalResource::canAccess());
     }
+
+    public function test_staff_signed_in_preview_a_festival_before_its_days_and_visitors_do_not(): void
+    {
+        $festival = Festival::create(['name' => 'Christmas', 'theme' => 'christmas', 'starts_on' => today()->addMonth(), 'ends_on' => today()->addMonth()]);
+
+        $this->get('/?festival='.$festival->id)->assertDontSee('festival is-christmas', false);
+        $this->actingAs(User::factory()->create(['role' => Role::Admin]))->get('/?festival='.$festival->id)->assertSee('festival is-christmas', false);
+    }
 }

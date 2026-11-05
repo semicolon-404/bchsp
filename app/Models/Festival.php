@@ -66,7 +66,9 @@ class Festival extends Model
         $attributes = request()->attributes;
 
         if (! $attributes->has('festival.today')) {
-            $attributes->set('festival.today', static::onToday()->orderBy('starts_on')->first());
+            // Staff signed in can look at any festival ahead of its days (?festival=id, "Preview" in the panel).
+            $preview = auth()->check() && is_numeric(request()->query('festival')) ? static::find((int) request()->query('festival')) : null;
+            $attributes->set('festival.today', $preview ?? static::onToday()->orderBy('starts_on')->first());
         }
 
         return $attributes->get('festival.today');
