@@ -168,8 +168,13 @@ class AnnouncementController extends Controller
             // When each last posted: a ring round its picture while that was in the last week.
             ->withMax(['announcements as last_posted' => fn ($query) => $query->published()], 'starts_at')
             ->get()->filter(fn (Department $one) => $one->posted > 0)
-            ->sortByDesc('posted')->values();
+            // Who posted last first, as stories are.
+            ->sortByDesc('last_posted')->values();
         $department = is_string($request->query('department')) ? $departments->firstWhere('slug', $request->query('department')) : null;
+        // The newest posts with a picture, in one query: the wall of pictures at the top, and each department's latest
+        // picture behind its card in the row of stories.
+        $pictured = Announcement::published()->whereIn('department_id', $departments->pluck('id'))->whereNotNull('image_path')
+            ->orderByDesc('starts_at')->orderByDesc('id')->limit(60)->get();
 
         return view('posts', [
             'department' => $department,
@@ -178,6 +183,8 @@ class AnnouncementController extends Controller
                 ->whereIn('department_id', $department ? [$department->id] : $departments->pluck('id'))
                 ->orderByDesc('starts_at')->orderByDesc('id')
                 ->paginate(10)->withQueryString(),
+            'wall' => $pictured->take(12)->values(),
+            'covers' => $pictured->unique('department_id')->keyBy('department_id'),
             // Beside the feed: what has been read most lately, of the departments' posts.
             'mostRead' => $request->query('page', 1) <= 1 ? Announcement::mostRead(20)->whereNotNull('department_id')->take(5)->values() : collect(),
         ]);
