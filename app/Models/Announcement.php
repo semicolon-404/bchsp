@@ -465,11 +465,21 @@ class Announcement extends Model
             : $date->locale('en')->translatedFormat('j M Y');
     }
 
-    /** Its day and the hour it went up, as every list and card shows it: "4 พ.ย. 2569 · 09:30 น." */
+    /**
+     * Its day and the hour it went up, as every list and card shows it: "4 พ.ย. 2569 · 09:30 น.".
+     * Put up today, how long ago instead of the day, as a social page does: "3 ชั่วโมงที่แล้ว · 09:30 น.".
+     */
     public function shownAt(): string
     {
         $date = $this->starts_at ?? $this->created_at;
+        $hour = $date->format('H:i').(app()->getLocale() === 'th' ? ' น.' : '');
 
-        return $this->shownOn().' · '.$date->format('H:i').(app()->getLocale() === 'th' ? ' น.' : '');
+        if ($date->isToday() && $date->isPast()) {
+            $ago = $date->diffInMinutes() < 1 ? __('Just now') : $date->locale(app()->getLocale())->diffForHumans();
+
+            return $ago.' · '.$hour;
+        }
+
+        return $this->shownOn().' · '.$hour;
     }
 }
