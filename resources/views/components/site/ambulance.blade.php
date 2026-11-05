@@ -13,23 +13,42 @@
     <div class="ambulance">
         <span class="ambulance-beam"></span>
         <span class="ambulance-glow"></span>
-        {{-- A Thai high-roof ambulance van, seen from the side: the yellow and green squares along it, the blue star of life, 1669. --}}
-        <svg viewBox="0 0 120 60" class="ambulance-body">
-            <rect x="22" y="2" width="30" height="5" rx="2" class="ambulance-bar" />
-            <rect x="22" y="2" width="15" height="5" rx="2" class="ambulance-red" />
-            <rect x="37" y="2" width="15" height="5" rx="2" class="ambulance-blue" />
-            <path d="M6 8h80q4 0 6 4l12 14q10 2 12 8v12H6z" fill="#fff" stroke="#cbd5e1" stroke-width="1.2" />
-            <path d="M88 13l11 13H88z" fill="#1e293b" opacity="0.85" />
-            <rect x="54" y="13" width="28" height="11" rx="1.5" fill="#1e293b" opacity="0.85" />
-            <rect x="104" y="26" width="12" height="17" fill="#facc15" />
-            <rect x="8" y="31" width="7" height="6" fill="#facc15" /><rect x="8" y="37" width="7" height="6" fill="#16a34a" /><rect x="15" y="31" width="7" height="6" fill="#16a34a" /><rect x="15" y="37" width="7" height="6" fill="#facc15" /><rect x="22" y="31" width="7" height="6" fill="#facc15" /><rect x="22" y="37" width="7" height="6" fill="#16a34a" /><rect x="29" y="31" width="7" height="6" fill="#16a34a" /><rect x="29" y="37" width="7" height="6" fill="#facc15" /><rect x="36" y="31" width="7" height="6" fill="#facc15" /><rect x="36" y="37" width="7" height="6" fill="#16a34a" /><rect x="43" y="31" width="7" height="6" fill="#16a34a" /><rect x="43" y="37" width="7" height="6" fill="#facc15" /><rect x="50" y="31" width="7" height="6" fill="#facc15" /><rect x="50" y="37" width="7" height="6" fill="#16a34a" /><rect x="57" y="31" width="7" height="6" fill="#16a34a" /><rect x="57" y="37" width="7" height="6" fill="#facc15" /><rect x="64" y="31" width="7" height="6" fill="#facc15" /><rect x="64" y="37" width="7" height="6" fill="#16a34a" /><rect x="71" y="31" width="7" height="6" fill="#16a34a" /><rect x="71" y="37" width="7" height="6" fill="#facc15" /><rect x="78" y="31" width="7" height="6" fill="#facc15" /><rect x="78" y="37" width="7" height="6" fill="#16a34a" /><rect x="85" y="31" width="7" height="6" fill="#16a34a" /><rect x="85" y="37" width="7" height="6" fill="#facc15" /><rect x="92" y="31" width="7" height="6" fill="#facc15" /><rect x="92" y="37" width="7" height="6" fill="#16a34a" /><rect x="99" y="31" width="7" height="6" fill="#16a34a" /><rect x="99" y="37" width="7" height="6" fill="#facc15" />
-            <rect x="6" y="30" width="110" height="1.2" fill="#16a34a" />
-            <g transform="translate(36 21)"><path d="M0 -6v12M-5.2 -3l10.4 6M-5.2 3l10.4 -6" stroke="#2563eb" stroke-width="3.2" stroke-linecap="round" /><path d="M0 -4v8" stroke="#fff" stroke-width="0.8" /></g>
-            <text x="66" y="29.5" font-size="5.5" font-weight="700" fill="#16a34a" font-family="sans-serif">1669</text>
-            <rect x="113" y="33" width="4" height="3" rx="1" fill="#fde68a" />
-            <rect x="4" y="43" width="114" height="3" rx="1.5" fill="#94a3b8" />
-            <g class="ambulance-wheel" style="transform-origin: 26px 49px"><circle cx="26" cy="49" r="8" fill="#1f2937" /><circle cx="26" cy="49" r="3.5" fill="#cbd5e1" /><path d="M26 42v14M19 49h14" stroke="#64748b" stroke-width="1.2" /></g>
-            <g class="ambulance-wheel" style="transform-origin: 96px 49px"><circle cx="96" cy="49" r="8" fill="#1f2937" /><circle cx="96" cy="49" r="3.5" fill="#cbd5e1" /><path d="M96 42v14M89 49h14" stroke="#64748b" stroke-width="1.2" /></g>
+        {{-- A Thai high-roof ambulance van, seen from the side: white, rounded, its windows dark, the yellow and green
+             squares along it, the blue star of life and 1669, the light bar on the roof. --}}
+        <svg viewBox="0 0 180 80" class="ambulance-body">
+            <defs>
+                <linearGradient id="amb-white" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff" /><stop offset="0.75" stop-color="#f1f5f9" /><stop offset="1" stop-color="#cbd5e1" /></linearGradient>
+                <linearGradient id="amb-glass" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#475569" /><stop offset="0.5" stop-color="#1e293b" /><stop offset="1" stop-color="#0f172a" /></linearGradient>
+                <clipPath id="amb-side"><path d="M10 14q0-6 6-6h112q6 0 9 4l15 20q16 3 20 10q3 4 3 10v12q0 4-4 4H10z" /></clipPath>
+            </defs>
+            <rect x="40" y="2" width="40" height="6" rx="3" class="ambulance-bar" />
+            <rect x="42" y="3" width="17" height="4" rx="2" class="ambulance-red" />
+            <rect x="61" y="3" width="17" height="4" rx="2" class="ambulance-blue" />
+            <path d="M10 14q0-6 6-6h112q6 0 9 4l15 20q16 3 20 10q3 4 3 10v12q0 4-4 4H10z" fill="url(#amb-white)" stroke="#94a3b8" stroke-width="1" />
+            <g clip-path="url(#amb-side)"><rect x="12" y="42" width="9" height="7" fill="#facc15" /><rect x="12" y="49" width="9" height="7" fill="#15803d" /><rect x="21" y="42" width="9" height="7" fill="#15803d" /><rect x="21" y="49" width="9" height="7" fill="#facc15" /><rect x="30" y="42" width="9" height="7" fill="#facc15" /><rect x="30" y="49" width="9" height="7" fill="#15803d" /><rect x="39" y="42" width="9" height="7" fill="#15803d" /><rect x="39" y="49" width="9" height="7" fill="#facc15" /><rect x="48" y="42" width="9" height="7" fill="#facc15" /><rect x="48" y="49" width="9" height="7" fill="#15803d" /><rect x="57" y="42" width="9" height="7" fill="#15803d" /><rect x="57" y="49" width="9" height="7" fill="#facc15" /><rect x="66" y="42" width="9" height="7" fill="#facc15" /><rect x="66" y="49" width="9" height="7" fill="#15803d" /><rect x="75" y="42" width="9" height="7" fill="#15803d" /><rect x="75" y="49" width="9" height="7" fill="#facc15" /><rect x="84" y="42" width="9" height="7" fill="#facc15" /><rect x="84" y="49" width="9" height="7" fill="#15803d" /><rect x="93" y="42" width="9" height="7" fill="#15803d" /><rect x="93" y="49" width="9" height="7" fill="#facc15" /><rect x="102" y="42" width="9" height="7" fill="#facc15" /><rect x="102" y="49" width="9" height="7" fill="#15803d" /><rect x="111" y="42" width="9" height="7" fill="#15803d" /><rect x="111" y="49" width="9" height="7" fill="#facc15" /><rect x="120" y="42" width="9" height="7" fill="#facc15" /><rect x="120" y="49" width="9" height="7" fill="#15803d" /><rect x="129" y="42" width="9" height="7" fill="#15803d" /><rect x="129" y="49" width="9" height="7" fill="#facc15" /><rect x="10" y="41" width="170" height="1.2" fill="#15803d" /></g>
+            <path d="M134 16l13 17h-13z" fill="url(#amb-glass)" />
+            <rect x="96" y="16" width="34" height="17" rx="3" fill="url(#amb-glass)" />
+            <rect x="60" y="16" width="32" height="17" rx="3" fill="url(#amb-glass)" />
+            <path d="M98 18l8 0l-6 12h-4z" fill="#fff" opacity="0.12" />
+            <path d="M94 14v52" stroke="#94a3b8" stroke-width="0.8" />
+            <path d="M132 14v52" stroke="#94a3b8" stroke-width="0.8" />
+            <rect x="136" y="38" width="5" height="1.6" rx="0.8" fill="#64748b" />
+            <g transform="translate(34 26)"><circle r="10" fill="#fff" /><path d="M0 -8v16M-6.9 -4l13.8 8M-6.9 4l13.8 -8" stroke="#1d4ed8" stroke-width="4" stroke-linecap="round" /><path d="M0 -5v10" stroke="#fff" stroke-width="1" /></g>
+            <text x="100" y="62" font-size="6.5" font-weight="800" fill="#0f172a" font-family="sans-serif">1669</text>
+            <path d="M150 34l4 2v4h-4z" fill="#0f172a" />
+            <rect x="168" y="44" width="7" height="5" rx="1.5" fill="#fef3c7" stroke="#f59e0b" stroke-width="0.6" />
+            <rect x="166" y="58" width="12" height="6" rx="2" fill="#94a3b8" />
+            <rect x="6" y="60" width="10" height="6" rx="2" fill="#94a3b8" />
+            <rect x="8" y="46" width="3" height="5" rx="1" fill="#ef4444" />
+            <g class="ambulance-wheel" style="transform-origin: 38px 66px"><circle cx="38" cy="66" r="11" fill="#111827" /><circle cx="38" cy="66" r="6" fill="#e2e8f0" /><circle cx="38" cy="66" r="2" fill="#64748b" /><path d="M38 60v12M32 66h12" stroke="#94a3b8" stroke-width="1.4" /></g>
+            <g class="ambulance-wheel" style="transform-origin: 146px 66px"><circle cx="146" cy="66" r="11" fill="#111827" /><circle cx="146" cy="66" r="6" fill="#e2e8f0" /><circle cx="146" cy="66" r="2" fill="#64748b" /><path d="M146 60v12M140 66h12" stroke="#94a3b8" stroke-width="1.4" /></g>
         </svg>
     </div>
 </div>
+
+{{-- The siren, off until the visitor turns it on (resources/js/siren.js): a short wail each time the van comes by. --}}
+<button type="button" class="siren-toggle" data-siren aria-pressed="false" title="{{ __('Siren sound') }}">
+    <x-heroicon-m-speaker-x-mark class="size-5 siren-off" aria-hidden="true" />
+    <x-heroicon-m-speaker-wave class="size-5 siren-on" aria-hidden="true" />
+    <span class="sr-only">{{ __('Siren sound') }}</span>
+</button>

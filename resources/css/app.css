@@ -4314,7 +4314,7 @@ html.is-mourning {
         position: absolute;
         bottom: -0.15rem;
         left: 0;
-        width: 7rem;
+        width: 8.5rem;
         animation: amb-drive 30s linear infinite, amb-bump 30s linear infinite;
     }
 
@@ -4430,5 +4430,34 @@ html.is-mourning {
 
     @media (prefers-reduced-motion: reduce) {
         .hero-siren { display: none; }
+    }
+}
+
+@layer components {
+    /* The siren's button, in the lower corner of the first screen. */
+    .siren-toggle {
+        position: absolute;
+        right: 1rem;
+        bottom: 1rem;
+        z-index: 6;
+        display: grid;
+        place-items: center;
+        width: 2.5rem;
+        height: 2.5rem;
+        border-radius: 999px;
+        background: color-mix(in srgb, var(--color-page) 80%, transparent);
+        color: var(--color-muted);
+        box-shadow: 0 0 0 1px var(--color-line);
+        backdrop-filter: blur(8px);
+        cursor: pointer;
+    }
+
+    .siren-toggle:hover { color: var(--color-brand); }
+    .siren-toggle .siren-on, .siren-toggle[aria-pressed='true'] .siren-off { display: none; }
+    .siren-toggle[aria-pressed='true'] .siren-on { display: block; }
+    .siren-toggle[aria-pressed='true'] { color: #dc2626; }
+
+    @media (prefers-reduced-motion: reduce) {
+        .siren-toggle { display: none; }
     }
 }

@@ -10,6 +10,7 @@ import { startPopup } from './popup';
 import { startMore, startRail } from './rail';
 import { startSeen } from './seen';
 import { startPostShare, startShare } from './share';
+import { startSiren } from './siren';
 import { startSlider } from './slider';
 import { startSpot } from './spot';
 import { startSwipe } from './swipe';
@@ -19,6 +20,7 @@ import { startTop } from './top';
 
 startTheme();
 startClock();
+startSiren();
 startPopup();
 startMenu();
 startSlider();
