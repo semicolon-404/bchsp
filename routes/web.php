@@ -3,6 +3,7 @@
 use App\Http\Controllers\AnnouncementController;
 use App\Http\Controllers\ComplaintController;
 use App\Http\Controllers\DepartmentController;
+use App\Http\Controllers\KrathongController;
 use App\Http\Controllers\ItaController;
 use App\Http\Controllers\QrController;
 use App\Http\Controllers\ReportController;
@@ -58,6 +59,8 @@ Route::post('/complaint/track', [ComplaintController::class, 'lookup'])->middlew
 // What a sender attached, for an administrator who is signed in (checked in the controller).
 Route::get('/admin/complaint-files/{complaint}/{index}', [ComplaintController::class, 'file'])->whereNumber('index')->name('complaint.file');
 // A QR code leading to a page of this site, for posters and signs (App\Http\Controllers\QrController).
+Route::get('/loykrathong', [KrathongController::class, 'index'])->name('loykrathong');
+Route::post('/loykrathong', [KrathongController::class, 'store'])->middleware('throttle:6,10')->name('loykrathong.store');
 Route::get('/qr.svg', QrController::class)->middleware('throttle:60,1')->name('qr');
 
 // The report for executives, to print or to open in Excel: for administrators (App\Http\Controllers\ReportController).

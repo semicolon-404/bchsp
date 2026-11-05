@@ -15,7 +15,9 @@
 
 <div class="festival is-{{ $festival->theme }}" aria-label="{{ $festival->name }}" role="img">
     @if ($festival->theme === 'loykrathong')
-        @php($krathongs = $festival->krathongs()->with('department')->limit(12)->get())
+        @php($krathongs = $festival->krathongs()->where('is_hidden', false)->with('department')->limit(12)->get())
+        {{-- The way to float one's own. --}}
+        <a href="{{ route('loykrathong') }}" class="festival-go">{{ __('Float a krathong online') }} &rarr;</a>
         <span class="festival-moon" aria-hidden="true"></span>
         <div class="river" aria-hidden="true"><span class="river-wave"></span><span class="river-wave is-back"></span></div>
         <ul class="krathongs">
@@ -24,10 +26,10 @@
                 @php($at = $spread($loop->index))
                 <li class="krathong is-{{ $one?->style ?? ['banana', 'lotus', 'flower', 'bread'][$loop->index % 4] }}" style="--start: {{ $at['left'] }}%; --time: {{ 40 + ($loop->index * 13) % 30 }}s; --wait: {{ -($loop->index * 9) % 50 }}s">
                     @if ($one)
-                        <button type="button" class="krathong-tap" aria-label="{{ ($one->department?->localName() ?? __('The hospital')).': '.$one->wish }}">
+                        <button type="button" class="krathong-tap" aria-label="{{ $one->by().': '.$one->wish }}">
                             <x-site.krathong-drawing />
                         </button>
-                        <span class="krathong-wish" role="tooltip"><b>{{ $one->department?->localName() ?? __('The hospital') }}</b>{{ $one->wish }}</span>
+                        <span class="krathong-wish" role="tooltip"><b>{{ $one->by() }}</b>{{ $one->wish }}</span>
                     @else
                         <x-site.krathong-drawing />
                     @endif

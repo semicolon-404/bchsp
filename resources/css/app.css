@@ -4641,3 +4641,178 @@ html.is-mourning {
         .festival-fall { display: none; }
     }
 }
+
+@layer components {
+    /* /loykrathong (loykrathong.blade.php): night over the river, the site's green deep in the sky. */
+    .loy {
+        position: relative;
+        min-height: calc(100dvh - 4rem);
+        overflow: hidden;
+        padding-bottom: 11rem;
+        background:
+            radial-gradient(60rem 30rem at 80% 10%, color-mix(in srgb, var(--color-brand) 25%, transparent), transparent 70%),
+            linear-gradient(180deg, #06121f 0%, #0b2233 55%, #0e2f3f 100%);
+        isolation: isolate;
+    }
+
+    .loy-sky { position: absolute; inset: 0; pointer-events: none; }
+
+    .loy-star {
+        position: absolute;
+        width: 2px;
+        height: 2px;
+        border-radius: 999px;
+        background: #fff;
+        animation: twinkle 3.5s ease-in-out var(--wait) infinite alternate;
+    }
+
+    @keyframes twinkle { from { opacity: 0.2; } to { opacity: 0.9; } }
+
+    .loy-moon {
+        position: absolute;
+        top: 2rem;
+        right: 40%;
+        width: 6rem;
+        height: 6rem;
+        border-radius: 999px;
+        background: radial-gradient(circle at 38% 35%, #fffbeb, #fef3c7 55%, #fcd34d);
+        box-shadow: 0 0 60px 20px rgb(253 230 138 / 0.35), 0 0 160px 60px rgb(253 230 138 / 0.12);
+    }
+
+    /* Lanterns far off, rising slowly and swaying. */
+    .loy-lantern {
+        position: absolute;
+        bottom: 12rem;
+        width: 0.7rem;
+        height: 0.9rem;
+        border-radius: 40% 40% 30% 30%;
+        background: radial-gradient(circle at 50% 70%, #fef3c7, #f59e0b 60%, #b45309);
+        box-shadow: 0 0 12px 4px rgb(251 191 36 / 0.45);
+        opacity: 0;
+        will-change: transform, opacity;
+        animation: lantern-rise var(--time) linear var(--wait) infinite;
+    }
+
+    @keyframes lantern-rise {
+        0% { transform: translate(0, 0); opacity: 0; }
+        10% { opacity: 0.9; }
+        50% { transform: translate(1.5rem, -45vh); }
+        100% { transform: translate(-1rem, -90vh) scale(0.5); opacity: 0; }
+    }
+
+    .loy-thanks {
+        display: inline-block;
+        padding: 0.75rem 1rem;
+        border-radius: 14px;
+        background: rgb(251 191 36 / 0.15);
+        color: #fde68a;
+        font-weight: 600;
+        box-shadow: inset 0 0 0 1px rgb(251 191 36 / 0.35);
+    }
+
+    .loy-card {
+        padding: 1.25rem;
+        border-radius: 20px;
+        background: var(--color-page);
+        color: var(--color-ink);
+        box-shadow: 0 30px 70px -30px rgb(0 0 0 / 0.7);
+    }
+
+    .loy-input {
+        display: block;
+        width: 100%;
+        margin-top: 0.35rem;
+        padding: 0.6rem 0.8rem;
+        border: 1px solid var(--color-line);
+        border-radius: 10px;
+        background: var(--color-surface);
+        color: var(--color-ink);
+    }
+
+    .loy-pick {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.25rem;
+        padding: 0.4rem 0.2rem;
+        border: 2px solid transparent;
+        border-radius: 12px;
+        background: var(--color-raised);
+        cursor: pointer;
+    }
+
+    .loy-pick:has(input:checked) { border-color: var(--color-brand); background: color-mix(in srgb, var(--color-brand) 10%, var(--color-page)); }
+    .loy-pick:has(input:focus-visible) { outline: 2px solid var(--color-brand); outline-offset: 2px; }
+    .loy-pick .krathong.is-still { position: static; width: 3rem; animation: none; }
+
+    /* The river, wide and deep, the moon's light laid on it. */
+    .loy-river {
+        position: absolute;
+        inset: auto 0 0 0;
+        height: 10rem;
+        background: linear-gradient(180deg, #0f3b52 0%, #082233 100%);
+        box-shadow: inset 0 12px 30px -10px rgb(0 0 0 / 0.5);
+    }
+
+    .loy-river .river-wave { top: -0.4rem; }
+    .loy-river .river-wave.is-back { top: 2.5rem; }
+
+    .loy-glint {
+        position: absolute;
+        top: 0;
+        right: calc(40% - 3rem);
+        width: 12rem;
+        height: 100%;
+        background: repeating-linear-gradient(180deg, rgb(253 230 138 / 0.45) 0 3px, transparent 3px 14px);
+        mask-image: linear-gradient(180deg, #000, transparent 90%), radial-gradient(closest-side, #000, transparent);
+        mask-composite: intersect;
+        animation: glint 4s ease-in-out infinite alternate;
+    }
+
+    @keyframes glint { from { opacity: 0.55; } to { opacity: 1; } }
+
+    @media (max-width: 63.99rem) {
+        .loy-moon { top: 1.5rem; right: 6%; width: 4rem; height: 4rem; opacity: 0.85; }
+        .loy-glint { right: calc(6% - 4rem); }
+    }
+
+    .loy-krathongs { position: absolute; inset: 0; }
+
+    .loy-krathongs .krathong {
+        bottom: calc(6.4rem - var(--row) * 2.6rem);
+        width: calc(4rem + var(--row) * 0.6rem);
+        z-index: var(--row);
+    }
+
+    /* One's own, just floated: it sets off from the middle of the river, its light larger. */
+    .loy-krathongs .krathong.is-mine { animation-delay: calc(var(--time) * -0.45); z-index: 4; }
+    .loy-krathongs .krathong.is-mine .k-light { fill: rgb(251 191 36 / 0.6); }
+    .loy-krathongs .krathong.is-mine .krathong-wish { opacity: 1; transform: translate(-50%, 0); }
+
+    @media (prefers-reduced-motion: reduce) {
+        .loy *, .loy *::before { animation: none !important; }
+        .loy-lantern { display: none; }
+        .loy-krathongs .krathong { left: calc(var(--row) * 30% + 5%); }
+    }
+}
+
+@layer components {
+    /* On the home page's river: the way to float one's own. */
+    .festival-go {
+        position: absolute;
+        bottom: 4.4rem;
+        left: 1rem;
+        z-index: 3;
+        padding: 0.35rem 0.9rem;
+        border-radius: 999px;
+        background: rgb(8 47 73 / 0.85);
+        color: #fde68a;
+        font-size: 0.85rem;
+        font-weight: 600;
+        text-decoration: none;
+        pointer-events: auto;
+        box-shadow: 0 0 0 1px rgb(253 230 138 / 0.35);
+    }
+
+    .festival-go:hover { background: rgb(8 47 73); color: #fff; }
+}

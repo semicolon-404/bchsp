@@ -15,14 +15,16 @@ use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Columns\ToggleColumn;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use UnitEnum;
 
 /**
- * The krathongs floated on the home page's river at Loy Krathong (App\Models\Krathong): a department floats its own,
- * one to a festival, with a short wish; an administrator sees them all and can take one off.
+ * The krathongs floated at Loy Krathong (App\Models\Krathong): a department floats its own here, one to a festival,
+ * with a short wish; visitors float theirs at /loykrathong. An administrator sees them all and can take one off the
+ * river.
  */
 class KrathongResource extends Resource
 {
@@ -108,10 +110,12 @@ class KrathongResource extends Resource
             ->emptyStateHeading(__('No krathong yet'))
             ->emptyStateDescription(__('Float your department\'s krathong: it drifts on the home page\'s river through the festival.'))
             ->columns([
-                TextColumn::make('department.name')->label(__('Department'))->placeholder(__('The hospital'))->weight('semibold'),
+                TextColumn::make('by')->label(__('Floated by'))->state(fn (Krathong $record) => $record->by())->description(fn (Krathong $record) => $record->department_id ? __('Department') : __('Visitor'))->weight('semibold'),
                 TextColumn::make('style')->label(__('Krathong'))->formatStateUsing(fn (string $state) => __(Krathong::STYLES[$state] ?? $state)),
                 TextColumn::make('wish')->label(__('Wish'))->wrap(),
                 TextColumn::make('festival.name')->label(__('Festival'))->color('gray'),
+                // Taken off the river, not deleted: an administrator's call.
+                ToggleColumn::make('is_hidden')->label(__('Off the river'))->visible(fn () => auth()->user()?->isAdmin()),
             ])
             ->recordActions([
                 EditAction::make(),
