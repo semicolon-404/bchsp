@@ -8,7 +8,7 @@
 @props(['light' => 'medium'])
 
 {{-- The lights' red and blue thrown over the whole first screen, the sign too, strongest where the van is. --}}
-<div class="hero-siren is-{{ $light }}" aria-hidden="true"></div>
+<div class="hero-siren is-{{ $light }}" aria-hidden="true"><span class="siren-red"></span><span class="siren-blue"></span></div>
 <div class="ambulance-road" aria-hidden="true">
     <div class="ambulance">
         <span class="ambulance-beam"></span>

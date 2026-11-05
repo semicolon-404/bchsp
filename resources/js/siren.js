@@ -1,6 +1,7 @@
 /**
  * The ambulance's siren on the home page (components/site/ambulance): off until the visitor presses its button, then
- * a short wail each time the van comes by, made in the browser (no sound file to fetch). The choice is remembered.
+ * a short whoop as the van drops over the beat in the line, made in the browser (no sound file to fetch). The choice is
+ * remembered.
  */
 export function startSiren() {
     const button = document.querySelector('[data-siren]');
@@ -20,19 +21,17 @@ export function startSiren() {
         const tone = audio.createOscillator();
         const volume = audio.createGain();
         tone.type = 'triangle';
-        // Two rises and falls, as a Thai ambulance's siren, in two and a half seconds.
-        tone.frequency.setValueAtTime(650, now);
-        tone.frequency.linearRampToValueAtTime(1250, now + 0.6);
-        tone.frequency.linearRampToValueAtTime(650, now + 1.2);
-        tone.frequency.linearRampToValueAtTime(1250, now + 1.8);
-        tone.frequency.linearRampToValueAtTime(650, now + 2.4);
+        // One rise and fall, under a second.
+        tone.frequency.setValueAtTime(700, now);
+        tone.frequency.linearRampToValueAtTime(1300, now + 0.35);
+        tone.frequency.linearRampToValueAtTime(700, now + 0.8);
         volume.gain.setValueAtTime(0, now);
-        volume.gain.linearRampToValueAtTime(0.08, now + 0.15);
-        volume.gain.setValueAtTime(0.08, now + 2.1);
-        volume.gain.linearRampToValueAtTime(0, now + 2.5);
+        volume.gain.linearRampToValueAtTime(0.08, now + 0.08);
+        volume.gain.setValueAtTime(0.08, now + 0.65);
+        volume.gain.linearRampToValueAtTime(0, now + 0.85);
         tone.connect(volume).connect(audio.destination);
         tone.start(now);
-        tone.stop(now + 2.5);
+        tone.stop(now + 0.9);
     };
 
     const set = (value) => {
@@ -46,10 +45,16 @@ export function startSiren() {
         wail();
     });
 
-    // Each time the van starts across again.
-    van.addEventListener('animationiteration', (event) => {
-        if (event.animationName === 'amb-drive') wail();
-    });
+    // As the van drops over the beat: 34.4% into its thirty seconds (resources/css/app.css, amb-bump). One timer a
+    // cycle, set from where the van is now, so it stays in step.
+    const CYCLE = 30000;
+    const DROP = 0.344 * CYCLE;
+    const drive = van.getAnimations().find((a) => a.animationName === 'amb-drive');
+    const next = () => {
+        const at = Number(drive?.currentTime ?? 0) % CYCLE;
+        setTimeout(() => { wail(); next(); }, ((DROP - at + CYCLE) % CYCLE) || CYCLE);
+    };
+    if (drive) next();
 
     // Remembered, but a browser plays nothing before the visitor has pressed something on the page.
     try {
