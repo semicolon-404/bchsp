@@ -380,6 +380,12 @@
                                     </a>
                                 </li>
                             @endforeach
+                            <li>
+                                <a href="{{ route('posts') }}" class="dept-tile is-feed no-underline">
+                                    <span class="grid size-12 shrink-0 place-items-center rounded-full bg-white/15" aria-hidden="true"><x-heroicon-s-newspaper class="size-6" /></span>
+                                    <span class="min-w-0 flex-1 font-semibold">{{ __('Read the feed') }} &rarr;</span>
+                                </a>
+                            </li>
                         </ul>
                     </div>
                 @endif
