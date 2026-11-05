@@ -302,7 +302,14 @@ class Announcement extends Model
     /** Whether anything at all is on the calendar: for the menu, which lists the calendar only then. */
     public static function hasEvents(): bool
     {
-        return static::published()->whereNotNull('event_on')->exists();
+        // Asked by the home page and the menus both: worked out once a request.
+        $attributes = request()->attributes;
+
+        if (! $attributes->has('announcements.has-events')) {
+            $attributes->set('announcements.has-events', static::published()->whereNotNull('event_on')->exists());
+        }
+
+        return $attributes->get('announcements.has-events');
     }
 
     /** How many days one that has just come out is marked as new. */
