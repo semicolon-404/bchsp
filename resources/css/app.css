@@ -3930,9 +3930,9 @@ html.is-mourning {
         top: -16rem;
         z-index: 2;
         width: 1rem;
-        /* Down over the front of the sign's band, to where it turns under the edge (a swing's rope round its seat). */
-        height: calc(16rem + 5.5rem + 3.9rem);
-        border-radius: 0.5rem 0.5rem 0.7rem 0.7rem;
+        /* Down to the sign's top edge, where it is tied on. */
+        height: calc(16rem + 5.5rem + 0.4rem);
+        border-radius: 0.5rem;
         /* The strands: light and dark turns crossing the rope, a shade down one side for its roundness. */
         background:
             linear-gradient(90deg, rgb(255 255 255 / 0.18), transparent 40%, rgb(0 0 0 / 0.28)),
@@ -3945,7 +3945,7 @@ html.is-mourning {
         .sign { transform-origin: 50% -5rem; }
         .sign-rope {
             top: -5rem;
-            height: calc(5rem + 5.5rem + 3.9rem);
+            height: calc(5rem + 5.5rem + 0.4rem);
             mask-image: linear-gradient(to bottom, transparent, #000 3.5rem);
         }
         .sign-knot { top: calc(5rem + 5.5rem - 4.4rem); }
@@ -3980,42 +3980,11 @@ html.is-mourning {
         pointer-events: none;
     }
 
-    /* Where the rope turns under the sign's edge: a shade on the rope's foot, and on the band beside it. */
-    .sign-rope::after {
-        content: '';
-        position: absolute;
-        inset: auto -0.15rem -0.25rem;
-        height: 0.9rem;
-        border-radius: 0 0 0.8rem 0.8rem;
-        background: linear-gradient(180deg, transparent, rgb(40 25 10 / 0.55));
-    }
-
-    /* Tied by hand: the knot a little askew, and the end of the rope hanging from it, frayed. */
+    /* Tied by hand: the knot a little askew. */
     .sign-rope.is-left .sign-knot { transform: rotate(-5deg); }
     .sign-rope.is-right .sign-knot { transform: rotate(4deg); }
 
-    .sign-knot::after {
-        content: '';
-        position: absolute;
-        top: 82%;
-        width: 0.7rem;
-        height: 2.4rem;
-        border-radius: 0.35rem 0.35rem 0.15rem 0.15rem;
-        background:
-            linear-gradient(180deg, transparent 72%, rgb(255 255 255 / 0.25) 72%, transparent 100%),
-            repeating-linear-gradient(90deg, transparent 0 1px, rgb(0 0 0 / 0.12) 1px 2px) bottom / 100% 0.6rem no-repeat,
-            linear-gradient(90deg, rgb(255 255 255 / 0.18), transparent 40%, rgb(0 0 0 / 0.28)),
-            repeating-linear-gradient(-55deg, #d8b37a 0 4px, #b98d52 4px 7px, #8c6634 7px 8px);
-        mask-image: linear-gradient(180deg, #000 78%, rgb(0 0 0 / 0.55) 90%, transparent);
-        box-shadow: 1px 2px 3px rgb(0 0 0 / 0.2);
-        transform-origin: top center;
-    }
 
-    .sign-rope.is-left .sign-knot::after { left: -0.35rem; transform: rotate(16deg); }
-    .sign-rope.is-right .sign-knot::after { right: -0.35rem; transform: rotate(-16deg); }
-
-    /* Room in the band for the ropes on either side. */
-    .sign .board-head { padding-inline: 2.75rem; }
 
     .sign .board-head { border-radius: 20px 20px 0 0; }
     .sign .board-foot { border-radius: 0 0 20px 20px; }
@@ -4315,7 +4284,7 @@ html.is-mourning {
         bottom: -0.15rem;
         left: 0;
         width: 8.5rem;
-        animation: amb-drive 30s linear infinite, amb-bump 30s linear infinite;
+        visibility: hidden;
     }
 
     .ambulance-body { position: relative; display: block; width: 100%; filter: drop-shadow(0 3px 3px rgb(0 0 0 / 0.18)); }
@@ -4355,18 +4324,18 @@ html.is-mourning {
 
     @keyframes amb-drive {
         0% { transform: translateX(-8rem); }
-        66.6% { transform: translateX(calc(100vw + 2rem)); }
+        99.9% { transform: translateX(calc(100vw + 2rem)); }
         100% { transform: translateX(calc(100vw + 2rem)); }
     }
 
     /* Over the beat (the middle of the line) the ambulance rises and dips with it. */
     @keyframes amb-bump {
-        0%, 32.4% { translate: 0 0; rotate: 0deg; }
-        33.4% { translate: 0 -0.7rem; rotate: -5deg; }
-        34.4% { translate: 0 -2.3rem; rotate: -10deg; }
-        35.4% { translate: 0 0.9rem; rotate: 8deg; }
-        36.3% { translate: 0 -0.5rem; rotate: -3deg; }
-        37.2%, 100% { translate: 0 0; rotate: 0deg; }
+        0%, 48.6% { translate: 0 0; rotate: 0deg; }
+        50.1% { translate: 0 -0.7rem; rotate: -5deg; }
+        51.6% { translate: 0 -2.3rem; rotate: -10deg; }
+        53.1% { translate: 0 0.9rem; rotate: 8deg; }
+        54.4% { translate: 0 -0.5rem; rotate: -3deg; }
+        55.8%, 100% { translate: 0 0; rotate: 0deg; }
     }
 
     @keyframes amb-wheel { to { transform: rotate(360deg); } }
@@ -4393,7 +4362,7 @@ html.is-mourning {
         pointer-events: none;
         mix-blend-mode: soft-light;
         --siren: 0.4;
-        animation: siren-show 30s linear infinite;
+        opacity: 0;
     }
 
     :root:not([data-theme='light']) .hero-siren { mix-blend-mode: screen; }
@@ -4410,15 +4379,20 @@ html.is-mourning {
         height: 30rem;
         border-radius: 50%;
         will-change: transform, opacity;
-        animation: siren-follow 30s linear infinite, siren-flash 0.7s steps(1) infinite;
     }
 
     .siren-red { background: radial-gradient(closest-side, rgb(239 68 68 / 0.75), rgb(239 68 68 / 0.25) 60%, transparent); }
-    .siren-blue { background: radial-gradient(closest-side, rgb(59 130 246 / 0.75), rgb(59 130 246 / 0.25) 60%, transparent); animation-delay: 0s, 0.35s !important; }
+    .siren-blue { background: radial-gradient(closest-side, rgb(59 130 246 / 0.75), rgb(59 130 246 / 0.25) 60%, transparent); }
+
+    /* A run: the script adds is-driving to the first screen for thirty seconds, every minute or every few. */
+    .is-driving .ambulance { visibility: visible; animation: amb-drive 30s linear both, amb-bump 30s linear both; }
+    .is-driving .hero-siren { animation: siren-show 30s linear both; }
+    .is-driving .hero-siren > span { animation: siren-follow 30s linear both, siren-flash 0.7s steps(1) infinite; }
+    .is-driving .siren-blue { animation-delay: 0s, 0.35s; }
 
     @keyframes siren-follow {
         0% { transform: translateX(-4rem); }
-        66.6%, 100% { transform: translateX(calc(100vw + 6rem)); }
+        99.9%, 100% { transform: translateX(calc(100vw + 6rem)); }
     }
 
     @keyframes siren-flash {
@@ -4428,8 +4402,8 @@ html.is-mourning {
 
     @keyframes siren-show {
         0% { opacity: 0; }
-        3%, 62% { opacity: var(--siren); }
-        66.6%, 100% { opacity: 0; }
+        4.5%, 93% { opacity: var(--siren); }
+        99.9%, 100% { opacity: 0; }
     }
 
     .home-screen[data-kind='photo'] .hero-siren { display: none; }

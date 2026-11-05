@@ -6,16 +6,15 @@
 export function startSiren() {
     const button = document.querySelector('[data-siren]');
     const van = document.querySelector('.ambulance');
-    if (!button || !van || !(window.AudioContext || window.webkitAudioContext)) {
-        if (button) button.hidden = true;
-        return;
-    }
+    if (!van) return;
+    const sound = Boolean(button && (window.AudioContext || window.webkitAudioContext));
+    if (button && !sound) button.hidden = true;
 
     let audio = null;
     let on = false;
 
     const wail = () => {
-        if (!on) return;
+        if (!on || !sound) return;
         audio ??= new (window.AudioContext || window.webkitAudioContext)();
         const now = audio.currentTime;
         const tone = audio.createOscillator();
@@ -36,25 +35,31 @@ export function startSiren() {
 
     const set = (value) => {
         on = value;
-        button.setAttribute('aria-pressed', String(value));
+        button?.setAttribute('aria-pressed', String(value));
         try { localStorage.setItem('siren', value ? 'on' : 'off'); } catch {}
     };
 
-    button.addEventListener('click', () => {
+    button?.addEventListener('click', () => {
         set(!on);
         wail();
     });
 
-    // As the van drops over the beat: 34.4% into its thirty seconds (resources/css/app.css, amb-bump). One timer a
-    // cycle, set from where the van is now, so it stays in step.
-    const CYCLE = 30000;
-    const DROP = 0.344 * CYCLE;
-    const drive = van.getAnimations().find((a) => a.animationName === 'amb-drive');
-    const next = () => {
-        const at = Number(drive?.currentTime ?? 0) % CYCLE;
-        setTimeout(() => { wail(); next(); }, ((DROP - at + CYCLE) % CYCLE) || CYCLE);
+    // Each run: thirty seconds across, then a rest, every minute or every few (the administrator's choice); the whoop
+    // as the van drops over the beat, halfway across (resources/css/app.css, amb-bump). The van is gone meanwhile.
+    const screen = van.closest('.home-screen');
+    const every = Number(document.querySelector('[data-ambulance-every]')?.dataset.ambulanceEvery || 60) * 1000;
+    const RUN = 30000;
+    const DROP = 0.516 * RUN;
+    const drive = () => {
+        if (document.hidden) return;
+        screen.classList.remove('is-driving');
+        void screen.offsetWidth;
+        screen.classList.add('is-driving');
+        setTimeout(wail, DROP);
+        setTimeout(() => screen.classList.remove('is-driving'), RUN);
     };
-    if (drive) next();
+    setTimeout(drive, 2500);
+    setInterval(drive, Math.max(every, RUN + 5000));
 
     // Remembered, but a browser plays nothing before the visitor has pressed something on the page.
     try {

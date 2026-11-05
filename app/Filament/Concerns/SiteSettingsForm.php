@@ -279,6 +279,12 @@ trait SiteSettingsForm
                             ->default('medium')
                             ->inline()
                             ->columnSpanFull(),
+                        Radio::make(self::field('site.ambulance_every'))
+                            ->label(__('How often it comes by'))
+                            ->options([60 => __('Every minute'), 120 => __('Every 2 minutes'), 300 => __('Every 5 minutes'), 600 => __('Every 10 minutes')])
+                            ->default(60)
+                            ->inline()
+                            ->columnSpanFull(),
                         Toggle::make(self::field('site.hero_welcome'))
                             ->label(__('Begin the home page with the welcome on the site\'s own drawing'))
                             ->helperText(__('The name, the motto, the numbers to call and today\'s clinics, on a drawing in the site\'s colour: no photograph needed. Photographs added below follow it, one after another. Switched off, the home page begins with the first photograph.'))

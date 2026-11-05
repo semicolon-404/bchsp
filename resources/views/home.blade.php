@@ -158,7 +158,7 @@
              again. Drawn here, no picture to fetch; still, parked at the end, for those who ask for less motion. --}}
         {{-- The ambulance on the pulse, as the administrator set it (Site settings > The hospital). --}}
         @if (SiteSettings::ambulance() !== 'off')
-            <x-site.ambulance :light="SiteSettings::ambulance()" />
+            <x-site.ambulance :light="SiteSettings::ambulance()" :every="SiteSettings::ambulanceEvery()" />
         @endif
     </section>
 

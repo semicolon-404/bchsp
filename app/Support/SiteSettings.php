@@ -57,7 +57,7 @@ class SiteSettings
         // "site.hero_image" is kept as the first of them, for what wants one picture of the hospital.
         'site.name_en', 'site.logo', 'site.show_logo', 'site.hero_image', 'site.hero_slides', 'site.hero_welcome',
         // The ambulance along the foot of the first screen: off, or how bright its lights are.
-        'site.ambulance',
+        'site.ambulance', 'site.ambulance_every',
         // What the home page says under the name, and of the hospital itself: plain text, one item to a line.
         'site.motto', 'identity.vision', 'identity.mission', 'identity.values',
         // Who runs the hospital and since when (App\Support\Organisation): the director, as one of the register
@@ -135,6 +135,14 @@ class SiteSettings
         $value = self::get('site.ambulance', 'medium');
 
         return in_array($value, ['off', 'low', 'medium', 'bright', 'very'], true) ? $value : 'medium';
+    }
+
+    /** Every how many seconds the ambulance comes by: 60 (as it starts), 120, 300 or 600. */
+    public static function ambulanceEvery(): int
+    {
+        $value = (int) self::get('site.ambulance_every', 60);
+
+        return in_array($value, [60, 120, 300, 600], true) ? $value : 60;
     }
 
     public static function get(string $key, mixed $default = null): mixed

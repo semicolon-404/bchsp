@@ -1,14 +1,15 @@
 {{--
     An ambulance driving slowly along the pulse at the foot of the home page's first screen, over its beat, its lights
-    going and thrown over the screen; every half minute it comes by again. How bright the lights are is the
-    administrator's choice (Site settings > The hospital): low, medium, bright or very bright.
+    going and thrown over the screen. It takes thirty seconds to cross, and comes by again every minute, or every few
+    (resources/js/siren.js starts each run); how often, and how bright the lights are, are the administrator's choice
+    (Site settings > The hospital).
 
     <x-site.ambulance light="medium" />
 --}}
-@props(['light' => 'medium'])
+@props(['light' => 'medium', 'every' => 60])
 
 {{-- The lights' red and blue thrown over the whole first screen, the sign too, strongest where the van is. --}}
-<div class="hero-siren is-{{ $light }}" aria-hidden="true"><span class="siren-red"></span><span class="siren-blue"></span></div>
+<div class="hero-siren is-{{ $light }}" data-ambulance-every="{{ $every }}" aria-hidden="true"><span class="siren-red"></span><span class="siren-blue"></span></div>
 <div class="ambulance-road" aria-hidden="true">
     <div class="ambulance">
         <span class="ambulance-beam"></span>
