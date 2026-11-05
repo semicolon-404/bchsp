@@ -1,6 +1,5 @@
 import './bootstrap';
 import { startFilter } from './filter';
-import { startFold } from './fold';
 import { startHero } from './hero';
 import { startLightbox } from './lightbox';
 import { startMenu } from './menu';
@@ -25,7 +24,6 @@ startSpot();
 startShare();
 startMotion();
 startFilter();
-startFold();
 startTop();
 startLightbox();
 startHero();
