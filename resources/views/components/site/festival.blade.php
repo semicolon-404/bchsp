@@ -1,7 +1,7 @@
 {{--
     The festival on today (App\Models\Festival), along the foot of the home page's first screen in place of the
     pulse. Loy Krathong: a river, the krathongs drifting on it, each with its wish on a press. The other days: a few
-    things falling or rising in the day's colours (App\Models\Festival::LOOKS); a day of remembrance, a black ribbon.
+    things falling or rising in the day's colours (App\Models\Festival::LOOKS).
     Everything moves by transform and opacity alone (no blur, no repainting), and is still for those who ask for less.
 
     <x-site.festival :festival="$festival" />
@@ -36,9 +36,6 @@
                 </li>
             @endforeach
         </ul>
-    @elseif ($festival->look()[0] === 'none')
-        {{-- A day of remembrance: nothing moves; a black ribbon in the corner. --}}
-        <span class="festival-ribbon" aria-hidden="true"></span>
     @else
         @php([$look, $colours] = $festival->look())
         <ul class="festival-fall is-{{ $look }}" aria-hidden="true">

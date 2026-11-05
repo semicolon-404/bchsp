@@ -4610,9 +4610,7 @@ html.is-mourning {
     /* Each look, in the day's colour (--c). */
     .festival-fall.is-snow > li { border-radius: 999px; background: radial-gradient(circle, var(--c), rgb(219 234 254 / 0.5)); box-shadow: 0 0 6px rgb(255 255 255 / 0.8); }
     .festival-fall.is-drop > li { border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%; background: linear-gradient(180deg, var(--c), rgb(14 165 233 / 0.8)); }
-    .festival-fall.is-petal > li { border-radius: 0 70% 0 70%; background: var(--c); opacity: 0.9; box-shadow: inset -2px -2px 0 rgb(0 0 0 / 0.08); }
     .festival-fall.is-coin > li { border-radius: 999px; background: radial-gradient(circle at 35% 35%, #fff7, transparent 40%), var(--c); box-shadow: inset 0 0 0 2px rgb(0 0 0 / 0.12); }
-    .festival-fall.is-confetti > li { width: calc(var(--size) * 0.5); border-radius: 2px; background: var(--c); box-shadow: 0 0 0 1px rgb(0 0 0 / 0.06); }
 
     .festival-fall.is-heart > li,
     .festival-fall.is-balloon > li { top: auto; bottom: -3rem; animation-name: rise; }
@@ -4650,15 +4648,6 @@ html.is-mourning {
         animation-name: burst;
     }
 
-    /* A day of remembrance: a black ribbon, still. */
-    .festival-ribbon {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 5rem;
-        height: 5rem;
-        background: linear-gradient(135deg, #111827 0 28%, transparent 28%);
-    }
 
     @keyframes rise {
         0% { transform: translate(0, 0) scale(0.8); opacity: 0; }

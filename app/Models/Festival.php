@@ -7,10 +7,9 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
- * A festival or day of note the home page dresses up for, between two days (Festivals in the panel): Loy Krathong's
- * river with the krathongs, and for the rest a few things falling or rising in the day's colours: petals for the
- * royal and Buddhist days, balloons for Children's Day, red and gold for Chinese New Year, snow, hearts, bursts of
- * light. A day of mourning moves nothing. Outside its days nothing of it is loaded.
+ * A festival the home page dresses up for, between two days (Festivals in the panel): Loy Krathong's river with the
+ * krathongs, and for the rest a few things falling or rising in its colours: balloons for Children's Day, red and
+ * gold for Chinese New Year, snow, hearts, drops, bursts of light. Outside its days nothing of it is loaded.
  */
 class Festival extends Model
 {
@@ -20,21 +19,8 @@ class Festival extends Model
         'children' => 'Children\'s Day',
         'chinese' => 'Chinese New Year',
         'valentine' => 'Valentine\'s Day',
-        'makha' => 'Makha Bucha',
-        'chakri' => 'Chakri Day',
         'songkran' => 'Songkran',
-        'visakha' => 'Visakha Bucha',
-        'queen' => 'The Queen\'s birthday',
-        'asalha' => 'Asalha Bucha and Buddhist Lent',
-        'king' => 'The King\'s birthday',
-        'mother' => 'Mother\'s Day',
-        'mourning' => 'A day of remembrance',
-        'nurses' => 'National Nurses\' Day',
-        'chulalongkorn' => 'Chulalongkorn Day',
-        'endlent' => 'End of Buddhist Lent',
         'loykrathong' => 'Loy Krathong',
-        'father' => 'Father\'s Day',
-        'constitution' => 'Constitution Day',
         'christmas' => 'Christmas',
     ];
 
@@ -49,21 +35,8 @@ class Festival extends Model
         'children' => ['balloon', ['#f43f5e', '#f59e0b', '#22c55e', '#3b82f6', '#a855f7']],
         'chinese' => ['coin', ['#dc2626', '#facc15']],
         'valentine' => ['heart', ['#f43f5e', '#fb7185']],
-        'makha' => ['petal', ['#fde68a', '#fffbeb']],
-        'chakri' => ['petal', ['#facc15', '#fde68a']],
         'songkran' => ['drop', ['#38bdf8', '#7dd3fc']],
-        'visakha' => ['petal', ['#fde68a', '#fffbeb']],
-        'queen' => ['petal', ['#a855f7', '#d8b4fe']],
-        'asalha' => ['petal', ['#fbbf24', '#fef3c7']],
-        'king' => ['petal', ['#facc15', '#fde047']],
-        'mother' => ['petal', ['#3b82f6', '#bfdbfe']],
-        'mourning' => ['none', []],
-        'nurses' => ['heart', ['#ffffff', '#fbcfe8']],
-        'chulalongkorn' => ['petal', ['#f472b6', '#fbcfe8']],
-        'endlent' => ['petal', ['#fbbf24', '#fde68a']],
         'loykrathong' => ['river', []],
-        'father' => ['petal', ['#facc15', '#fde047']],
-        'constitution' => ['confetti', ['#dc2626', '#ffffff', '#1d4ed8']],
         'christmas' => ['snow', ['#ffffff', '#dbeafe']],
     ];
 
