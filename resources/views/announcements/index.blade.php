@@ -23,21 +23,54 @@
             <p class="mt-3 max-w-2xl text-lg text-muted">{{ __('News, notices, health knowledge and what the hospital has been doing: the newest first, and everything before it kept.') }}</p>
 
             {{-- Sent with GET: the address of what was found can be shared, and nothing typed here is kept by the site. --}}
-            <form action="{{ route('announcements.index') }}" method="get" role="search" class="mt-6 flex max-w-2xl gap-2">
+            <form action="{{ route('announcements.index') }}" method="get" role="search" class="mt-6 max-w-2xl">
                 @foreach (array_filter(['type' => $type?->slug, 'department' => $department?->slug, 'year' => $year ?? $period, 'from' => $from, 'to' => $to, 'view' => $look === 'cards' ? 'cards' : null]) as $kept => $value)
                     <input type="hidden" name="{{ $kept }}" value="{{ $value }}">
                 @endforeach
-                <label class="relative block min-w-0 flex-1">
+                <label class="news-search relative block min-w-0 flex-1">
                     <span class="sr-only">{{ __('Word in the title') }}</span>
-                    <x-heroicon-m-magnifying-glass class="pointer-events-none absolute left-3 top-1/2 size-5 -translate-y-1/2 text-muted" aria-hidden="true" />
+                    <x-heroicon-m-magnifying-glass class="pointer-events-none absolute left-4 top-1/2 size-6 -translate-y-1/2 text-muted" aria-hidden="true" />
                     <input type="search" name="q" value="{{ $term }}" maxlength="80" placeholder="{{ __('e.g. medicine, dental, interview') }}"
-                           class="min-h-12 w-full rounded-lg border border-line bg-surface pl-10 pr-3 text-ink placeholder:text-muted">
+                           class="min-h-14 w-full rounded-2xl border border-line bg-surface pl-13 pr-28 text-lg text-ink shadow-sm placeholder:text-muted">
+                    <button class="btn btn-brand absolute right-1.5 top-1/2 min-h-11 -translate-y-1/2 rounded-xl px-5">{{ __('Search') }}</button>
                 </label>
-                <button class="btn btn-brand">{{ __('Search') }}</button>
             </form>
 
+            {{-- The fiscal years, newest first, one press each: what an office looks for most after the kind. The rest are under Period below. --}}
+            @if (count($years) > 0)
+                <nav class="mt-5 flex flex-wrap items-center gap-2" aria-label="{{ __('Fiscal year') }}">
+                    <span class="mr-1 inline-flex items-center gap-1.5 text-sm font-semibold text-ink"><x-heroicon-o-calendar class="size-5 text-brand" aria-hidden="true" />{{ __('Fiscal year') }}</span>
+                    <a href="{{ $with(['year' => null, 'from' => null, 'to' => null]) }}" @class(['chip', 'is-on' => ! $year]) aria-current="{{ $year ? 'false' : 'true' }}">{{ __('All') }}</a>
+                    @foreach (array_slice($years, 0, 5, true) as $one => $count)
+                        <a href="{{ $with(['year' => $one, 'from' => null, 'to' => null]) }}" @class(['chip gap-1.5', 'is-on' => $one === $year]) aria-current="{{ $one === $year ? 'true' : 'false' }}">{{ $one }}<span class="font-mono text-xs opacity-60">{{ number_format($count) }}</span></a>
+                    @endforeach
+                </nav>
+            @endif
+
+            {{-- What the list is narrowed by, each with its own way off. --}}
+            @if ($narrowed)
+                <div class="mt-4 flex flex-wrap items-center gap-2 text-sm">
+                    <span class="text-muted">{{ __('Showing') }}</span>
+                    @if ($type)
+                        <a href="{{ $with(['type' => null]) }}" class="news-pill">{{ $type->localName() }}<x-heroicon-m-x-mark class="size-4" aria-hidden="true" /><span class="sr-only">{{ __('Remove') }}</span></a>
+                    @endif
+                    @if ($department)
+                        <a href="{{ $with(['department' => null]) }}" class="news-pill">{{ $department->localName() }}<x-heroicon-m-x-mark class="size-4" aria-hidden="true" /><span class="sr-only">{{ __('Remove') }}</span></a>
+                    @endif
+                    @if ($year)
+                        <a href="{{ $with(['year' => null]) }}" class="news-pill">{{ __('Fiscal year :year', ['year' => $year]) }}<x-heroicon-m-x-mark class="size-4" aria-hidden="true" /><span class="sr-only">{{ __('Remove') }}</span></a>
+                    @elseif ($period)
+                        <a href="{{ $with(['year' => null, 'from' => null, 'to' => null]) }}" class="news-pill">{{ __(App\Http\Controllers\AnnouncementController::PERIODS[$period]) }}<x-heroicon-m-x-mark class="size-4" aria-hidden="true" /><span class="sr-only">{{ __('Remove') }}</span></a>
+                    @endif
+                    @if ($term !== '')
+                        <a href="{{ $with(['q' => null]) }}" class="news-pill">&ldquo;{{ $term }}&rdquo;<x-heroicon-m-x-mark class="size-4" aria-hidden="true" /><span class="sr-only">{{ __('Remove') }}</span></a>
+                    @endif
+                    <a href="{{ $with(['type' => null, 'department' => null, 'year' => null, 'from' => null, 'to' => null, 'q' => null]) }}" class="ml-1 font-semibold text-brand underline">{{ __('Clear') }}</a>
+                </div>
+            @endif
+
             <dl class="mt-8 flex flex-wrap gap-x-10 gap-y-4">
-                @foreach ([['In all', $stats['all']], ['This week', $stats['week']], ['This month', $stats['month']]] as [$label, $figure])
+                @foreach ([['In all', $figures['all']], ['This week', $figures['week']], ['This month', $figures['month']]] as [$label, $figure])
                     <div>
                         <dd class="font-mono text-3xl font-semibold text-ink" data-count>{{ number_format($figure) }}</dd>
                         <dt class="text-sm text-muted">{{ __($label) }}</dt>
@@ -95,13 +128,15 @@
         @if ($types->isNotEmpty())
             {{-- On a phone they are a row that slides sideways: six tiles stacked would push the list a screen further down. --}}
             <nav @class(['-mx-4 flex gap-3 overflow-x-auto px-4 [scrollbar-width:none] sm:mx-0 sm:grid sm:grid-cols-3 sm:overflow-visible sm:px-0 lg:grid-cols-6', 'mt-10' => $featured->isNotEmpty()]) aria-label="{{ __('Types') }}">
-                <a href="{{ $with(['type' => null]) }}" @class(['card flex w-36 shrink-0 flex-col gap-2 px-4 py-4 text-ink no-underline sm:w-auto', 'border-brand bg-raised' => ! $type]) aria-current="{{ $type ? 'false' : 'page' }}">
+                <a href="{{ $with(['type' => null]) }}" @class(['kind-pick card flex w-36 shrink-0 flex-col gap-2 px-4 py-4 text-ink no-underline sm:w-auto', 'is-on' => ! $type]) aria-current="{{ $type ? 'false' : 'page' }}">
+                    @unless ($type)<span class="kind-tick" aria-hidden="true"><x-heroicon-m-check class="size-4" /></span>@endunless
                     <span class="flex size-9 items-center justify-center rounded-lg bg-raised text-brand" aria-hidden="true"><x-heroicon-o-squares-2x2 class="size-5" /></span>
                     <span class="font-medium leading-tight">{{ __('All') }}</span>
                     <span class="font-mono text-sm text-muted">{{ number_format($stats['all']) }}</span>
                 </a>
                 @foreach ($types as $one)
-                    <a href="{{ $with(['type' => $one->slug, 'year' => $period]) }}" @class(['card flex w-36 shrink-0 flex-col gap-2 px-4 py-4 text-ink no-underline sm:w-auto', 'border-brand bg-raised' => $type?->is($one)]) aria-current="{{ $type?->is($one) ? 'page' : 'false' }}">
+                    <a href="{{ $with(['type' => $one->slug]) }}" @class(['kind-pick card flex w-36 shrink-0 flex-col gap-2 px-4 py-4 text-ink no-underline sm:w-auto', 'is-on' => $type?->is($one)]) style="--kind: {{ $one->colour() }}" aria-current="{{ $type?->is($one) ? 'page' : 'false' }}">
+                        @if ($type?->is($one))<span class="kind-tick" aria-hidden="true"><x-heroicon-m-check class="size-4" /></span>@endif
                         <x-site.type-mark :type="$one" />
                         <span class="font-medium leading-tight">{{ $one->localName() }}</span>
                         <span class="font-mono text-sm text-muted">{{ number_format($counts[$one->id] ?? 0) }}</span>

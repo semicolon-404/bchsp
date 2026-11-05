@@ -71,6 +71,12 @@ class AnnouncementController extends Controller
                 ? Department::shown()->whereKey($lately = Announcement::current()->whereNotNull('department_id')->latest('starts_at')->limit(60)->pluck('department_id')->unique()->take(6)->values())->get()->sortBy(fn (Department $one) => $lately->search($one->id))->values()
                 : collect(),
             'stats' => $stats,
+            // The same three for the band at the top, of the kind being looked at when there is one.
+            'figures' => $type ? [
+                'all' => Announcement::published()->where('announcement_type_id', $type->id)->count(),
+                'week' => Announcement::published()->where('announcement_type_id', $type->id)->where('starts_at', '>=', now()->startOfWeek())->count(),
+                'month' => Announcement::published()->where('announcement_type_id', $type->id)->where('starts_at', '>=', now()->startOfMonth())->count(),
+            ] : $stats,
             // How many each kind holds, for its tile.
             'counts' => Announcement::published()->selectRaw('announcement_type_id, count(*) as held')->groupBy('announcement_type_id')->pluck('held', 'announcement_type_id'),
             'types' => AnnouncementType::orderBy('sort_order')->orderBy('name')->get(),
