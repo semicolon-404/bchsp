@@ -24,9 +24,13 @@
             <p class="eyebrow mt-6"><a href="{{ route('announcements.index', ['type' => $announcement->type->slug]) }}" class="inline-flex items-center gap-2 no-underline" style="color: {{ $announcement->type->colour() }}"><x-site.type-mark :type="$announcement->type" bare />{{ $announcement->type->localName() }}</a></p>
         @endif
         <h1 class="mt-2 text-ink text-3xl leading-tight sm:text-4xl">{{ $announcement->localTitle() }}</h1>
-        <p class="mt-3 font-mono text-sm text-muted">
-            <time datetime="{{ ($announcement->starts_at ?? $announcement->created_at)->toDateString() }}">{{ $announcement->shownOn() }}</time>
-            · <a href="{{ route('announcements.index', array_filter(['type' => $announcement->type?->slug, 'year' => App\Models\Announcement::fiscalYearOf($announcement->starts_at ?? $announcement->created_at)])) }}" class="underline">{{ __('Fiscal year :year', ['year' => App\Models\Announcement::fiscalYearOf($announcement->starts_at ?? $announcement->created_at)]) }}</a>
+        @php($postedAt = $announcement->starts_at ?? $announcement->created_at)
+        <p class="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 font-mono text-sm text-muted">
+            <time datetime="{{ $postedAt->toIso8601String() }}" class="inline-flex items-center gap-x-4">
+                <span class="inline-flex items-center gap-1.5"><x-heroicon-o-calendar class="size-4" aria-hidden="true" />{{ $announcement->shownOn() }}</span>
+                <span class="inline-flex items-center gap-1.5"><x-heroicon-o-clock class="size-4" aria-hidden="true" />{{ $postedAt->format('H:i') }}{{ app()->getLocale() === 'th' ? ' น.' : '' }}</span>
+            </time>
+            <a href="{{ route('announcements.index', array_filter(['type' => $announcement->type?->slug, 'year' => App\Models\Announcement::fiscalYearOf($announcement->starts_at ?? $announcement->created_at)])) }}" class="underline">{{ __('Fiscal year :year', ['year' => App\Models\Announcement::fiscalYearOf($announcement->starts_at ?? $announcement->created_at)]) }}</a>
         </p>
 
         @if ($announcement->event_on)
