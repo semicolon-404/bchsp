@@ -22,7 +22,7 @@ class NewsroomTest extends TestCase
         Announcement::factory()->create(['starts_at' => '2026-09-01 09:00']);
         Announcement::factory()->create(['status' => Announcement::STATUS_DRAFT]);
 
-        $this->get('/announcements')->assertOk()->assertSeeInOrder(['data-count>3</dd>', 'In all', 'data-count>1</dd>', 'This week', 'data-count>2</dd>', 'This month'], false);
+        $this->get('/announcements')->assertOk()->assertSee('3 announcements · <span class="text-brand">1 new this week</span>', false);
     }
 
     public function test_each_kind_has_a_tile_that_says_how_many_it_holds(): void
@@ -46,23 +46,25 @@ class NewsroomTest extends TestCase
         $this->get('/announcements?type=jobs')->assertSee('aria-current="page"', false)->assertSee('1 announcement');
     }
 
-    public function test_the_newest_are_set_large_only_as_the_whole_list_opens_and_only_when_there_are_enough(): void
+    public function test_the_newest_are_set_large_above_the_list_and_left_out_of_it(): void
     {
-        Announcement::factory()->create(['title' => 'First of three']);
-        Announcement::factory()->count(2)->create();
+        Announcement::factory()->count(5)->create(['starts_at' => now()->subDay()]);
 
-        // With three, the list itself says them all: nothing is set large above it.
+        // With five, the list itself says them all: nothing is set large above it.
         $this->get('/announcements')->assertDontSee('id="latest-heading"', false);
 
         Announcement::factory()->create(['title' => 'The newest, with a picture', 'starts_at' => now()->subMinute(), 'image_path' => 'announcements/pictures/big.webp']);
 
-        $page = $this->get('/announcements')->assertSee('id="latest-heading"', false)->assertSeeInOrder(['Latest', 'The newest, with a picture', 'Types'], false)->getContent();
+        // Set large it leads, and the list below does not say it again.
+        $page = $this->get('/announcements')->assertSee('id="latest-heading"', false)->assertSee('Earlier')->getContent();
+        $this->assertSame(1, substr_count($page, 'The newest, with a picture'));
 
-        // Set large it carries no marks: "New" is said once, in the list.
-        $this->assertSame(4, substr_count($page, '>New</span>'));
-        $this->assertSame(2, substr_count($page, 'The newest, with a picture'));
+        // One kind at a time is set large too, with what that kind holds.
+        $news = AnnouncementType::where('slug', 'news')->firstOrFail();
+        Announcement::query()->update(['announcement_type_id' => $news->id]);
+        $this->get('/announcements?type=news')->assertSee('id="latest-heading"', false);
 
-        // Narrowed, or on a later page, there is the list alone.
+        // Searched, or on a later page, there is the list alone.
         $this->get('/announcements?q=newest')->assertDontSee('id="latest-heading"', false);
         $this->get('/announcements?page=2')->assertDontSee('id="latest-heading"', false);
     }
@@ -95,6 +97,6 @@ class NewsroomTest extends TestCase
         $this->get('/announcements?q=zzzz')->assertSee('No announcements match.')->assertSee('Nothing matches. Try another word, or clear the filters.');
 
         app()->setLocale('th');
-        $this->get('/announcements')->assertSee('ล่าสุด', false)->assertSee('รวมทั้งหมด');
+        $this->get('/announcements')->assertSee('ตัวกรอง')->assertSee('1 ประกาศ');
     }
 }

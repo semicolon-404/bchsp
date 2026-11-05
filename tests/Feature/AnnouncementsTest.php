@@ -246,7 +246,8 @@ class AnnouncementsTest extends TestCase
 
     public function test_the_list_is_in_pages_of_fifteen(): void
     {
-        Announcement::factory()->count(16)->create();
+        // Twenty: four set large at the top, sixteen in the list, fifteen to a page.
+        Announcement::factory()->count(20)->create();
 
         $this->get('/announcements')->assertSee('1 / 2');
         $this->get('/announcements?page=2')->assertOk()->assertSee('rel="prev"', false);
@@ -345,8 +346,10 @@ class AnnouncementsTest extends TestCase
 
     public function test_the_list_can_be_looked_at_as_cards_with_covers_and_the_choice_is_kept(): void
     {
-        Announcement::factory()->create(['title' => 'With a cover', 'image_path' => 'announcements/pictures/cover.webp', 'starts_at' => now()]);
-        Announcement::factory()->count(16)->create(['starts_at' => now()->subDay()]);
+        // The four newest are set large above the list; the one with a cover comes after them, so first in the list itself.
+        Announcement::factory()->count(4)->create(['starts_at' => now()]);
+        Announcement::factory()->create(['title' => 'With a cover', 'image_path' => 'announcements/pictures/cover.webp', 'starts_at' => now()->subDay()]);
+        Announcement::factory()->count(16)->create(['starts_at' => now()->subDays(2)]);
 
         // Rows unless asked; anything else in the address is rows too.
         $this->get('/announcements')->assertOk()->assertDontSee('object-cover object-top', false)

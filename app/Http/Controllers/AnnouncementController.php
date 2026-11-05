@@ -56,14 +56,25 @@ class AnnouncementController extends Controller
             'month' => Announcement::published()->where('starts_at', '>=', now()->startOfMonth())->count(),
         ];
 
+        $counts = Announcement::published()->selectRaw('announcement_type_id, count(*) as held')->groupBy('announcement_type_id')->pluck('held', 'announcement_type_id');
+        // The newest of what is being looked at (all, or one kind) set large at the top, one with a picture leading; not
+        // while searching or narrowed further, and not while there are so few that the list would be left near empty.
+        // The list leaves them out on every page, so nothing is said twice and nothing is skipped between pages.
+        $browsing = ! $department && ! $year && ! $period && $term === '';
+        $featured = $browsing && ($type ? (int) ($counts[$type->id] ?? 0) : $stats['all']) >= 6
+            ? Announcement::current()->with('type', 'department')
+                ->when($type, fn ($query) => $query->where('announcement_type_id', $type->id))
+                ->inListOrder()->limit(4)->get()
+                ->sortByDesc(fn (Announcement $one) => $one->imageUrl() !== null)->values()
+            : collect();
+
         return view('announcements.index', [
             'type' => $type,
             'department' => $department,
             'departments' => $departments,
             // What is shown only on the whole list as it opens: narrowed, or further on, the reader is after something already.
             'mostRead' => $opening ? Announcement::mostRead() : collect(),
-            // The three newest, set large; not while there are so few that the list below would only say them again.
-            'featured' => $opening && $stats['all'] >= 4 ? Announcement::current()->with('type', 'department')->inListOrder()->limit(3)->get() : collect(),
+            'featured' => (int) $request->query('page', 1) <= 1 ? $featured : collect(),
             // What has been given a day that is still to come (the calendar has the rest).
             'coming' => $opening ? Announcement::published()->whereDate('event_on', '>=', now()->toDateString())->orderBy('event_on')->orderBy('id')->limit(4)->get() : collect(),
             // The departments that posted most lately, newest first.
@@ -71,8 +82,12 @@ class AnnouncementController extends Controller
                 ? Department::shown()->whereKey($lately = Announcement::current()->whereNotNull('department_id')->latest('starts_at')->limit(60)->pluck('department_id')->unique()->take(6)->values())->get()->sortBy(fn (Department $one) => $lately->search($one->id))->values()
                 : collect(),
             'stats' => $stats,
+            // How many of what is being looked at came out this week, for the line under the title.
+            'fresh' => $type
+                ? Announcement::published()->where('announcement_type_id', $type->id)->where('starts_at', '>=', now()->startOfWeek())->count()
+                : $stats['week'],
             // How many each kind holds, for its tile.
-            'counts' => Announcement::published()->selectRaw('announcement_type_id, count(*) as held')->groupBy('announcement_type_id')->pluck('held', 'announcement_type_id'),
+            'counts' => $counts,
             'types' => AnnouncementType::orderBy('sort_order')->orderBy('name')->get(),
             'year' => $year,
             'years' => $years,
@@ -85,6 +100,7 @@ class AnnouncementController extends Controller
                 ->with('type', 'department')
                 ->when($type, fn ($query) => $query->where('announcement_type_id', $type->id))
                 ->when($department, fn ($query) => $query->where('department_id', $department->id))
+                ->when($featured->isNotEmpty(), fn ($query) => $query->whereKeyNot($featured->modelKeys()))
                 ->when($year, fn ($query) => $query->ofFiscalYear($year))
                 ->when($from, fn ($query) => $query->where('starts_at', '>=', $from))
                 ->when($until, fn ($query) => $query->where('starts_at', '<=', $until))
