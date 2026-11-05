@@ -3291,3 +3291,47 @@ html.is-mourning {
         .kind-pick, .kind-pick:hover { transition: none; transform: none; }
     }
 }
+
+@layer components {
+    /* The band at the top of the news list: the width of the page, tinted by the kind being looked at. */
+    .news-band {
+        position: relative;
+        overflow: hidden;
+    }
+
+    .news-band::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background:
+            radial-gradient(60rem 30rem at 100% 0%, color-mix(in srgb, var(--kind, var(--color-brand)) 16%, transparent), transparent 70%),
+            radial-gradient(40rem 24rem at 0% 100%, color-mix(in srgb, var(--kind, var(--color-brand)) 8%, transparent), transparent 70%);
+        pointer-events: none;
+    }
+
+    .news-band-mark {
+        position: absolute;
+        right: -3rem;
+        top: 50%;
+        width: 26rem;
+        height: 26rem;
+        color: var(--kind, var(--color-brand));
+        opacity: 0.07;
+        transform: translateY(-50%) rotate(-12deg);
+        pointer-events: none;
+    }
+
+    .news-band-pane {
+        position: relative;
+        padding: 1.25rem;
+        border: 1px solid color-mix(in srgb, var(--color-line) 70%, transparent);
+        border-radius: 22px;
+        background: color-mix(in srgb, var(--color-surface) 72%, transparent);
+        backdrop-filter: blur(18px) saturate(1.4);
+        box-shadow: 0 24px 60px -32px color-mix(in srgb, var(--kind, var(--color-brand)) 60%, transparent);
+    }
+
+    @media (max-width: 63.99rem) {
+        .news-band-mark { width: 16rem; height: 16rem; right: -4rem; top: 2rem; transform: rotate(-12deg); }
+    }
+}

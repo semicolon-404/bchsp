@@ -71,6 +71,9 @@ class AnnouncementController extends Controller
                 ? Department::shown()->whereKey($lately = Announcement::current()->whereNotNull('department_id')->latest('starts_at')->limit(60)->pluck('department_id')->unique()->take(6)->values())->get()->sortBy(fn (Department $one) => $lately->search($one->id))->values()
                 : collect(),
             'stats' => $stats,
+            // The newest out of the kind being looked at, or of all: "last updated" in the band. Not while narrowed further,
+            // where it could name what the list leaves out.
+            'newest' => $department || $year || $period || $term !== '' ? null : Announcement::published()->when($type, fn ($query) => $query->where('announcement_type_id', $type->id))->latest('starts_at')->first(),
             // The same three for the band at the top, of the kind being looked at when there is one.
             'figures' => $type ? [
                 'all' => Announcement::published()->where('announcement_type_id', $type->id)->count(),

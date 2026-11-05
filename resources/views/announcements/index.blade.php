@@ -17,13 +17,23 @@
 @endphp
 <x-layouts.site :title="($type ? $type->localName() : __('Announcements')).($year ? ' '.$year : '')" :description="__('Announcements, procurement notices and job openings from :name.', ['name' => App\Support\SiteSettings::name()])">
     {{-- The band at the top: what this is, the search, and how much there is. --}}
-    <section class="home-screen !min-h-0 border-b border-line">
-        <div class="wrap py-10 sm:py-14">
-            <h1 class="hero-name mt-2 text-3xl sm:text-5xl">{{ $type ? $type->localName() : __('Announcements from the hospital') }}</h1>
-            <p class="mt-3 max-w-2xl text-lg text-muted">{{ __('News, notices, health knowledge and what the hospital has been doing: the newest first, and everything before it kept.') }}</p>
+    <section class="news-band home-screen !min-h-0 border-b border-line" @if ($type) style="--kind: {{ $type->colour() }}" @endif>
+        {{-- The kind's own symbol, large and faint, at the far side: the page changes with what is chosen. --}}
+        <x-dynamic-component :component="'heroicon-o-'.($type ? $type->icon() : 'megaphone')" class="news-band-mark" aria-hidden="true" />
+        <div class="wrap relative grid grid-cols-[minmax(0,1fr)] items-center gap-8 py-10 sm:py-14 lg:grid-cols-[minmax(0,1fr)_21rem] lg:gap-14">
+            <div class="min-w-0">
+            <h1 class="hero-name mt-2 text-3xl [overflow-wrap:anywhere] sm:text-5xl">{{ $type ? $type->localName() : __('Announcements from the hospital') }}</h1>
+            <p class="mt-3 max-w-2xl text-lg text-muted">{{ __(match ($type?->slug) {
+                'news' => 'News and notices from the hospital, the newest first.',
+                'procurement' => 'Procurement, invitations to bid and their results, by fiscal year.',
+                'jobs' => 'Job openings at the hospital and the results of each selection.',
+                'knowledge' => "Health knowledge from the hospital's staff, to read and to share.",
+                'activities' => 'What the hospital has been doing, in pictures.',
+                default => 'News, notices, health knowledge and what the hospital has been doing: the newest first, and everything before it kept.',
+            }) }}</p>
 
             {{-- Sent with GET: the address of what was found can be shared, and nothing typed here is kept by the site. --}}
-            <form action="{{ route('announcements.index') }}" method="get" role="search" class="mt-6 max-w-2xl">
+            <form action="{{ route('announcements.index') }}" method="get" role="search" class="mt-6 max-w-3xl">
                 @foreach (array_filter(['type' => $type?->slug, 'department' => $department?->slug, 'year' => $year ?? $period, 'from' => $from, 'to' => $to, 'view' => $look === 'cards' ? 'cards' : null]) as $kept => $value)
                     <input type="hidden" name="{{ $kept }}" value="{{ $value }}">
                 @endforeach
@@ -69,14 +79,29 @@
                 </div>
             @endif
 
-            <dl class="mt-8 flex flex-wrap gap-x-10 gap-y-4">
-                @foreach ([['In all', $figures['all']], ['This week', $figures['week']], ['This month', $figures['month']]] as [$label, $figure])
-                    <div>
-                        <dd class="font-mono text-3xl font-semibold text-ink" data-count>{{ number_format($figure) }}</dd>
-                        <dt class="text-sm text-muted">{{ __($label) }}</dt>
-                    </div>
-                @endforeach
-            </dl>
+            </div>
+
+            {{-- How much there is and how fresh: a pane of its own beside the search, for the eye that wants the size of things. --}}
+            <aside class="news-band-pane" aria-label="{{ __('In figures') }}">
+                <dl class="grid grid-cols-3 gap-3 lg:grid-cols-1 lg:gap-0 lg:divide-y lg:divide-line">
+                    @foreach ([['In all', $figures['all'], 'rectangle-stack'], ['This week', $figures['week'], 'sparkles'], ['This month', $figures['month'], 'calendar-days']] as [$label, $figure, $icon])
+                        <div class="flex flex-col items-start gap-1 lg:flex-row-reverse lg:items-center lg:gap-4 lg:py-3.5">
+                            <dd class="font-mono text-3xl font-semibold text-ink lg:text-2xl" data-count>{{ number_format($figure) }}</dd>
+                            <dt class="flex items-center gap-2 text-sm text-muted lg:flex-1"><x-dynamic-component :component="'heroicon-o-'.$icon" class="hidden size-5 text-brand lg:block" aria-hidden="true" />{{ __($label) }}</dt>
+                        </div>
+                    @endforeach
+                </dl>
+                @if ($newest)
+                    <a href="{{ route('announcements.show', $newest) }}" class="group mt-4 flex items-center gap-3 rounded-xl border border-line bg-page px-3 py-2.5 text-ink no-underline">
+                        <span class="relative flex size-2.5 shrink-0" aria-hidden="true"><span class="absolute inline-flex size-full animate-ping rounded-full bg-brand opacity-60 motion-reduce:hidden"></span><span class="relative inline-flex size-2.5 rounded-full bg-brand"></span></span>
+                        <span class="min-w-0 flex-1">
+                            <span class="block text-xs text-muted">{{ __('Last updated') }} · {{ $newest->shownAt() }}</span>
+                            <span class="block truncate text-sm font-medium group-hover:text-brand">{{ $newest->localTitle() }}</span>
+                        </span>
+                        <x-heroicon-m-chevron-right class="size-4 shrink-0 text-brand" aria-hidden="true" />
+                    </a>
+                @endif
+            </aside>
         </div>
     </section>
 
