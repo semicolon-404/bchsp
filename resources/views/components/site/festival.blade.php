@@ -1,7 +1,7 @@
 {{--
     The festival on today (App\Models\Festival), along the foot of the home page's first screen in place of the
-    ambulance. Loy Krathong: a river under a full moon, the departments' krathongs drifting on it, each with its wish
-    on a press. Christmas snow, New Year fireworks, Valentine's hearts, Songkran drops: a few falling or rising.
+    pulse. Loy Krathong: a river, the krathongs drifting on it, each with its wish on a press. The other days: a few
+    things falling or rising in the day's colours (App\Models\Festival::LOOKS); a day of remembrance, a black ribbon.
     Everything moves by transform and opacity alone (no blur, no repainting), and is still for those who ask for less.
 
     <x-site.festival :festival="$festival" />
@@ -36,11 +36,15 @@
                 </li>
             @endforeach
         </ul>
+    @elseif ($festival->look()[0] === 'none')
+        {{-- A day of remembrance: nothing moves; a black ribbon in the corner. --}}
+        <span class="festival-ribbon" aria-hidden="true"></span>
     @else
-        <ul class="festival-fall" aria-hidden="true">
+        @php([$look, $colours] = $festival->look())
+        <ul class="festival-fall is-{{ $look }}" aria-hidden="true">
             @for ($i = 0; $i < $count; $i++)
                 @php($at = $spread($i))
-                <li style="left: {{ $at['left'] }}%; --time: {{ $at['time'] }}s; --wait: {{ $at['wait'] }}s; --size: {{ 0.8 + ($i % 4) * 0.25 }}rem"></li>
+                <li style="left: {{ $at['left'] }}%; --time: {{ $at['time'] }}s; --wait: {{ $at['wait'] }}s; --size: {{ 0.8 + ($i % 4) * 0.25 }}rem; --c: {{ $colours[$i % count($colours)] }}"></li>
             @endfor
         </ul>
     @endif

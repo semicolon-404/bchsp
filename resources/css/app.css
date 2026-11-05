@@ -4607,25 +4607,57 @@ html.is-mourning {
         100% { transform: translate(2rem, 110vh) rotate(200deg); opacity: 0; }
     }
 
-    .is-christmas .festival-fall > li { border-radius: 999px; background: radial-gradient(circle, #fff, rgb(219 234 254 / 0.6)); box-shadow: 0 0 6px rgb(255 255 255 / 0.8); }
-    .is-songkran .festival-fall > li { border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%; background: linear-gradient(180deg, rgb(125 211 252 / 0.9), rgb(14 165 233 / 0.8)); }
+    /* Each look, in the day's colour (--c). */
+    .festival-fall.is-snow > li { border-radius: 999px; background: radial-gradient(circle, var(--c), rgb(219 234 254 / 0.5)); box-shadow: 0 0 6px rgb(255 255 255 / 0.8); }
+    .festival-fall.is-drop > li { border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%; background: linear-gradient(180deg, var(--c), rgb(14 165 233 / 0.8)); }
+    .festival-fall.is-petal > li { border-radius: 0 70% 0 70%; background: var(--c); opacity: 0.9; box-shadow: inset -2px -2px 0 rgb(0 0 0 / 0.08); }
+    .festival-fall.is-coin > li { border-radius: 999px; background: radial-gradient(circle at 35% 35%, #fff7, transparent 40%), var(--c); box-shadow: inset 0 0 0 2px rgb(0 0 0 / 0.12); }
+    .festival-fall.is-confetti > li { width: calc(var(--size) * 0.5); border-radius: 2px; background: var(--c); box-shadow: 0 0 0 1px rgb(0 0 0 / 0.06); }
 
-    .is-valentine .festival-fall > li {
-        top: auto;
-        bottom: -2rem;
-        background: #f43f5e;
+    .festival-fall.is-heart > li,
+    .festival-fall.is-balloon > li { top: auto; bottom: -3rem; animation-name: rise; }
+
+    .festival-fall.is-heart > li {
+        background: var(--c);
         mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 21s-7.5-4.6-9.6-9.2C.9 8.4 3 5 6.4 5c2 0 3.6 1.2 4.6 2.8C12 6.2 13.6 5 15.6 5 19 5 21.1 8.4 19.6 11.8 17.5 16.4 12 21 12 21z'/%3E%3C/svg%3E") center / contain no-repeat;
-        animation-name: rise;
     }
 
-    /* New Year: bursts of light, each opening and fading where it rose. */
-    .is-newyear .festival-fall > li {
+    /* A balloon: round, a shine on it, its string under. */
+    .festival-fall.is-balloon > li {
+        width: calc(var(--size) * 1.6);
+        height: calc(var(--size) * 2);
+        border-radius: 50% 50% 48% 48% / 55% 55% 45% 45%;
+        background: radial-gradient(circle at 35% 30%, rgb(255 255 255 / 0.6), transparent 30%), var(--c);
+    }
+
+    .festival-fall.is-balloon > li::after {
+        content: '';
+        position: absolute;
+        top: 100%;
+        left: 50%;
+        width: 1px;
+        height: 2.5rem;
+        background: rgb(100 116 139 / 0.6);
+    }
+
+    /* Bursts of light, each opening and fading where it rose. */
+    .festival-fall.is-burst > li {
         top: calc(8% + var(--size) * 10);
         width: calc(var(--size) * 4);
         height: calc(var(--size) * 4);
         border-radius: 999px;
-        background: radial-gradient(circle, transparent 30%, #fde047 32%, transparent 36%, transparent 55%, #f472b6 57%, transparent 61%);
+        background: radial-gradient(circle, transparent 30%, var(--c) 32%, transparent 36%, transparent 55%, var(--c) 57%, transparent 61%);
         animation-name: burst;
+    }
+
+    /* A day of remembrance: a black ribbon, still. */
+    .festival-ribbon {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 5rem;
+        height: 5rem;
+        background: linear-gradient(135deg, #111827 0 28%, transparent 28%);
     }
 
     @keyframes rise {
