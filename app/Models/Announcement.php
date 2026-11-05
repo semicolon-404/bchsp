@@ -464,4 +464,12 @@ class Announcement extends Model
             ? $date->locale('th')->translatedFormat('j M ').($date->year + 543)
             : $date->locale('en')->translatedFormat('j M Y');
     }
+
+    /** Its day and the hour it went up, as every list and card shows it: "4 พ.ย. 2569 · 09:30 น." */
+    public function shownAt(): string
+    {
+        $date = $this->starts_at ?? $this->created_at;
+
+        return $this->shownOn().' · '.$date->format('H:i').(app()->getLocale() === 'th' ? ' น.' : '');
+    }
 }

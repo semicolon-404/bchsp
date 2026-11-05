@@ -28,7 +28,7 @@
                 @if ($announcement->pinned_in_department)
                     <span class="inline-flex items-center gap-1 rounded border border-brand px-1.5 font-sans font-semibold text-brand"><x-heroicon-s-bookmark class="size-3" aria-hidden="true" />{{ __('Pinned') }}</span>
                 @endif
-                <time datetime="{{ ($announcement->starts_at ?? $announcement->created_at)->toDateString() }}">{{ $announcement->shownOn() }}</time>
+                <time datetime="{{ ($announcement->starts_at ?? $announcement->created_at)->toIso8601String() }}">{{ $announcement->shownAt() }}</time>
                 @if ($announcement->type)
                     <span style="color: {{ $announcement->type->colour() }}">{{ $announcement->type->localName() }}</span>
                 @endif

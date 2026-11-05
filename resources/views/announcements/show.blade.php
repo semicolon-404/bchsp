@@ -76,7 +76,7 @@
             --}}
             <section class="mt-10" aria-label="{{ __('Photographs') }}">
                 <h2 class="flex items-center gap-2 text-lg"><x-heroicon-o-photo class="size-5 text-brand" aria-hidden="true" />{{ trans_choice('{1} :count photograph|[2,*] :count photographs', count($photos), ['count' => count($photos)]) }}</h2>
-                <ul @class(['album mt-4', 'is-one' => count($photos) === 1, 'is-two' => count($photos) === 2]) data-gallery data-gallery-title="{{ $announcement->localTitle() }}" data-gallery-kind="{{ $announcement->type?->localName() }}" data-gallery-kind-colour="{{ $announcement->type?->colour() }}" data-gallery-date="{{ $announcement->shownOn() }}">
+                <ul @class(['album mt-4', 'is-one' => count($photos) === 1, 'is-two' => count($photos) === 2]) data-gallery data-gallery-title="{{ $announcement->localTitle() }}" data-gallery-kind="{{ $announcement->type?->localName() }}" data-gallery-kind-colour="{{ $announcement->type?->colour() }}" data-gallery-date="{{ $announcement->shownAt() }}">
                     @foreach ($photos as $photo)
                         <li @class(['is-hidden' => $loop->iteration > 9])>
                             <a href="{{ $photo }}" target="_blank" rel="noopener" data-lightbox>
@@ -151,7 +151,7 @@
                                 <x-site.type-mark :type="$one->type" />
                                 <span class="min-w-0 flex-1">
                                     <span class="block font-medium text-ink group-hover:text-brand">{{ $one->localTitle() }}</span>
-                                    <span class="mt-0.5 block font-mono text-xs text-muted">{{ $one->shownOn() }}</span>
+                                    <span class="mt-0.5 block font-mono text-xs text-muted">{{ $one->shownAt() }}</span>
                                 </span>
                                 <x-heroicon-m-chevron-right class="size-5 shrink-0 text-brand" aria-hidden="true" />
                             </a>

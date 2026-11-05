@@ -30,6 +30,6 @@
                 <x-heroicon-m-paper-clip class="ml-1 inline size-4 text-muted" aria-hidden="true" /><span class="sr-only">{{ __('Has files attached') }}</span>
             @endif
         </h2>
-        <p class="mt-3 font-mono text-xs text-muted"><time datetime="{{ ($announcement->starts_at ?? $announcement->created_at)->toDateString() }}">{{ $announcement->shownOn() }}</time></p>
+        <p class="mt-3 font-mono text-xs text-muted"><time datetime="{{ ($announcement->starts_at ?? $announcement->created_at)->toIso8601String() }}">{{ $announcement->shownAt() }}</time></p>
     </div>
 </a>

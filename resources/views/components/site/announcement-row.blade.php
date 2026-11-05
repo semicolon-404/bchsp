@@ -35,7 +35,7 @@
                 @if ($announcement->type)
                     <span style="color: {{ $announcement->type->colour() }}">{{ $announcement->type->localName() }}</span>
                 @endif
-                <time datetime="{{ ($announcement->starts_at ?? $announcement->created_at)->toIso8601String() }}">{{ $announcement->shownOn() }} · {{ ($announcement->starts_at ?? $announcement->created_at)->format('H:i') }}{{ app()->getLocale() === 'th' ? ' น.' : '' }}</time>
+                <time datetime="{{ ($announcement->starts_at ?? $announcement->created_at)->toIso8601String() }}">{{ $announcement->shownAt() }}</time>
             </span>
         </span>
         {{-- Its "one page" picture, small: a list of announcements with pictures is easier to scan. --}}
@@ -50,7 +50,7 @@
                 @if ($announcement->type)
                     <span style="color: {{ $announcement->type->colour() }}">{{ $announcement->type->localName() }}</span> ·
                 @endif
-                {{ $announcement->shownOn() }} · {{ ($announcement->starts_at ?? $announcement->created_at)->format('H:i') }}{{ app()->getLocale() === 'th' ? ' น.' : '' }}
+                {{ $announcement->shownAt() }}
             </span>
         </span>
     </a>

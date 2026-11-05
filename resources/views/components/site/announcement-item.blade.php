@@ -23,7 +23,7 @@
                 @if ($announcement->type)
                     <span class="inline-flex items-center gap-1 font-semibold" style="color: {{ $announcement->type->colour() }}"><x-site.type-mark :type="$announcement->type" bare />{{ $announcement->type->localName() }}</span>
                 @endif
-                <time datetime="{{ $day->toDateString() }}">{{ $announcement->shownOn() }}</time>
+                <time datetime="{{ $day->toIso8601String() }}">{{ $announcement->shownAt() }}</time>
                 @if ($announcement->department?->is_active)
                     <span>{{ $announcement->department->localName() }}</span>
                 @endif

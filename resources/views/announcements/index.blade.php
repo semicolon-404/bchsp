@@ -67,7 +67,7 @@
                                         <span class="inline-block rounded px-2 py-0.5 font-mono text-xs font-semibold {{ $image ? 'bg-white/20 text-white backdrop-blur' : 'bg-page' }}" @unless ($image) style="color: {{ $one->type->colour() }}" @endunless>{{ $one->type->localName() }}</span>
                                     @endif
                                     <span class="mt-2 block text-2xl font-semibold leading-snug sm:text-3xl">{{ $one->localTitle() }}</span>
-                                    <span class="mt-2 block font-mono text-sm {{ $image ? 'text-white/80' : 'text-muted' }}">{{ $one->shownOn() }}@if ($one->department?->is_active) · {{ $one->department->localName() }}@endif</span>
+                                    <span class="mt-2 block font-mono text-sm {{ $image ? 'text-white/80' : 'text-muted' }}">{{ $one->shownAt() }}@if ($one->department?->is_active) · {{ $one->department->localName() }}@endif</span>
                                 </span>
                             </a>
                         @else
@@ -82,7 +82,7 @@
                                         <span class="block font-mono text-xs font-semibold" style="color: {{ $one->type->colour() }}">{{ $one->type->localName() }}</span>
                                     @endif
                                     <span class="mt-1 line-clamp-3 block text-lg font-medium leading-snug group-hover:text-brand">{{ $one->localTitle() }}</span>
-                                    <span class="mt-2 block font-mono text-xs text-muted">{{ $one->shownOn() }}</span>
+                                    <span class="mt-2 block font-mono text-xs text-muted">{{ $one->shownAt() }}</span>
                                 </span>
                             </a>
                         @endif
