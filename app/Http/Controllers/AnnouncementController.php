@@ -49,12 +49,13 @@ class AnnouncementController extends Controller
         $department = is_string($request->query('department')) ? $departments->firstWhere('slug', $request->query('department')) : null;
 
         $opening = ! $type && ! $department && ! $year && ! $period && $term === '' && (int) $request->query('page', 1) <= 1;
-        // The figures in the band at the top: how much there is, and how much of it is new.
-        $stats = [
-            'all' => Announcement::published()->count(),
-            'week' => Announcement::published()->where('starts_at', '>=', now()->startOfWeek())->count(),
-            'month' => Announcement::published()->where('starts_at', '>=', now()->startOfMonth())->count(),
-        ];
+        // The figures in the band at the top: how much there is, and how much of it is new. One query for all three.
+        $tally = fn (?AnnouncementType $of) => (array) Announcement::published()
+            ->when($of, fn ($query) => $query->where('announcement_type_id', $of->id))
+            ->toBase()
+            ->selectRaw('count(*) as `all`, sum(case when starts_at >= ? then 1 else 0 end) as week, sum(case when starts_at >= ? then 1 else 0 end) as month', [now()->startOfWeek(), now()->startOfMonth()])
+            ->first();
+        $stats = array_map('intval', $tally(null));
 
         return view('announcements.index', [
             'type' => $type,
@@ -75,11 +76,7 @@ class AnnouncementController extends Controller
             // where it could name what the list leaves out.
             'newest' => $department || $year || $period || $term !== '' ? null : Announcement::published()->when($type, fn ($query) => $query->where('announcement_type_id', $type->id))->latest('starts_at')->first(),
             // The same three for the band at the top, of the kind being looked at when there is one.
-            'figures' => $type ? [
-                'all' => Announcement::published()->where('announcement_type_id', $type->id)->count(),
-                'week' => Announcement::published()->where('announcement_type_id', $type->id)->where('starts_at', '>=', now()->startOfWeek())->count(),
-                'month' => Announcement::published()->where('announcement_type_id', $type->id)->where('starts_at', '>=', now()->startOfMonth())->count(),
-            ] : $stats,
+            'figures' => $type ? array_map('intval', $tally($type)) : $stats,
             // How many each kind holds, for its tile.
             'counts' => Announcement::published()->selectRaw('announcement_type_id, count(*) as held')->groupBy('announcement_type_id')->pluck('held', 'announcement_type_id'),
             'types' => AnnouncementType::orderBy('sort_order')->orderBy('name')->get(),

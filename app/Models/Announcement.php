@@ -15,6 +15,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Number;
 
@@ -237,23 +238,26 @@ class Announcement extends Model
 
     /**
      * The fiscal years that have something out, newest first, with how many announcements each holds.
-     * Counted here, not by the database: MariaDB and the tests' SQLite do not share a way to take a year from a date.
+     * Counted by the database in one grouped query (not every date brought over to be counted here, which grows with
+     * the years); MariaDB and the tests' SQLite each take the year and month from a date in their own words.
      *
      * @return array<int, int> [2569 => 48, 2568 => 112]
      */
     public static function fiscalYears(?int $typeId = null): array
     {
-        $years = [];
+        [$year, $month] = DB::connection()->getDriverName() === 'sqlite'
+            ? ["cast(strftime('%Y', starts_at) as integer)", "cast(strftime('%m', starts_at) as integer)"]
+            : ['year(starts_at)', 'month(starts_at)'];
 
-        static::published()->when($typeId, fn (Builder $query) => $query->where('announcement_type_id', $typeId))->pluck('starts_at')
-            ->each(function ($date) use (&$years) {
-                $year = self::fiscalYearOf($date);
-                $years[$year] = ($years[$year] ?? 0) + 1;
-            });
-
-        krsort($years);
-
-        return $years;
+        return static::published()
+            ->when($typeId, fn (Builder $query) => $query->where('announcement_type_id', $typeId))
+            ->toBase()
+            ->selectRaw("$year + 543 + (case when $month >= 10 then 1 else 0 end) as fiscal_year, count(*) as held")
+            ->groupBy('fiscal_year')
+            ->orderByDesc('fiscal_year')
+            ->pluck('held', 'fiscal_year')
+            ->mapWithKeys(fn ($held, $fiscalYear) => [(int) $fiscalYear => (int) $held])
+            ->all();
     }
 
     /** Inside its dates right now: what the home page shows. */
