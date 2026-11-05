@@ -3930,8 +3930,8 @@ html.is-mourning {
         top: -16rem;
         z-index: 2;
         width: 1rem;
-        /* Down to the sign's top edge, where it is tied on. */
-        height: calc(16rem + 5.5rem + 0.4rem);
+        /* Down into the hole near the sign's top edge, where it is tied through. */
+        height: calc(16rem + 5.5rem + 1.6rem);
         border-radius: 0.5rem;
         /* The strands: light and dark turns crossing the rope, a shade down one side for its roundness. */
         background:
@@ -3945,7 +3945,7 @@ html.is-mourning {
         .sign { transform-origin: 50% -5rem; }
         .sign-rope {
             top: -5rem;
-            height: calc(5rem + 5.5rem + 0.4rem);
+            height: calc(5rem + 5.5rem + 1.6rem);
             mask-image: linear-gradient(to bottom, transparent, #000 3.5rem);
         }
         .sign-knot { top: calc(5rem + 5.5rem - 4.4rem); }
@@ -3979,6 +3979,24 @@ html.is-mourning {
         background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='26' viewBox='0 0 28 26' fill='none' stroke-linecap='round'%3E%3Cg stroke='%23e7cf9f' stroke-width='0.45' opacity='0.85'%3E%3Cpath d='M6 3 q-3 -1 -5 1'/%3E%3Cpath d='M6 11 q-4 1 -5.5 4'/%3E%3Cpath d='M7 19 q-3 -2 -6 -1'/%3E%3Cpath d='M22 6 q3 -2 5 0'/%3E%3Cpath d='M22 14 q4 0 5.5 3'/%3E%3Cpath d='M21 22 q3 1 6 -1'/%3E%3C/g%3E%3Cg stroke='%23a77d45' stroke-width='0.4' opacity='0.7'%3E%3Cpath d='M6 7 q-2 2 -4 2'/%3E%3Cpath d='M7 16 q-3 0 -4 -2'/%3E%3Cpath d='M22 10 q2 2 4 1'/%3E%3Cpath d='M22 19 q3 0 4 2'/%3E%3C/g%3E%3Cg stroke='%23f3e3c2' stroke-width='0.3' opacity='0.6'%3E%3Cpath d='M10 4 l3 -1.5'/%3E%3Cpath d='M12 12 l4 -2'/%3E%3Cpath d='M10 20 l3 -1.5'/%3E%3C/g%3E%3C/svg%3E") center top / 100% auto repeat-y;
         pointer-events: none;
     }
+
+    /* The holes the ropes pass through, near the sign's upper edge; room in the band beside them. */
+    .sign .board::before,
+    .sign .board::after {
+        content: '';
+        position: absolute;
+        top: 1.1rem;
+        z-index: 1;
+        width: 1.05rem;
+        height: 1.05rem;
+        border-radius: 999px;
+        background: rgb(0 0 0 / 0.45);
+        box-shadow: inset 0 2px 3px rgb(0 0 0 / 0.6), 0 1px 0 rgb(255 255 255 / 0.25);
+    }
+
+    .sign .board::before { left: calc(1.4rem - 0.525rem); }
+    .sign .board::after { right: calc(1.4rem - 0.525rem); }
+    .sign .board-head { padding-inline: 2.75rem; }
 
     /* Tied by hand: the knot a little askew. */
     .sign-rope.is-left .sign-knot { transform: rotate(-5deg); }

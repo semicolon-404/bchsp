@@ -185,7 +185,7 @@
         ]);
         $href = fn (string $place) => str_starts_with($place, 'http') ? $place : route($place);
     @endphp
-    <footer @class(['site-foot', 'mt-16' => ! request()->routeIs('home', 'about', 'announcements.show')])>
+    <footer class="site-foot">
         {{-- The numbers to call are in the header (the emergency button) and on Contact us: not again here. --}}
 
         {{--
