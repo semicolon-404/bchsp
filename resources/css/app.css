@@ -4957,3 +4957,22 @@ html.is-mourning {
         .site-popup[open] { animation: none !important; }
     }
 }
+
+@layer components {
+    /* The first line of a group's list in the top bar: the way to all of it. */
+    .menu-list .menu-all-spot { position: absolute; top: 0.5rem; right: 0.5rem; z-index: 1; }
+    .menu-list .menu-all-spot + li > a { padding-right: 2.75rem; }
+
+    .menu-list .menu-all {
+        display: grid;
+        place-items: center;
+        width: 2rem;
+        height: 2rem;
+        padding: 0;
+        border-radius: 999px;
+        background: color-mix(in srgb, var(--color-brand) 12%, transparent);
+        color: var(--color-brand);
+    }
+
+    .menu-list .menu-all:hover { background: var(--color-brand); color: var(--color-on-brand); }
+}

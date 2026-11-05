@@ -11,11 +11,14 @@
 
         @if ($item['opens'])
             <details class="menu-group relative" data-menu>
-                <summary class="{{ $classes }} cursor-pointer list-none">
+                {{-- A double press goes straight to the group's own page (resources/js/menu.js), as the first line of the list does. --}}
+                <summary class="{{ $classes }} cursor-pointer list-none" data-menu-url="{{ $item['url'] }}" title="{{ __('Double-click to see all') }}">
                     {{ __($item['label']) }}
                     <x-heroicon-m-chevron-down class="size-4" aria-hidden="true" />
                 </summary>
                 <ul class="menu-list">
+                    {{-- The way to all of it: a small button in the list's top corner. --}}
+                    <li class="menu-all-spot"><a href="{{ $item['url'] }}" class="menu-all" title="{{ __('Open the whole section') }}"><x-heroicon-m-arrow-up-right class="size-4" aria-hidden="true" /><span class="sr-only">{{ __('Open the whole section') }}</span></a></li>
                     @foreach ($item['children'] as $child)
                         <li><a href="{{ $child['url'] }}" aria-current="{{ $child['active'] ? 'page' : 'false' }}">{{ $child['label'] }}</a></li>
                     @endforeach

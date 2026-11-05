@@ -4,6 +4,11 @@
  * and a press anywhere else, or Escape, closes whatever is open.
  */
 export function startMenu() {
+    // A double press on a group's name goes to its own page.
+    document.querySelectorAll('summary[data-menu-url]').forEach((summary) => {
+        summary.addEventListener('dblclick', () => (window.location.href = summary.dataset.menuUrl));
+    });
+
     const groups = () => document.querySelectorAll('details[data-menu]');
     const closeAll = (except = null) => groups().forEach((group) => {
         if (group !== except) group.open = false;
