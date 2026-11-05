@@ -44,7 +44,16 @@ export function startPopup() {
         if (event.key === 'ArrowRight') dialog.querySelector('[data-slider-next]')?.click();
     });
 
-    dialog.showModal();
-    // The window itself holds the focus at first, so no button is ringed before anyone touches it.
-    dialog.focus();
+    const open = () => {
+        dialog.showModal();
+        // The window itself holds the focus at first, so no button is ringed before anyone touches it.
+        dialog.focus();
+    };
+
+    // After the popups set up on their own (resources/js/site-popup.js), not over them.
+    if (window.sitePopupsBusy) {
+        document.addEventListener('site-popups-done', open, { once: true });
+    } else {
+        open();
+    }
 }

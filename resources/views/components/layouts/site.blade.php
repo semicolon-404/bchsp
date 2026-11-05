@@ -185,6 +185,9 @@
         ]);
         $href = fn (string $place) => str_starts_with($place, 'http') ? $place : route($place);
     @endphp
+    {{-- The popups set up on their own in the panel (Popups). --}}
+    <x-site.site-popups :home="request()->routeIs('home')" />
+
     <footer class="site-foot">
         {{-- The numbers to call are in the header (the emergency button) and on Contact us: not again here. --}}
 
