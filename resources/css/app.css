@@ -4465,3 +4465,179 @@ html.is-mourning {
     [data-news-view='detail'] > .dept-as-tiles,
     [data-news-view='list'] > .dept-as-stories { display: none !important; }
 }
+
+@layer components {
+    /* A festival along the foot of the home page's first screen (components/site/festival). Moved by transform and
+       opacity alone, so the graphics card does the work; still for those who ask for less motion. */
+    .festival {
+        position: absolute;
+        inset: auto 0 0 0;
+        height: 9rem;
+        z-index: 1;
+        overflow: hidden;
+        pointer-events: none;
+    }
+
+    .home-screen:has(.festival) .hero-pulse { opacity: 0.12; }
+
+    /* Loy Krathong: a full moon, a river, the krathongs. */
+    .festival-moon {
+        position: absolute;
+        top: 0.5rem;
+        right: 12%;
+        width: 3.5rem;
+        height: 3.5rem;
+        border-radius: 999px;
+        background: radial-gradient(circle at 40% 40%, #fffbeb, #fde68a 60%, #fbbf24);
+        box-shadow: 0 0 40px 10px rgb(253 230 138 / 0.45);
+    }
+
+    .river {
+        position: absolute;
+        inset: auto 0 0 0;
+        height: 3.75rem;
+        overflow: hidden;
+        background: linear-gradient(180deg, rgb(14 116 144 / 0.55), rgb(8 47 73 / 0.85));
+    }
+
+    /* The waves: a strip of crests twice the width, slid along. */
+    .river-wave {
+        position: absolute;
+        inset: -0.4rem 0 auto 0;
+        width: 200%;
+        height: 1rem;
+        background: radial-gradient(1.5rem 0.6rem at 1.5rem 0.9rem, transparent 70%, rgb(186 230 253 / 0.45) 72%, transparent 85%) 0 0 / 3rem 1rem repeat-x;
+        will-change: transform;
+        animation: river-flow 9s linear infinite;
+    }
+
+    .river-wave.is-back { top: 1.2rem; opacity: 0.5; animation-duration: 14s; animation-direction: reverse; }
+
+    @keyframes river-flow { to { transform: translateX(-50%); } }
+
+    .krathongs { position: absolute; inset: 0; }
+
+    .krathong {
+        position: absolute;
+        bottom: 1.6rem;
+        left: -5rem;
+        width: 4rem;
+        pointer-events: auto;
+        will-change: transform;
+        animation: krathong-drift var(--time) linear var(--wait) infinite;
+    }
+
+    .krathong > button, .krathong > .krathong-svg { animation: krathong-bob 3.4s ease-in-out infinite alternate; }
+    .krathong-tap { display: block; width: 100%; cursor: pointer; }
+    .krathong-svg { display: block; width: 100%; overflow: visible; }
+
+    @keyframes krathong-drift {
+        from { transform: translateX(0); }
+        to { transform: translateX(calc(100vw + 6rem)); }
+    }
+
+    @keyframes krathong-bob {
+        from { translate: 0 0; rotate: -3deg; }
+        to { translate: 0 -0.25rem; rotate: 3deg; }
+    }
+
+    /* The colours of each kind. */
+    .k-base { fill: #166534; }
+    .k-leaf { fill: #22c55e; }
+    .k-petal { fill: #fde68a; }
+    .k-petal.is-front { fill: #fbbf24; }
+    .krathong.is-lotus .k-petal { fill: #fbcfe8; }
+    .krathong.is-lotus .k-petal.is-front { fill: #f472b6; }
+    .krathong.is-flower .k-petal { fill: #fecaca; }
+    .krathong.is-flower .k-petal.is-front { fill: #fb7185; }
+    .krathong.is-bread .k-base { fill: #b45309; }
+    .krathong.is-bread .k-leaf { fill: #d97706; }
+
+    /* The flame flickers; its light, a soft circle, breathes with it. */
+    .k-flame { transform-origin: 30px 9px; animation: flame 0.9s ease-in-out infinite alternate; }
+    .k-light { fill: rgb(251 191 36 / 0.35); transform-origin: 30px 5px; animation: flame-light 1.3s ease-in-out infinite alternate; }
+
+    @keyframes flame { to { transform: scale(0.85, 1.12); } }
+    @keyframes flame-light { from { opacity: 0.5; transform: scale(0.85); } to { opacity: 1; transform: scale(1.15); } }
+
+    /* The wish, over the krathong as it is pressed or pointed at. */
+    .krathong-wish {
+        position: absolute;
+        bottom: 110%;
+        left: 50%;
+        width: max-content;
+        max-width: 14rem;
+        padding: 0.4rem 0.7rem;
+        border-radius: 10px;
+        background: var(--color-page);
+        color: var(--color-ink);
+        font-size: 0.8rem;
+        line-height: 1.35;
+        box-shadow: 0 8px 24px -10px rgb(0 0 0 / 0.4);
+        opacity: 0;
+        transform: translate(-50%, 0.3rem);
+        transition: opacity 0.2s ease, transform 0.2s ease;
+        pointer-events: none;
+    }
+
+    .krathong-wish b { display: block; color: var(--color-brand); }
+    .krathong:hover .krathong-wish, .krathong:focus-within .krathong-wish { opacity: 1; transform: translate(-50%, 0); }
+    .krathong:hover, .krathong:focus-within { animation-play-state: paused; z-index: 2; }
+
+    /* The other festivals: a few things falling or rising across the screen. */
+    .festival:not(.is-loykrathong) { height: 100%; }
+
+    .festival-fall > li {
+        position: absolute;
+        top: -2rem;
+        width: var(--size);
+        height: var(--size);
+        will-change: transform, opacity;
+        animation: fall var(--time) linear var(--wait) infinite;
+    }
+
+    @keyframes fall {
+        0% { transform: translate(0, 0) rotate(0); opacity: 0; }
+        10% { opacity: 0.9; }
+        100% { transform: translate(2rem, 110vh) rotate(200deg); opacity: 0; }
+    }
+
+    .is-christmas .festival-fall > li { border-radius: 999px; background: radial-gradient(circle, #fff, rgb(219 234 254 / 0.6)); box-shadow: 0 0 6px rgb(255 255 255 / 0.8); }
+    .is-songkran .festival-fall > li { border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%; background: linear-gradient(180deg, rgb(125 211 252 / 0.9), rgb(14 165 233 / 0.8)); }
+
+    .is-valentine .festival-fall > li {
+        top: auto;
+        bottom: -2rem;
+        background: #f43f5e;
+        mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 21s-7.5-4.6-9.6-9.2C.9 8.4 3 5 6.4 5c2 0 3.6 1.2 4.6 2.8C12 6.2 13.6 5 15.6 5 19 5 21.1 8.4 19.6 11.8 17.5 16.4 12 21 12 21z'/%3E%3C/svg%3E") center / contain no-repeat;
+        animation-name: rise;
+    }
+
+    /* New Year: bursts of light, each opening and fading where it rose. */
+    .is-newyear .festival-fall > li {
+        top: calc(8% + var(--size) * 10);
+        width: calc(var(--size) * 4);
+        height: calc(var(--size) * 4);
+        border-radius: 999px;
+        background: radial-gradient(circle, transparent 30%, #fde047 32%, transparent 36%, transparent 55%, #f472b6 57%, transparent 61%);
+        animation-name: burst;
+    }
+
+    @keyframes rise {
+        0% { transform: translate(0, 0) scale(0.8); opacity: 0; }
+        15% { opacity: 0.85; }
+        100% { transform: translate(-1.5rem, -110vh) scale(1.1); opacity: 0; }
+    }
+
+    @keyframes burst {
+        0%, 60% { transform: scale(0.1); opacity: 0; }
+        70% { opacity: 1; }
+        100% { transform: scale(1.4); opacity: 0; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .festival * { animation: none !important; }
+        .krathong { left: var(--start); }
+        .festival-fall { display: none; }
+    }
+}
