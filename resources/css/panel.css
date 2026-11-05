@@ -27,7 +27,7 @@ html.dark {
 }
 
 .fi-body {
-    font-family: 'IBM Plex Sans Thai', 'Leelawadee UI', Tahoma, ui-sans-serif, system-ui, sans-serif;
+    font-family: 'IBM Plex Sans Thai', 'Leelawadee UI', Tahoma, 'Segoe UI Emoji', 'Apple Color Emoji', 'Noto Color Emoji', ui-sans-serif, system-ui, sans-serif;
     /* A wash of the day's colour at the top of every page, as the site's header band has. */
     background-image: radial-gradient(60rem 22rem at 85% -6rem, var(--panel-tint), transparent 70%);
     background-repeat: no-repeat;

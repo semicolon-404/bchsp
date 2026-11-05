@@ -19,7 +19,7 @@
  * the light look, which the site opens in, re-points them below ([data-theme='light']). Each pair of text and background here keeps a contrast of 4.5:1 or more.
  */
 @theme {
-    --font-sans: 'IBM Plex Sans Thai', 'Leelawadee UI', Tahoma, ui-sans-serif, system-ui, sans-serif;
+    --font-sans: 'IBM Plex Sans Thai', 'Leelawadee UI', Tahoma, 'Segoe UI Emoji', 'Apple Color Emoji', 'Noto Color Emoji', ui-sans-serif, system-ui, sans-serif;
     /* Numbers (phones, times, dates) in the same face as the words, each figure as wide as the next so that columns line up
        (.font-mono below); a typewriter face is kept for real code alone (--font-code). */
     --font-mono: var(--font-sans);
