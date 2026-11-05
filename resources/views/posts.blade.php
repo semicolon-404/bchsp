@@ -59,9 +59,10 @@
     @endif
 
     @if ($departments->isNotEmpty())
-        {{-- The departments that have posted, as round pictures to press, as stories are: a ring round those that posted
-             this week. The row stays in reach as the feed is read, and slides sideways on a phone. --}}
-        <nav class="sticky top-16 z-30 border-b border-line bg-page/90 backdrop-blur" aria-label="{{ __('Departments') }}">
+        {{-- The departments that have posted, as story cards to press: a ring round those that posted this week. It
+             scrolls away with the page (cards this tall held at the top would leave the feed too little room), and
+             slides sideways on a phone. --}}
+        <nav class="border-b border-line bg-page" aria-label="{{ __('Departments') }}">
             <ul class="wrap flex max-w-5xl gap-2.5 overflow-x-auto py-3 [scrollbar-width:none]">
                 <li class="shrink-0">
                     <a href="{{ $with(null) }}" @class(['story-card is-all', 'is-on' => ! $department]) aria-current="{{ $department ? 'false' : 'page' }}">
@@ -97,38 +98,66 @@
             @if ($posts->isEmpty())
                 <x-site.empty icon="newspaper">{{ __('No department has posted anything yet.') }}</x-site.empty>
             @else
-                <ul class="space-y-4 sm:space-y-5">
+                <ul class="space-y-4 sm:space-y-5" data-feed>
                     @foreach ($posts as $announcement)
                         <x-site.post :announcement="$announcement" :department="$announcement->department" linked />
                     @endforeach
                 </ul>
 
-                <div class="mt-10">{{ $posts->links('components.site.pagination') }}</div>
+                {{-- The next posts fetched onto this page (resources/js/toc.js); without the script, a link to them. --}}
+                @if ($posts->hasMorePages())
+                    <p class="mt-6 text-center">
+                        <a href="{{ $posts->nextPageUrl() }}" class="btn btn-line w-full justify-center bg-page sm:w-auto" data-feed-more>
+                            <x-heroicon-m-chevron-down class="size-5" aria-hidden="true" />{{ __('Show more posts') }}
+                            <span class="font-mono text-sm text-muted">({{ number_format($posts->total() - $posts->lastItem()) }})</span>
+                        </a>
+                    </p>
+                @endif
             @endif
         </div>
 
-        <aside class="space-y-8 lg:sticky lg:top-36">
+        {{-- Beside the feed, held in view as it is read: never taller than the screen (what does not fit scrolls inside it). --}}
+        <aside class="feed-aside space-y-4">
+            {{-- Looking for one in particular: the search of the list of announcements, here. --}}
+            <form action="{{ route('announcements.index') }}" method="get" role="search" class="feed-panel">
+                <h2 class="text-sm font-semibold">{{ __('Looking for one announcement?') }}</h2>
+                @if ($department)
+                    <input type="hidden" name="department" value="{{ $department->slug }}">
+                @endif
+                <label class="relative mt-2 block">
+                    <span class="sr-only">{{ __('Word in the title') }}</span>
+                    <x-heroicon-m-magnifying-glass class="pointer-events-none absolute left-3 top-1/2 size-5 -translate-y-1/2 text-muted" aria-hidden="true" />
+                    <input type="search" name="q" maxlength="80" placeholder="{{ __('e.g. medicine, dental, interview') }}" class="min-h-11 w-full rounded-full border border-line bg-raised pl-10 pr-4 text-sm text-ink placeholder:text-muted">
+                </label>
+                <p class="mt-3 flex items-center justify-between gap-2 text-sm">
+                    <a href="{{ route('announcements.index', array_filter(['department' => $department?->slug])) }}" class="font-semibold text-brand no-underline hover:underline">{{ __('All announcements') }} &rarr;</a>
+                    <a href="{{ route('feed', array_filter(['department' => $department?->slug])) }}" class="inline-flex items-center gap-1 text-muted no-underline hover:text-brand"><x-heroicon-m-rss class="size-4" aria-hidden="true" />RSS</a>
+                </p>
+            </form>
+
             @if ($department)
                 {{-- Who this is, with the way to its own page. --}}
-                <section class="card text-center">
-                    <x-site.department-avatar :department="$department" class="mx-auto size-20 text-3xl" />
-                    <h2 class="mt-3 text-lg">{{ $department->localName() }}</h2>
-                    @if (filled($department->localHeadline()))
-                        <p class="mt-1 text-sm text-muted">{{ $department->localHeadline() }}</p>
-                    @endif
-                    <a href="{{ route('departments.show', $department) }}" class="btn btn-brand mt-4">{{ __('See the profile') }} &rarr;</a>
+                <section class="feed-panel flex items-center gap-3">
+                    <x-site.department-avatar :department="$department" class="size-12 text-lg" />
+                    <div class="min-w-0 flex-1">
+                        <h2 class="truncate font-semibold">{{ $department->localName() }}</h2>
+                        @if (filled($department->localHeadline()))
+                            <p class="line-clamp-2 text-sm text-muted">{{ $department->localHeadline() }}</p>
+                        @endif
+                        <a href="{{ route('departments.show', $department) }}" class="mt-1 inline-block text-sm font-semibold text-brand no-underline hover:underline">{{ __('See the profile') }} &rarr;</a>
+                    </div>
                 </section>
             @elseif ($mostRead->isNotEmpty())
                 {{-- Not the departments again (they are in the row above): what readers have opened most. --}}
-                <section aria-labelledby="most-read-heading">
-                    <h2 id="most-read-heading" class="flex items-center gap-2 text-xl"><x-heroicon-o-fire class="size-5 text-brand" aria-hidden="true" />{{ __('Most read') }}</h2>
-                    <ol class="card mt-3 p-0">
+                <section class="feed-panel p-0" aria-labelledby="most-read-heading">
+                    <h2 id="most-read-heading" class="flex items-center gap-2 px-4 pt-4 text-sm font-semibold"><x-heroicon-s-fire class="size-5 text-orange-500" aria-hidden="true" />{{ __('Most read') }}</h2>
+                    <ol class="mt-1 pb-2">
                         @foreach ($mostRead as $one)
-                            <li class="border-b border-line last:border-b-0">
-                                <a href="{{ route('announcements.show', $one) }}" class="group flex items-start gap-3 px-4 py-3 no-underline">
-                                    <span class="w-5 shrink-0 text-center font-mono text-lg font-semibold text-brand" aria-hidden="true">{{ $loop->iteration }}</span>
+                            <li>
+                                <a href="{{ route('announcements.show', $one) }}" class="group flex items-start gap-3 px-4 py-2 no-underline hover:bg-raised">
+                                    <span class="mt-0.5 w-4 shrink-0 font-mono text-sm font-semibold text-muted" aria-hidden="true">{{ $loop->iteration }}</span>
                                     <span class="min-w-0 flex-1">
-                                        <span class="line-clamp-2 block text-ink group-hover:text-brand">{{ $one->localTitle() }}</span>
+                                        <span class="line-clamp-2 block text-sm leading-snug text-ink group-hover:text-brand">{{ $one->localTitle() }}</span>
                                         <span class="mt-0.5 block font-mono text-xs text-muted">{{ trans_choice('{1} opened :count time|[2,*] opened :count times', $one->views, ['count' => number_format($one->views)]) }}</span>
                                     </span>
                                 </a>
@@ -137,15 +166,6 @@
                     </ol>
                 </section>
             @endif
-
-            <section class="card">
-                <h2 class="text-lg">{{ __('Looking for one announcement?') }}</h2>
-                <p class="mt-1 text-sm text-muted">{{ __('The list of announcements can be searched and narrowed by kind and by date.') }}</p>
-                <p class="mt-4 flex flex-wrap gap-2">
-                    <a href="{{ route('announcements.index', array_filter(['department' => $department?->slug])) }}" class="btn btn-line">{{ __('All announcements') }} &rarr;</a>
-                    <a href="{{ route('feed', array_filter(['department' => $department?->slug])) }}" class="btn btn-line"><x-heroicon-m-rss class="size-4" aria-hidden="true" />RSS</a>
-                </p>
-            </section>
         </aside>
     </div>
     </div>

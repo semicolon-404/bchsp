@@ -57,15 +57,18 @@ class DepartmentFeedTest extends TestCase
         $this->get('/posts?department[]=1')->assertOk();
     }
 
-    public function test_the_feed_is_in_pages_of_ten_and_says_so_when_empty(): void
+    public function test_the_feed_comes_five_at_a_time_with_show_more_and_says_so_when_empty(): void
     {
         $this->get('/posts')->assertOk()->assertSee('No department has posted anything yet.');
 
         $dental = Department::factory()->create();
         Announcement::factory()->count(12)->create(['department_id' => $dental->id]);
 
-        $this->get('/posts')->assertSee('1 / 2')->assertSee('rel="next"', false);
-        $this->get('/posts?page=2')->assertOk()->assertSee('rel="prev"', false);
+        // Five, and the way to the next five; the last five-or-fewer with no more to show.
+        $first = $this->get('/posts')->assertSee('data-feed-more', false)->assertSee('(7)')->getContent();
+        $this->assertSame(5, substr_count($first, 'class="post"'));
+        $this->get('/posts?page=3')->assertOk()->assertDontSee('data-feed-more', false);
+        $this->assertSame(2, substr_count($this->get('/posts?page=3')->getContent(), 'class="post"'));
     }
 
     public function test_there_are_ways_in_once_a_department_has_posted_and_a_feed_for_one_department(): void

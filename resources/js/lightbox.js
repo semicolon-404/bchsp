@@ -11,9 +11,9 @@
  * arrows, the arrow keys or a swipe move through it. A link outside any [data-gallery] is an album of one.
  */
 export function startLightbox() {
-    const links = [...document.querySelectorAll('a[data-lightbox]')];
-
-    if (links.length === 0 || typeof HTMLDialogElement === 'undefined') return;
+    // A feed that brings more posts onto the page (resources/js/toc.js) may bring photographs later on.
+    if (typeof HTMLDialogElement === 'undefined') return;
+    if (!document.querySelector('a[data-lightbox]') && !document.querySelector('[data-feed]')) return;
 
     const dialog = document.createElement('dialog');
     dialog.className = 'lightbox';
@@ -79,18 +79,18 @@ export function startLightbox() {
         tiles.hidden = set.length < 2;
     };
 
-    links.forEach((link) => {
-        link.addEventListener('click', (event) => {
-            // With Ctrl or a middle press the reader asked for a new tab: let them have it.
-            if (event.ctrlKey || event.metaKey || event.shiftKey || event.button !== 0) return;
+    // One listener for the page, so photographs brought in later open here too.
+    document.addEventListener('click', (event) => {
+        const link = event.target.closest?.('a[data-lightbox]');
+        // With Ctrl or a middle press the reader asked for a new tab: let them have it.
+        if (!link || event.ctrlKey || event.metaKey || event.shiftKey || event.button !== 0) return;
 
-            event.preventDefault();
-            const gallery = link.closest('[data-gallery]');
-            set = gallery ? [...gallery.querySelectorAll('a[data-lightbox]')] : [link];
-            fill(gallery);
-            dialog.showModal();
-            show(set.indexOf(link));
-        });
+        event.preventDefault();
+        const gallery = link.closest('[data-gallery]');
+        set = gallery ? [...gallery.querySelectorAll('a[data-lightbox]')] : [link];
+        fill(gallery);
+        dialog.showModal();
+        show(set.indexOf(link));
     });
 
     close.addEventListener('click', () => dialog.close());

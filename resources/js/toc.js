@@ -46,3 +46,40 @@ export function startToc() {
         }
     });
 }
+
+/**
+ * "Show more posts" under the feed (posts.blade.php): the next posts fetched and added under the last, so the
+ * reader keeps scrolling down. Their photographs and share buttons work at once (both listen on the page).
+ * Without the script, the button is a link to the next page.
+ */
+export function startFeedMore() {
+    const feed = document.querySelector('[data-feed]');
+    const more = document.querySelector('[data-feed-more]');
+    if (!feed || !more || !window.fetch) return;
+
+    more.addEventListener('click', async (event) => {
+        event.preventDefault();
+        if (more.getAttribute('aria-busy') === 'true') return;
+        more.setAttribute('aria-busy', 'true');
+
+        try {
+            const response = await fetch(more.href, { headers: { Accept: 'text/html' } });
+            if (!response.ok) throw new Error(String(response.status));
+            const page = new DOMParser().parseFromString(await response.text(), 'text/html');
+
+            feed.append(...page.querySelectorAll('[data-feed] > li'));
+
+            const next = page.querySelector('[data-feed-more]');
+            if (next) {
+                more.href = next.href;
+                more.replaceChildren(...next.childNodes);
+                more.removeAttribute('aria-busy');
+            } else {
+                more.closest('p')?.remove();
+            }
+        } catch {
+            // Something went wrong on the way: the link still leads to the next page.
+            window.location.href = more.href;
+        }
+    });
+}

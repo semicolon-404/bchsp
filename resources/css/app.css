@@ -3754,3 +3754,26 @@ html.is-mourning {
         .share-sheet[open] { animation: none; }
     }
 }
+
+@layer components {
+    /* Beside the feed (posts.blade.php): white panels like its posts, held in view on a wide screen but never taller
+       than it, so nothing of it is ever out of reach. */
+    .feed-panel {
+        padding: 1rem;
+        border-radius: 10px;
+        background: var(--color-page);
+        box-shadow: 0 1px 2px rgb(0 0 0 / 0.12), 0 0 0 1px color-mix(in srgb, var(--color-line) 50%, transparent);
+    }
+
+    @media (min-width: 64rem) {
+        .feed-aside {
+            position: sticky;
+            top: 5rem;
+            max-height: calc(100dvh - 6rem);
+            overflow-y: auto;
+            scrollbar-width: thin;
+            padding: 2px;
+            margin: -2px;
+        }
+    }
+}

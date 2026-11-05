@@ -182,7 +182,8 @@ class AnnouncementController extends Controller
             'posts' => Announcement::published()->with('type', 'department')
                 ->whereIn('department_id', $department ? [$department->id] : $departments->pluck('id'))
                 ->orderByDesc('starts_at')->orderByDesc('id')
-                ->paginate(10)->withQueryString(),
+                // Five at a time: posts are mostly pictures, so the page opens quickly; "Show more posts" brings the next five.
+                ->paginate(5)->withQueryString(),
             // Eight: enough to fill the rows (each is shown twice for the drift), few enough to load quickly.
             'wall' => $pictured->take(8)->values(),
             'covers' => $pictured->unique('department_id')->keyBy('department_id'),

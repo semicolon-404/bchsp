@@ -31,8 +31,12 @@ export function startShare() {
  */
 export function startPostShare() {
     const sheet = document.querySelector('[data-share-sheet]');
-    const buttons = document.querySelectorAll('button[data-share-url]');
-    if (!buttons.length) return;
+    if (!document.querySelector('button[data-share-url]')) return;
+    // One listener for the page, so the posts brought in later by "Show more" share too.
+    const onShare = (handler) => document.addEventListener('click', (event) => {
+        const button = event.target.closest?.('button[data-share-url]');
+        if (button) handler(button);
+    });
 
     let current = { url: '', title: '' };
 
@@ -77,7 +81,7 @@ export function startPostShare() {
             };
         };
 
-        buttons.forEach((button) => button.addEventListener('click', () => {
+        onShare((button) => {
             current = { url: button.dataset.shareUrl, title: button.dataset.shareTitle };
             const to = links(current.url, current.title);
             sheet.querySelectorAll('[data-share-to]').forEach((a) => (a.href = to[a.dataset.shareTo]));
@@ -88,16 +92,15 @@ export function startPostShare() {
             sheet.showModal();
             // The window itself holds the focus at first, so no button is ringed before anyone touches it.
             sheet.focus();
-        }));
+        });
 
         return;
     }
 
-    buttons.forEach((button) => {
+    onShare(async (button) => {
         const label = button.querySelector('[data-share-label]');
-        const usual = label.textContent;
-
-        button.addEventListener('click', async () => {
+        const usual = label.dataset.usual ??= label.textContent;
+        {
             const url = button.dataset.shareUrl;
             try {
                 if (navigator.share) {
@@ -112,6 +115,6 @@ export function startPostShare() {
             } catch {
                 // The reader closed the sharing sheet, or the browser refused: nothing to do.
             }
-        });
+        }
     });
 }
