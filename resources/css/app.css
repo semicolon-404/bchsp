@@ -4478,7 +4478,12 @@ html.is-mourning {
         pointer-events: none;
     }
 
-    .home-screen:has(.festival) .hero-pulse { opacity: 0.12; }
+    /* At Loy Krathong the pulse is the river's bank: the water lies under it, the ambulance still drives along it. */
+    .home-screen:has(.festival.is-loykrathong) .hero-pulse { opacity: 0.7; z-index: 2; }
+    .home-screen:has(.festival.is-loykrathong) .ambulance-road { z-index: 3; }
+    .festival.is-loykrathong .river { height: 3rem; }
+    .festival.is-loykrathong .krathong { bottom: 0.6rem; }
+    .festival.is-loykrathong .festival-moon { display: none; }
 
     /* Loy Krathong: a full moon, a river, the krathongs. */
     .festival-moon {
@@ -4495,9 +4500,9 @@ html.is-mourning {
     .river {
         position: absolute;
         inset: auto 0 0 0;
-        height: 3.75rem;
+        height: 3.5rem;
         overflow: hidden;
-        background: linear-gradient(180deg, rgb(14 116 144 / 0.55), rgb(8 47 73 / 0.85));
+        background: linear-gradient(180deg, #5eead4 0%, #22d3ee 35%, #0891b2 100%);
     }
 
     /* The waves: a strip of crests twice the width, slid along. */
@@ -4506,7 +4511,7 @@ html.is-mourning {
         inset: -0.4rem 0 auto 0;
         width: 200%;
         height: 1rem;
-        background: radial-gradient(1.5rem 0.6rem at 1.5rem 0.9rem, transparent 70%, rgb(186 230 253 / 0.45) 72%, transparent 85%) 0 0 / 3rem 1rem repeat-x;
+        background: radial-gradient(1.5rem 0.6rem at 1.5rem 0.9rem, transparent 70%, rgb(255 255 255 / 0.7) 72%, transparent 85%) 0 0 / 3rem 1rem repeat-x;
         will-change: transform;
         animation: river-flow 9s linear infinite;
     }
@@ -4519,9 +4524,9 @@ html.is-mourning {
 
     .krathong {
         position: absolute;
-        bottom: 1.6rem;
+        bottom: 0.9rem;
         left: -5rem;
-        width: 4rem;
+        width: 4.5rem;
         pointer-events: auto;
         will-change: transform;
         animation: krathong-drift var(--time) linear var(--wait) infinite;
@@ -4649,15 +4654,15 @@ html.is-mourning {
         min-height: calc(100dvh - 4rem);
         overflow: hidden;
         padding-bottom: 11rem;
-        background:
-            radial-gradient(60rem 30rem at 80% 10%, color-mix(in srgb, var(--color-brand) 25%, transparent), transparent 70%),
-            linear-gradient(180deg, #06121f 0%, #0b2233 55%, #0e2f3f 100%);
+        background: linear-gradient(180deg, #ea580c 0%, #f97316 25%, #fb923c 50%, #fdba74 75%, #fed7aa 100%);
         isolation: isolate;
     }
 
     .loy-sky { position: absolute; inset: 0; pointer-events: none; }
 
-    .loy-star {
+    .loy-star { display: none; }
+
+    .loy-star-unused {
         position: absolute;
         width: 2px;
         height: 2px;
@@ -4675,8 +4680,9 @@ html.is-mourning {
         width: 6rem;
         height: 6rem;
         border-radius: 999px;
-        background: radial-gradient(circle at 38% 35%, #fffbeb, #fef3c7 55%, #fcd34d);
-        box-shadow: 0 0 60px 20px rgb(253 230 138 / 0.35), 0 0 160px 60px rgb(253 230 138 / 0.12);
+        background: radial-gradient(circle at 40% 38%, #fffbeb, #fde68a 60%, #fbbf24);
+        box-shadow: 0 0 60px 24px rgb(254 243 199 / 0.5);
+        opacity: 0.85;
     }
 
     /* Lanterns far off, rising slowly and swaying. */
@@ -4704,10 +4710,10 @@ html.is-mourning {
         display: inline-block;
         padding: 0.75rem 1rem;
         border-radius: 14px;
-        background: rgb(251 191 36 / 0.15);
-        color: #fde68a;
+        background: rgb(255 255 255 / 0.9);
+        color: #9d174d;
         font-weight: 600;
-        box-shadow: inset 0 0 0 1px rgb(251 191 36 / 0.35);
+        box-shadow: 0 10px 24px -12px rgb(124 45 18 / 0.6);
     }
 
     .loy-card {
@@ -4750,8 +4756,8 @@ html.is-mourning {
         position: absolute;
         inset: auto 0 0 0;
         height: 10rem;
-        background: linear-gradient(180deg, #0f3b52 0%, #082233 100%);
-        box-shadow: inset 0 12px 30px -10px rgb(0 0 0 / 0.5);
+        background: linear-gradient(180deg, #5eead4 0%, #22d3ee 30%, #06b6d4 60%, #0e7490 100%);
+        box-shadow: inset 0 6px 0 rgb(120 53 15 / 0.85);
     }
 
     .loy-river .river-wave { top: -0.4rem; }
@@ -4763,7 +4769,7 @@ html.is-mourning {
         right: calc(40% - 3rem);
         width: 12rem;
         height: 100%;
-        background: repeating-linear-gradient(180deg, rgb(253 230 138 / 0.45) 0 3px, transparent 3px 14px);
+        background: repeating-linear-gradient(180deg, rgb(255 255 255 / 0.6) 0 3px, transparent 3px 14px);
         mask-image: linear-gradient(180deg, #000, transparent 90%), radial-gradient(closest-side, #000, transparent);
         mask-composite: intersect;
         animation: glint 4s ease-in-out infinite alternate;
@@ -4779,8 +4785,8 @@ html.is-mourning {
     .loy-krathongs { position: absolute; inset: 0; }
 
     .loy-krathongs .krathong {
-        bottom: calc(6.4rem - var(--row) * 2.6rem);
-        width: calc(4rem + var(--row) * 0.6rem);
+        bottom: calc(5.8rem - var(--row) * 2.6rem);
+        width: calc(5rem + var(--row) * 1rem);
         z-index: var(--row);
     }
 
@@ -4800,13 +4806,13 @@ html.is-mourning {
     /* On the home page's river: the way to float one's own. */
     .festival-go {
         position: absolute;
-        bottom: 4.4rem;
+        bottom: 4.2rem;
         left: 1rem;
         z-index: 3;
-        padding: 0.35rem 0.9rem;
+        padding: 0.4rem 1rem;
         border-radius: 999px;
-        background: rgb(8 47 73 / 0.85);
-        color: #fde68a;
+        background: linear-gradient(135deg, #db2777, #9333ea);
+        color: #fff;
         font-size: 0.85rem;
         font-weight: 600;
         text-decoration: none;
@@ -4814,5 +4820,12 @@ html.is-mourning {
         box-shadow: 0 0 0 1px rgb(253 230 138 / 0.35);
     }
 
-    .festival-go:hover { background: rgb(8 47 73); color: #fff; }
+    .festival-go:hover { filter: brightness(1.1); color: #fff; }
+}
+
+@layer components {
+    /* The page's words on the sunset: white with a warm shadow; the button in festival pink. */
+    .loy h1, .loy .text-white { text-shadow: 0 2px 10px rgb(124 45 18 / 0.45); }
+    .loy .eyebrow { color: #fff7ed; }
+    .loy-card .btn-brand { background: linear-gradient(135deg, #db2777, #9333ea); border-color: transparent; color: #fff; }
 }

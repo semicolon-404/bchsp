@@ -1,5 +1,5 @@
 {{--
-    /loykrathong: the river at night under a full moon, its light laid on the water, lanterns rising far off, every
+    /loykrathong: a warm sunset over a turquoise river, the moon rising, lanterns going up far off, every
     krathong floated this festival drifting on it (the departments' and the visitors'), and a card to float one's own:
     a krathong chosen from four, a name, a wish. Floated, it goes onto the water at once and drifts off with the rest
     (KrathongController). Moves by transform and opacity alone; still for those who ask for less motion.
@@ -20,10 +20,10 @@
 
         <div class="wrap relative z-[2] grid items-start gap-8 py-8 sm:py-12 lg:grid-cols-[minmax(0,1fr)_24rem]">
             <div class="text-white">
-                <p class="eyebrow text-amber-200/90">{{ $festival->name }}</p>
+                <p class="eyebrow">{{ $festival->name }}</p>
                 <h1 class="mt-2 text-4xl font-semibold leading-tight sm:text-5xl">{{ __('Float a krathong online') }}</h1>
-                <p class="mt-3 max-w-xl text-lg text-white/80">{{ __('Choose a krathong, write a wish for yourself, your family or the people of Buached, and set it on the river.') }}</p>
-                <p class="mt-5 inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-1.5 text-sm text-white/90"><span class="size-2 rounded-full bg-amber-300" aria-hidden="true"></span>{{ trans_choice('{0} Be the first on the river|[1,*] :count krathongs on the river', $floated, ['count' => number_format($floated)]) }}</p>
+                <p class="mt-3 max-w-xl text-lg text-white">{{ __('Choose a krathong, write a wish for yourself, your family or the people of Buached, and set it on the river.') }}</p>
+                <p class="mt-5 inline-flex items-center gap-2 rounded-full bg-white/90 px-4 py-1.5 text-sm font-semibold text-orange-800"><span class="size-2 rounded-full bg-pink-500" aria-hidden="true"></span>{{ trans_choice('{0} Be the first on the river|[1,*] :count krathongs on the river', $floated, ['count' => number_format($floated)]) }}</p>
 
                 @if ($fresh)
                     <p class="loy-thanks mt-6" role="status">{{ __('Your krathong is on the river. May your wish come true.') }}</p>

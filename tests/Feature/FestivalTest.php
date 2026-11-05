@@ -20,12 +20,13 @@ class FestivalTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_a_festival_takes_the_place_of_the_ambulance_only_within_its_days_and_while_on(): void
+    public function test_a_festival_shows_under_the_pulse_only_within_its_days_and_while_on(): void
     {
         $this->get('/')->assertSee('class="ambulance"', false)->assertDontSee('class="festival', false);
 
         $festival = Festival::create(['name' => 'Christmas', 'theme' => 'christmas', 'starts_on' => today(), 'ends_on' => today()->addDays(3)]);
-        $this->get('/')->assertSee('festival is-christmas', false)->assertDontSee('class="ambulance"', false);
+        // The ambulance keeps driving along the pulse above it.
+        $this->get('/')->assertSee('festival is-christmas', false)->assertSee('class="ambulance"', false);
 
         $festival->update(['is_active' => false]);
         $this->get('/')->assertDontSee('festival is-christmas', false);

@@ -156,11 +156,12 @@
 
         {{-- An ambulance driving slowly along the pulse, over its beat, its lights going: every half minute it comes by
              again. Drawn here, no picture to fetch; still, parked at the end, for those who ask for less motion. --}}
-        {{-- A festival on today (Festivals in the panel) takes the foot of the screen; otherwise the ambulance on the
-             pulse, as the administrator set it (Site settings > The hospital). --}}
+        {{-- A festival on today (Festivals in the panel), under the pulse; the ambulance along the pulse, as the
+             administrator set it (Site settings > The hospital). --}}
         @if ($festival = App\Models\Festival::today())
             <x-site.festival :festival="$festival" />
-        @elseif (SiteSettings::ambulance() !== 'off')
+        @endif
+        @if (SiteSettings::ambulance() !== 'off')
             <x-site.ambulance :light="SiteSettings::ambulance()" :every="SiteSettings::ambulanceEvery()" />
         @endif
     </section>
