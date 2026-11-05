@@ -2066,7 +2066,7 @@ html.is-mourning {
 /* A pulse across the home page's first screen (home.blade.php, "hero"), in the colour of the day, drawn once. */
 .hero-pulse {
     position: absolute;
-    inset: auto 0 1.5rem 0;
+    inset: auto 0 0.5rem 0;
     z-index: -1;
     width: 100%;
     height: 6rem;
@@ -2076,29 +2076,11 @@ html.is-mourning {
     transition: opacity 0.9s ease;
 }
 
-.hero-pulse path {
-    stroke-dasharray: 3000;
-    stroke-dashoffset: 3000;
-    animation: hero-pulse 2.6s ease-out 0.3s forwards;
-}
-
-@keyframes hero-pulse {
-    to {
-        stroke-dashoffset: 0;
-    }
-}
-
 /* Over a photograph the pulse would only cross it. */
 .home-screen[data-kind='photo'] .hero-pulse {
     opacity: 0;
 }
 
-@media (prefers-reduced-motion: reduce) {
-    .hero-pulse path {
-        stroke-dashoffset: 0;
-        animation: none;
-    }
-}
 
 /* The newest announcements beside the pictures on the home page: the rows share out the height of the frame. */
 @media (min-width: 64rem) {
@@ -3873,22 +3855,16 @@ html.is-mourning {
         to { transform: scale(1.8); opacity: 0; }
     }
 
-    /* The pulse: a light running along the line, glowing, after the line is drawn. */
-    .hero-pulse-blip {
-        stroke-dasharray: 60 1000;
-        stroke-dashoffset: 60;
-        filter: drop-shadow(0 0 6px currentColor) drop-shadow(0 0 12px currentColor);
-        opacity: 0;
-        animation: pulse-run 3.2s cubic-bezier(0.45, 0, 0.55, 1) 2.9s infinite;
+    /* The pulse: drawn once as the page opens, then still. */
+    .hero-pulse path {
+        stroke-dasharray: 3000;
+        stroke-dashoffset: 3000;
+        animation: hero-pulse 2.6s ease-out 0.3s forwards;
     }
 
-    @keyframes pulse-run {
-        0% { stroke-dashoffset: 60; opacity: 1; }
-        90% { opacity: 1; }
-        100% { stroke-dashoffset: -1000; opacity: 0; }
+    @keyframes hero-pulse {
+        to { stroke-dashoffset: 0; }
     }
-
-    .hero-pulse:has(.hero-pulse-blip) { opacity: 0.6; }
 
     /* Today's clinics as a board, as at an airport, in the site's own colours: a clock, a state for each row, a bar
        for how far an open one is. White glass on the light page, dark glass on the dark one. */
@@ -3937,70 +3913,127 @@ html.is-mourning {
         text-shadow: 0 1px 2px rgb(0 0 0 / 0.25);
     }
 
-    /* The sign: hung from a nail by a cord to two rings at its upper corners; it swings in, then stirs. */
+    /* The sign: hung on two thick twisted ropes coming down from above, each wound into a knot and passed through a
+       hole near the sign's upper edge; it swings in, then stirs. */
     .sign {
         position: relative;
-        padding-top: 4.5rem;
-        transform-origin: 50% 0.4rem;
-        animation: sign-in 2.4s cubic-bezier(0.3, 0.7, 0.4, 1) both, sign-stir 7s ease-in-out 2.4s infinite alternate;
+        padding-top: 5.5rem;
+        transform-origin: 50% -16rem;
+        animation: sign-in 3.2s both, sign-stir 9s ease-in-out 3.2s infinite;
     }
 
-    .sign-nail {
+    .sign-rope {
         position: absolute;
-        top: 0;
+        top: -16rem;
+        z-index: 2;
+        width: 1rem;
+        /* Down over the front of the sign's band, to where it turns under the edge (a swing's rope round its seat). */
+        height: calc(16rem + 5.5rem + 3.9rem);
+        border-radius: 0.5rem 0.5rem 0.7rem 0.7rem;
+        /* The strands: light and dark turns crossing the rope, a shade down one side for its roundness. */
+        background:
+            linear-gradient(90deg, rgb(255 255 255 / 0.18), transparent 40%, rgb(0 0 0 / 0.28)),
+            repeating-linear-gradient(-55deg, #d8b37a 0 4px, #b98d52 4px 7px, #8c6634 7px 8px);
+        box-shadow: 1px 2px 3px rgb(0 0 0 / 0.25);
+    }
+
+    /* Under the words (a narrow screen) the ropes are shorter and fade in from above, not cross the words. */
+    @media (max-width: 63.99rem) {
+        .sign { transform-origin: 50% -5rem; }
+        .sign-rope {
+            top: -5rem;
+            height: calc(5rem + 5.5rem + 3.9rem);
+            mask-image: linear-gradient(to bottom, transparent, #000 3.5rem);
+        }
+        .sign-knot { top: calc(5rem + 5.5rem - 4.4rem); }
+    }
+
+    .sign-rope.is-left { left: calc(1.4rem - 0.5rem); }
+    .sign-rope.is-right { right: calc(1.4rem - 0.5rem); }
+
+    /* The knot: the rope wound round itself, four turns, a little above the sign. */
+    .sign-knot {
+        position: absolute;
+        top: calc(16rem + 5.5rem - 4.4rem);
         left: 50%;
-        z-index: 1;
-        width: 0.875rem;
-        height: 0.875rem;
-        margin-left: -0.4375rem;
-        border-radius: 999px;
-        background: radial-gradient(circle at 35% 35%, #f1f5f9, #64748b 70%);
-        box-shadow: 0 2px 3px rgb(0 0 0 / 0.35);
+        width: 1.9rem;
+        height: 3.4rem;
+        margin-left: -0.95rem;
+        border-radius: 0.8rem;
+        background:
+            linear-gradient(90deg, rgb(255 255 255 / 0.22), transparent 45%, rgb(0 0 0 / 0.3)),
+            repeating-linear-gradient(180deg, #d4ad74 0 0.62rem, #9a723f 0.62rem 0.85rem);
+        box-shadow: 1px 3px 5px rgb(0 0 0 / 0.3);
     }
 
-    .sign-cord {
-        position: absolute;
-        top: 0.4rem;
-        left: 0;
-        width: 100%;
-        height: 4.35rem;
-        color: color-mix(in srgb, var(--color-ink) 45%, #a16207);
-    }
-
-    /* The rings the cord is tied to, at the sign's upper corners. */
     .sign .board { position: relative; overflow: visible; }
 
-    .sign .board::before,
-    .sign .board::after {
+    /* Hairs: loose fibres standing out from both sides of the rope and lying on it, as on real hemp. */
+    .sign-rope::before {
         content: '';
         position: absolute;
-        top: -0.55rem;
-        z-index: 1;
-        width: 1.1rem;
-        height: 1.1rem;
-        border: 3px solid #94a3b8;
-        border-radius: 999px;
-        background: transparent;
+        inset: 0 -0.38rem;
+        background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='26' viewBox='0 0 28 26' fill='none' stroke-linecap='round'%3E%3Cg stroke='%23e7cf9f' stroke-width='0.45' opacity='0.85'%3E%3Cpath d='M6 3 q-3 -1 -5 1'/%3E%3Cpath d='M6 11 q-4 1 -5.5 4'/%3E%3Cpath d='M7 19 q-3 -2 -6 -1'/%3E%3Cpath d='M22 6 q3 -2 5 0'/%3E%3Cpath d='M22 14 q4 0 5.5 3'/%3E%3Cpath d='M21 22 q3 1 6 -1'/%3E%3C/g%3E%3Cg stroke='%23a77d45' stroke-width='0.4' opacity='0.7'%3E%3Cpath d='M6 7 q-2 2 -4 2'/%3E%3Cpath d='M7 16 q-3 0 -4 -2'/%3E%3Cpath d='M22 10 q2 2 4 1'/%3E%3Cpath d='M22 19 q3 0 4 2'/%3E%3C/g%3E%3Cg stroke='%23f3e3c2' stroke-width='0.3' opacity='0.6'%3E%3Cpath d='M10 4 l3 -1.5'/%3E%3Cpath d='M12 12 l4 -2'/%3E%3Cpath d='M10 20 l3 -1.5'/%3E%3C/g%3E%3C/svg%3E") center top / 100% auto repeat-y;
+        pointer-events: none;
     }
 
-    .sign .board::before { left: calc(10% - 0.55rem); }
-    .sign .board::after { right: calc(10% - 0.55rem); }
+    /* Where the rope turns under the sign's edge: a shade on the rope's foot, and on the band beside it. */
+    .sign-rope::after {
+        content: '';
+        position: absolute;
+        inset: auto -0.15rem -0.25rem;
+        height: 0.9rem;
+        border-radius: 0 0 0.8rem 0.8rem;
+        background: linear-gradient(180deg, transparent, rgb(40 25 10 / 0.55));
+    }
+
+    /* Tied by hand: the knot a little askew, and the end of the rope hanging from it, frayed. */
+    .sign-rope.is-left .sign-knot { transform: rotate(-5deg); }
+    .sign-rope.is-right .sign-knot { transform: rotate(4deg); }
+
+    .sign-knot::after {
+        content: '';
+        position: absolute;
+        top: 82%;
+        width: 0.7rem;
+        height: 2.4rem;
+        border-radius: 0.35rem 0.35rem 0.15rem 0.15rem;
+        background:
+            linear-gradient(180deg, transparent 72%, rgb(255 255 255 / 0.25) 72%, transparent 100%),
+            repeating-linear-gradient(90deg, transparent 0 1px, rgb(0 0 0 / 0.12) 1px 2px) bottom / 100% 0.6rem no-repeat,
+            linear-gradient(90deg, rgb(255 255 255 / 0.18), transparent 40%, rgb(0 0 0 / 0.28)),
+            repeating-linear-gradient(-55deg, #d8b37a 0 4px, #b98d52 4px 7px, #8c6634 7px 8px);
+        mask-image: linear-gradient(180deg, #000 78%, rgb(0 0 0 / 0.55) 90%, transparent);
+        box-shadow: 1px 2px 3px rgb(0 0 0 / 0.2);
+        transform-origin: top center;
+    }
+
+    .sign-rope.is-left .sign-knot::after { left: -0.35rem; transform: rotate(16deg); }
+    .sign-rope.is-right .sign-knot::after { right: -0.35rem; transform: rotate(-16deg); }
+
+    /* Room in the band for the ropes on either side. */
+    .sign .board-head { padding-inline: 2.75rem; }
 
     .sign .board-head { border-radius: 20px 20px 0 0; }
     .sign .board-foot { border-radius: 0 0 20px 20px; }
 
+    /* A board on two ropes swings sideways, hardly turning: each swing smaller than the last, each slowing at its end. */
     @keyframes sign-in {
-        0% { transform: translateY(-2.5rem) rotate(-7deg); opacity: 0; }
-        25% { opacity: 1; }
-        45% { transform: translateY(0) rotate(4deg); }
-        65% { transform: rotate(-2deg); }
-        82% { transform: rotate(1deg); }
-        100% { transform: rotate(0); }
+        0% { transform: translate(-2.2rem, -1.5rem) rotate(-1.2deg); opacity: 0; animation-timing-function: ease-out; }
+        12% { opacity: 1; }
+        22% { transform: translate(1.1rem, 0) rotate(0.6deg); animation-timing-function: ease-in-out; }
+        40% { transform: translate(-0.7rem, 0) rotate(-0.35deg); animation-timing-function: ease-in-out; }
+        57% { transform: translate(0.42rem, 0) rotate(0.2deg); animation-timing-function: ease-in-out; }
+        73% { transform: translate(-0.22rem, 0) rotate(-0.1deg); animation-timing-function: ease-in-out; }
+        88% { transform: translate(0.08rem, 0) rotate(0.04deg); animation-timing-function: ease-in-out; }
+        100% { transform: translate(0, 0) rotate(0); }
     }
 
+    /* Then a slow stir, as in a breeze, barely seen. */
     @keyframes sign-stir {
-        from { transform: rotate(-0.6deg); }
-        to { transform: rotate(0.6deg); }
+        0%, 100% { transform: translateX(0) rotate(0); }
+        30% { transform: translateX(3px) rotate(0.12deg); }
+        70% { transform: translateX(-2px) rotate(-0.08deg); }
     }
 
     .board-rows { padding: 0.25rem 0; }
@@ -4063,8 +4096,8 @@ html.is-mourning {
     }
 
     @media (prefers-reduced-motion: reduce) {
-        .hero-aurora > span, .hero-pulse-blip, .hero-live-dot::after, .sign { animation: none; }
-        .hero-pulse-blip { opacity: 0; }
+        .hero-aurora > span, .hero-live-dot::after, .sign { animation: none; }
+        .hero-pulse path { stroke-dashoffset: 0; animation: none; }
     }
 }
 

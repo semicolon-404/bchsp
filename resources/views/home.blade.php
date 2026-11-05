@@ -76,7 +76,7 @@
         <span class="hero-crosses" aria-hidden="true"><span style="left: 6%; --size: 1.4rem; --time: 18s; --wait: 0s">+</span><span style="left: 18%; --size: 0.9rem; --time: 14s; --wait: 4s">+</span><span style="left: 31%; --size: 1.8rem; --time: 22s; --wait: 8s">+</span><span style="left: 47%; --size: 1.1rem; --time: 16s; --wait: 2s">+</span><span style="left: 58%; --size: 0.8rem; --time: 13s; --wait: 10s">+</span><span style="left: 69%; --size: 1.5rem; --time: 20s; --wait: 5s">+</span><span style="left: 82%; --size: 1rem; --time: 15s; --wait: 7s">+</span><span style="left: 93%; --size: 1.3rem; --time: 19s; --wait: 12s">+</span></span>
         {{-- The site's own drawing with the welcome, then the hospital's photographs, one after another (Site settings > The hospital). --}}
         <x-site.hero-photos :slides="$photos" />
-        <div @class(['hero-front wrap grid items-center gap-12 py-14 sm:py-20', 'lg:grid-cols-2' => $sessions->isNotEmpty()])>
+        <div @class(['hero-front wrap grid items-center gap-12 pb-28 pt-14 sm:pb-36 sm:pt-20', 'lg:grid-cols-2' => $sessions->isNotEmpty()])>
             {{-- Beside today's clinics the words keep to the left; under the hospital's emblem they are centred, the emblem over their middle. --}}
             @php($logo = SiteSettings::logoUrl())
             @php($aside = $sessions->isNotEmpty() && ! $logo)
@@ -113,12 +113,11 @@
             </div>
 
             @if ($sessions->isNotEmpty())
-                {{-- A sign hung by a cord from a nail, swinging in as the page opens, then stirring as in a breeze. --}}
+                {{-- A sign hung on two ropes, swinging in as the page opens, then stirring as in a breeze. --}}
                 <div class="sign">
-                <span class="sign-nail" aria-hidden="true"></span>
-                <svg class="sign-cord" viewBox="0 0 100 40" preserveAspectRatio="none" fill="none" aria-hidden="true">
-                    <path d="M50 1 L10 39 M50 1 L90 39" stroke="currentColor" stroke-width="2" stroke-linecap="round" vector-effect="non-scaling-stroke" />
-                </svg>
+                {{-- Two thick twisted ropes coming down from above, each wound into a knot and passed through a hole in the sign. --}}
+                <span class="sign-rope is-left" aria-hidden="true"><span class="sign-knot"></span></span>
+                <span class="sign-rope is-right" aria-hidden="true"><span class="sign-knot"></span></span>
                 <section class="board" aria-labelledby="today-heading">
                     <div class="board-head">
                         <h2 id="today-heading" class="text-sm font-semibold">{{ __('Open today') }} · <span @class(['day-chip' => App\Support\Theme::touchOfTheDay()])>{{ __(App\Models\ClinicSession::DAYS[now()->dayOfWeek]) }}</span></h2>
@@ -148,11 +147,9 @@
             @endif
         </div>
 
-        {{-- A pulse across the first screen, in the colour of the day: drawn as the page opens, then a light runs along it. --}}
+        {{-- A pulse across the foot of the first screen, in the colour of the day, drawn once as the page opens. --}}
         <svg class="hero-pulse" viewBox="0 0 1200 120" preserveAspectRatio="none" fill="none" aria-hidden="true">
             <path d="M0 60H520l18-22 16 22h40l14-50 22 100 18-78 12 28h40l16-14 14 14H1200" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke" />
-            {{-- A light running along the line, as a heartbeat on a monitor. --}}
-            <path class="hero-pulse-blip" pathLength="1000" d="M0 60H520l18-22 16 22h40l14-50 22 100 18-78 12 28h40l16-14 14 14H1200" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke" />
         </svg>
     </section>
 
