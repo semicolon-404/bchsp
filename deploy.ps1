@@ -52,7 +52,8 @@ try {
 $refresh = Join-Path $env:TEMP 'refresh-bchsp.php'
 @'
 <?php
-// Put here by deploy.ps1: applies new migrations and clears what the site kept from before.
+// Put here by deploy.ps1: applies new migrations, clears what the site kept from before, and makes up to twenty
+// old pictures thousands of dots wide smaller (each original kept in storage/app/private/picture-originals).
 if (! hash_equals('KEY', (string) ($_GET['key'] ?? ''))) { http_response_code(404); exit; }
 header('Content-Type: text/plain; charset=utf-8');
 set_time_limit(300);
@@ -61,7 +62,7 @@ $app = require __DIR__.'/../bchsp/bootstrap/app.php';
 $app->usePublicPath(__DIR__);
 $kernel = $app->make(Illuminate\Contracts\Console\Kernel::class);
 $kernel->bootstrap();
-foreach ([['migrate', ['--force' => true]], ['optimize:clear', []]] as [$command, $options]) {
+foreach ([['migrate', ['--force' => true]], ['optimize:clear', []], ['site:shrink-pictures', ['--at-most' => 20]]] as [$command, $options]) {
     $code = $kernel->call($command, $options);
     echo "> $command\n", $kernel->output(), "\n";
     if ($code !== 0) { http_response_code(500); exit; }
