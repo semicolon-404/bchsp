@@ -43,15 +43,16 @@ class OldPicturesTest extends TestCase
         $this->assertSame(0, OldPictures::shrink());
     }
 
-    public function test_a_logo_of_few_colours_stays_few_colours_and_comes_out_smaller(): void
+    public function test_a_logo_of_few_colours_on_a_clear_ground_is_left_as_it_is(): void
     {
         Storage::fake('public');
         Storage::fake('local');
         $disk = Storage::disk('public');
 
-        // A palette PNG, as logos are: wide, a few colours in bands of noise so it is large.
+        // A palette PNG on a clear ground, as logos are: wide, a few colours in bands of noise so it is large.
         $logo = imagecreate(6000, 1200);
-        $colours = array_map(fn ($i) => imagecolorallocate($logo, $i * 30, 255 - $i * 30, 120), range(0, 7));
+        imagecolortransparent($logo, imagecolorallocate($logo, 0, 0, 0));
+        $colours = array_map(fn ($i) => imagecolorallocate($logo, 1 + $i * 30, 255 - $i * 30, 120), range(0, 7));
         for ($i = 0; $i < 400000; $i++) {
             imagesetpixel($logo, random_int(0, 5999), random_int(0, 1199), $colours[array_rand($colours)]);
         }
@@ -59,10 +60,10 @@ class OldPicturesTest extends TestCase
         imagepng($logo, null, 9);
         $disk->put('site/logo.png', (string) ob_get_clean());
         $before = $disk->size('site/logo.png');
-        $this->assertGreaterThan(300 * 1024, $before);
 
-        // Scaled in full colour it would grow and be left; kept to few colours it is made smaller.
-        $this->assertSame(1, OldPictures::shrink());
-        $this->assertLessThan($before, $disk->size('site/logo.png'));
+        // Made smaller it would lose its clear ground to black: it is not touched.
+        $this->assertSame(0, OldPictures::shrink());
+        $this->assertSame($before, $disk->size('site/logo.png'));
+        Storage::disk('local')->assertMissing(OldPictures::ORIGINALS.'/site/logo.png');
     }
 }

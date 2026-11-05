@@ -60,8 +60,8 @@ class NewsroomTest extends TestCase
 
         // Set large it carries no marks: "New" is said once, in the list.
         $this->assertSame(4, substr_count($page, '>New</span>'));
-        // Set large, in the list, and as "last updated" in the band.
-        $this->assertSame(3, substr_count($page, 'The newest, with a picture'));
+        // Set large, in the list (and its share button), and as "last updated" in the band.
+        $this->assertSame(4, substr_count($page, 'The newest, with a picture'));
 
         // Narrowed, or on a later page, there is the list alone.
         $this->get('/announcements?q=newest')->assertDontSee('id="latest-heading"', false);

@@ -165,8 +165,9 @@ class AnnouncementsTest extends TestCase
 
         $year = Announcement::fiscalYearOf(now());
 
+        // "Show more announcements" leads on with every filter kept.
         $this->get('/announcements?type=news&year='.$year.'&q=vaccine')
-            ->assertSee('1 / 2')
+            ->assertSee('data-feed-more', false)
             ->assertSee('type=news', false)
             ->assertSee('year='.$year, false)
             ->assertSee('q=vaccine', false)
@@ -245,12 +246,14 @@ class AnnouncementsTest extends TestCase
         $this->get('/announcements?type[]=x')->assertOk();
     }
 
-    public function test_the_list_is_in_pages_of_fifteen(): void
+    public function test_the_list_comes_ten_at_a_time_and_show_more_brings_the_rest(): void
     {
-        Announcement::factory()->count(16)->create();
+        // Twenty-four: ten, then ten more, then the last four with no more to show.
+        Announcement::factory()->count(24)->create();
 
-        $this->get('/announcements')->assertSee('1 / 2');
-        $this->get('/announcements?page=2')->assertOk()->assertSee('rel="prev"', false);
+        $this->get('/announcements')->assertSee('data-feed-more', false)->assertSee('(14)');
+        $this->get('/announcements?page=2')->assertOk()->assertSee('(4)');
+        $this->get('/announcements?page=3')->assertOk()->assertDontSee('data-feed-more', false);
     }
 
     public function test_an_announcement_shows_its_files_under_the_names_they_were_uploaded_with(): void

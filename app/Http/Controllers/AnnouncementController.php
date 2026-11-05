@@ -20,7 +20,8 @@ use Illuminate\View\View;
  */
 class AnnouncementController extends Controller
 {
-    private const PER_PAGE = 15;
+    /** Ten at a time in rows or cards; "Show more announcements" brings the next ten onto the same page. */
+    private const PER_PAGE = 10;
 
     /** The ways the list can be looked at: rows, or cards with each announcement's cover. */
     public const VIEWS = ['list', 'cards', 'index'];

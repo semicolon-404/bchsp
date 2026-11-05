@@ -71,15 +71,18 @@ class OldPictures
                 return false;
             }
 
-            // Asked before scaling, which turns the picture to full colour.
-            $fewColours = ! imageistruecolor($image);
+            // A PNG of few colours (a logo, as a rule on a clear ground) is left as it is: made smaller it either grows
+            // in full colour, or, brought back to few colours, loses its clear ground to black. Uploaded again in the
+            // panel it is made smaller as WebP, clear ground and all.
+            if ($extension === 'png' && ! imageistruecolor($image)) {
+                return false;
+            }
+
+            // Transparency kept through the scaling.
+            imagealphablending($image, false);
+            imagesavealpha($image, true);
             $scale = self::MAX_SIDE / max($width, $height);
             $smaller = imagescale($image, (int) round($width * $scale), (int) round($height * $scale), IMG_BICUBIC);
-
-            // A PNG of few colours (a logo) comes back to few colours: made smaller in full colour it would grow.
-            if ($extension === 'png' && $fewColours) {
-                imagetruecolortopalette($smaller, true, 256);
-            }
 
             // Transparency kept for PNG and WebP.
             imagealphablending($smaller, false);

@@ -86,6 +86,8 @@
         </div>
     </section>
 
+    {{-- On a grey ground, the cards white on it, as the feed. --}}
+    <div class="bg-raised">
     <div class="wrap py-10 sm:py-14">
         {{-- The three newest, set large: only as the whole list opens. No marks on them: they are said again in the list below. --}}
         @if ($featured->isNotEmpty())
@@ -267,13 +269,13 @@
                             @endforeach
                         </div>
                     @elseif ($look === 'cards')
-                        <ul @class(['mt-3 grid gap-4 sm:grid-cols-2', 'lg:grid-cols-3' => ! $aside])>
+                        <ul @class(['mt-3 grid gap-4 sm:grid-cols-2', 'lg:grid-cols-3' => ! $aside]) data-feed>
                             @foreach ($announcements as $announcement)
                                 <li><x-site.announcement-card :announcement="$announcement" /></li>
                             @endforeach
                         </ul>
                     @else
-                        <ul class="card mt-3 p-0">
+                        <ul class="card mt-3 overflow-hidden p-0" data-feed>
                             @foreach ($announcements as $announcement)
                                 <x-site.announcement-item :announcement="$announcement" />
                             @endforeach
@@ -290,8 +292,14 @@
                                 </a>
                             </p>
                         @endif
-                    @else
-                        <div class="mt-10">{{ $announcements->links('components.site.pagination') }}</div>
+                    @elseif ($announcements->hasMorePages())
+                        {{-- The next ten fetched onto this page (resources/js/toc.js); without the script, a link to them. --}}
+                        <p class="mt-6 text-center">
+                            <a href="{{ $announcements->nextPageUrl() }}" class="btn btn-line w-full justify-center bg-page sm:w-auto" data-feed-more>
+                                <x-heroicon-m-chevron-down class="size-5" aria-hidden="true" />{{ __('Show more announcements') }}
+                                <span class="font-mono text-sm text-muted">({{ number_format($announcements->total() - $announcements->lastItem()) }})</span>
+                            </a>
+                        </p>
                     @endif
                 @else
                     <x-site.empty class="mt-3" icon="magnifying-glass">{{ __('Nothing matches. Try another word, or clear the filters.') }}</x-site.empty>
@@ -300,17 +308,17 @@
 
             {{-- Beside the list as it opens: ways in for someone who came with nothing in mind. --}}
             @if ($aside)
-                <aside class="space-y-8">
+                <aside class="feed-aside space-y-4">
                     @if ($mostRead->isNotEmpty())
-                        <section aria-labelledby="most-read-heading">
-                            <h2 id="most-read-heading" class="flex items-center gap-2 text-xl"><x-heroicon-o-fire class="size-5 text-brand" aria-hidden="true" />{{ __('Most read') }}</h2>
-                            <ol class="card mt-3 p-0">
+                        <section class="feed-panel p-0" aria-labelledby="most-read-heading">
+                            <h2 id="most-read-heading" class="flex items-center gap-2 px-4 pt-4 text-sm font-semibold"><x-heroicon-s-fire class="size-5 text-orange-500" aria-hidden="true" />{{ __('Most read') }}</h2>
+                            <ol class="mt-1 pb-2">
                                 @foreach ($mostRead as $one)
-                                    <li class="border-b border-line last:border-b-0">
-                                        <a href="{{ route('announcements.show', $one) }}" class="group flex items-start gap-3 px-4 py-3 no-underline">
-                                            <span class="w-6 shrink-0 text-center font-mono text-xl font-semibold text-brand" aria-hidden="true">{{ $loop->iteration }}</span>
+                                    <li>
+                                        <a href="{{ route('announcements.show', $one) }}" class="group flex items-start gap-3 px-4 py-2 no-underline hover:bg-raised">
+                                            <span class="mt-0.5 w-4 shrink-0 font-mono text-sm font-semibold text-muted" aria-hidden="true">{{ $loop->iteration }}</span>
                                             <span class="min-w-0 flex-1">
-                                                <span class="line-clamp-2 block text-ink group-hover:text-brand">{{ $one->localTitle() }}</span>
+                                                <span class="line-clamp-2 block text-sm leading-snug text-ink group-hover:text-brand">{{ $one->localTitle() }}</span>
                                                 <span class="mt-0.5 block font-mono text-xs text-muted">{{ trans_choice('{1} opened :count time|[2,*] opened :count times', $one->views, ['count' => number_format($one->views)]) }}</span>
                                             </span>
                                         </a>
@@ -321,35 +329,40 @@
                     @endif
 
                     @if ($coming->isNotEmpty())
-                        <section aria-labelledby="coming-heading">
-                            <h2 id="coming-heading" class="flex items-center gap-2 text-xl"><x-heroicon-o-calendar-days class="size-5 text-brand" aria-hidden="true" />{{ __('Coming up') }}</h2>
-                            <ul class="card mt-3 p-0">
+                        <section class="feed-panel p-0" aria-labelledby="coming-heading">
+                            <h2 id="coming-heading" class="flex items-center justify-between gap-2 px-4 pt-4 text-sm font-semibold">
+                                <span class="inline-flex items-center gap-2"><x-heroicon-s-calendar-days class="size-5 text-brand" aria-hidden="true" />{{ __('Coming up') }}</span>
+                                <a href="{{ route('calendar') }}" class="text-xs font-semibold text-brand no-underline hover:underline">{{ __('Calendar') }} &rarr;</a>
+                            </h2>
+                            <ul class="mt-1 pb-2">
                                 @foreach ($coming as $one)
-                                    <li class="border-b border-line last:border-b-0">
-                                        <a href="{{ route('announcements.show', $one) }}" class="group flex items-center gap-3 px-4 py-3 no-underline">
-                                            <span class="flex w-12 shrink-0 flex-col items-center rounded-lg border border-line bg-page py-1 text-center" aria-hidden="true">
-                                                <span class="font-mono text-xl font-semibold leading-none text-brand">{{ $one->event_on->day }}</span>
-                                                <span class="mt-0.5 font-mono text-xs text-muted">{{ $one->event_on->locale(app()->getLocale())->translatedFormat('M') }}</span>
+                                    <li>
+                                        <a href="{{ route('announcements.show', $one) }}" class="group flex items-center gap-3 px-4 py-2 no-underline hover:bg-raised">
+                                            <span class="flex w-10 shrink-0 flex-col items-center rounded-md border border-line bg-page py-0.5 text-center" aria-hidden="true">
+                                                <span class="font-mono text-base font-semibold leading-none text-brand">{{ $one->event_on->day }}</span>
+                                                <span class="font-mono text-[0.65rem] text-muted">{{ $one->event_on->locale(app()->getLocale())->translatedFormat('M') }}</span>
                                             </span>
-                                            <span class="line-clamp-2 min-w-0 flex-1 text-ink group-hover:text-brand">{{ $one->localTitle() }}<span class="sr-only"> ({{ $one->event_on->locale(app()->getLocale())->translatedFormat('j F') }})</span></span>
+                                            <span class="line-clamp-2 min-w-0 flex-1 text-sm leading-snug text-ink group-hover:text-brand">{{ $one->localTitle() }}<span class="sr-only"> ({{ $one->event_on->locale(app()->getLocale())->translatedFormat('j F') }})</span></span>
                                         </a>
                                     </li>
                                 @endforeach
                             </ul>
-                            <p class="mt-3 text-sm"><a href="{{ route('calendar') }}" class="font-semibold text-brand underline">{{ __('Calendar') }} &rarr;</a></p>
                         </section>
                     @endif
 
                     @if ($posting->isNotEmpty())
-                        <section aria-labelledby="posting-heading">
-                            <h2 id="posting-heading" class="flex items-center gap-2 text-xl"><x-heroicon-o-building-office-2 class="size-5 text-brand" aria-hidden="true" />{{ __('From the departments') }}</h2>
-                            <ul class="mt-3 space-y-2">
+                        {{-- Who has been posting, as round pictures: each narrows the list to its own. --}}
+                        <section class="feed-panel" aria-labelledby="posting-heading">
+                            <h2 id="posting-heading" class="flex items-center justify-between gap-2 text-sm font-semibold">
+                                <span class="inline-flex items-center gap-2"><x-heroicon-s-building-office-2 class="size-5 text-brand" aria-hidden="true" />{{ __('From the departments') }}</span>
+                                <a href="{{ route('posts') }}" class="text-xs font-semibold text-brand no-underline hover:underline">{{ __('Feed') }} &rarr;</a>
+                            </h2>
+                            <ul class="mt-3 grid grid-cols-3 gap-2">
                                 @foreach ($posting as $one)
                                     <li>
-                                        <a href="{{ $with(['department' => $one->slug]) }}" class="card flex items-center gap-3 px-3 py-2 text-ink no-underline">
-                                            <x-site.department-avatar :department="$one" class="size-9 text-sm" />
-                                            <span class="min-w-0 flex-1 truncate">{{ $one->localName() }}</span>
-                                            <x-heroicon-m-chevron-right class="size-4 shrink-0 text-brand" aria-hidden="true" />
+                                        <a href="{{ $with(['department' => $one->slug]) }}" class="group flex flex-col items-center gap-1.5 rounded-lg p-1.5 text-center no-underline hover:bg-raised" title="{{ $one->localName() }}">
+                                            <x-site.department-avatar :department="$one" class="size-11 text-base" />
+                                            <span class="line-clamp-2 text-xs leading-tight text-ink group-hover:text-brand">{{ $one->localName() }}</span>
                                         </a>
                                     </li>
                                 @endforeach
@@ -364,4 +377,8 @@
             <a href="{{ route('feed') }}" class="inline-flex items-center gap-1 underline"><x-heroicon-m-rss class="size-4" aria-hidden="true" />{{ __('Follow new announcements (RSS)') }}</a>
         </p>
     </div>
+    </div>
+
+    {{-- The window that opens from "Share" beside each announcement. --}}
+    <x-site.share-sheet />
 </x-layouts.site>

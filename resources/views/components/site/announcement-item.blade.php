@@ -1,8 +1,8 @@
 {{--
     One announcement in the list of them all (announcements/index): the day it came out as a leaf of a calendar,
     then its kind by name and colour, its title with marks for "new", "pinned" and "has files", how its text begins,
-    who put it out, and its picture small. The whole row is the link. (The home page's shorter list uses
-    announcement-row.)
+    who put it out, and its picture small. The whole row is the link, with a button to share it beside it. (The home
+    page's shorter list uses announcement-row.)
 --}}
 @props(['announcement'])
 @php
@@ -10,8 +10,8 @@
     $begins = Str::limit(trim((string) preg_replace('/[\s\x{00a0}]+/u', ' ', html_entity_decode(strip_tags($announcement->inLanguage('body')), ENT_QUOTES | ENT_HTML5))), 150);
 @endphp
 
-<li class="border-b border-line last:border-b-0">
-    <a href="{{ route('announcements.show', $announcement) }}" class="group flex items-start gap-4 px-4 py-4 no-underline hover:bg-raised">
+<li class="flex items-start border-b border-line last:border-b-0 hover:bg-raised">
+    <a href="{{ route('announcements.show', $announcement) }}" class="group flex min-w-0 flex-1 items-start gap-4 py-4 pl-4 no-underline">
         {{-- The day, read at a glance down the list; the full date is in the line under the title. --}}
         <span class="hidden w-14 shrink-0 flex-col items-center rounded-lg border border-line bg-page py-1.5 text-center sm:flex" aria-hidden="true">
             <span class="font-mono text-2xl font-semibold leading-none text-ink">{{ $day->day }}</span>
@@ -51,4 +51,8 @@
             <img src="{{ $image }}" alt="" loading="lazy" class="size-16 shrink-0 rounded-lg border border-line object-cover sm:size-20">
         @endif
     </a>
+    {{-- Beside the row, not in it (a button inside a link is no button): opens the share window (components/site/share-sheet). --}}
+    <button type="button" class="m-2 mt-4 grid size-10 shrink-0 place-items-center rounded-full text-muted hover:bg-page hover:text-brand" data-share-url="{{ route('announcements.show', $announcement) }}" data-share-title="{{ $announcement->localTitle() }}" data-shared="{{ __('Link copied') }}" title="{{ __('Share') }}">
+        <x-heroicon-o-share class="size-5" aria-hidden="true" /><span class="sr-only" data-share-label>{{ __('Share') }}</span>
+    </button>
 </li>
