@@ -146,4 +146,6 @@
             </section>
         </aside>
     </div>
+    {{-- The window that opens from "Share" under a post. --}}
+    <x-site.share-sheet />
 </x-layouts.site>

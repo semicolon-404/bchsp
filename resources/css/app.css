@@ -3639,3 +3639,110 @@ html.is-mourning {
         .story-card:hover, .story-card:hover .story-card-picture { transform: none; }
     }
 }
+
+@layer components {
+    /* The share window under a post (components/site/share-sheet): centred on a computer, a sheet from the bottom on a phone. */
+    .share-sheet {
+        inset: 0;
+        width: calc(100% - 2rem);
+        max-width: 30rem;
+        margin: auto;
+        padding: 1.25rem 1.5rem 1.5rem;
+        border: 0;
+        border-radius: 20px;
+        background: var(--color-surface);
+        color: var(--color-ink);
+        box-shadow: 0 30px 80px -20px rgb(0 0 0 / 0.5);
+    }
+
+    .share-sheet[open] { animation: popup-in 0.24s cubic-bezier(0.2, 0.9, 0.3, 1.1); }
+
+    .share-sheet::backdrop {
+        background: rgb(10 15 12 / 0.55);
+        backdrop-filter: blur(4px);
+    }
+
+    .share-close {
+        display: grid;
+        place-items: center;
+        width: 2.5rem;
+        height: 2.5rem;
+        border-radius: 999px;
+        color: var(--color-muted);
+        cursor: pointer;
+    }
+
+    .share-close:hover { background: var(--color-raised); color: var(--color-ink); }
+
+    /* Six round buttons: one row on a computer, two rows of three on a narrow phone; never cut off. */
+    .share-targets {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(4.25rem, 1fr));
+        gap: 1rem 0.5rem;
+        justify-items: center;
+    }
+
+    .share-sheet:focus { outline: none; }
+
+    .share-targets a, .share-targets button {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.4rem;
+        width: 4.25rem;
+        color: var(--color-ink);
+        font-size: 0.8rem;
+        text-decoration: none;
+        cursor: pointer;
+    }
+
+    .share-target-face {
+        display: grid;
+        place-items: center;
+        width: 3.5rem;
+        height: 3.5rem;
+        border-radius: 999px;
+        color: #fff;
+        font-size: 0.75rem;
+        font-weight: 700;
+        transition: transform 0.15s ease;
+    }
+
+    .share-targets a:hover .share-target-face, .share-targets button:hover .share-target-face { transform: scale(1.08); }
+
+    .share-link {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.375rem 0.375rem 0.375rem 1rem;
+        border: 1px solid var(--color-line);
+        border-radius: 999px;
+        background: var(--color-page);
+    }
+
+    .share-link input {
+        min-width: 0;
+        flex: 1;
+        border: 0;
+        background: transparent;
+        color: var(--color-ink);
+        font-size: 0.9rem;
+        outline: none;
+    }
+
+    @media (max-width: 39.99rem) {
+        .share-sheet {
+            width: 100%;
+            max-width: none;
+            margin: auto 0 0;
+            padding-bottom: calc(1.5rem + env(safe-area-inset-bottom));
+            border-radius: 22px 22px 0 0;
+        }
+
+        .share-sheet[open] { animation: sheet-in 0.3s cubic-bezier(0.2, 0.9, 0.3, 1); }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .share-sheet[open] { animation: none; }
+    }
+}

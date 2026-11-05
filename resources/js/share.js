@@ -25,11 +25,75 @@ export function startShare() {
 }
 
 /**
- * "Share" under a post (components/site/post): the phone's own way of sharing where there is one, otherwise the
- * address copied, said for a moment on the button.
+ * "Share" under a post (components/site/post): opens the share window (components/site/share-sheet), as a video
+ * site's, filled with that post: LINE, Facebook, X, e-mail, a QR code, the phone's own sharing where there is one,
+ * and the address to copy. Where the page has no window, the phone's own sharing, or else the address copied.
  */
 export function startPostShare() {
-    document.querySelectorAll('button[data-share-url]').forEach((button) => {
+    const sheet = document.querySelector('[data-share-sheet]');
+    const buttons = document.querySelectorAll('button[data-share-url]');
+    if (!buttons.length) return;
+
+    let current = { url: '', title: '' };
+
+    if (sheet && typeof sheet.showModal === 'function') {
+        const field = sheet.querySelector('[data-share-sheet-url]');
+        const copy = sheet.querySelector('[data-share-sheet-copy]');
+        const native = sheet.querySelector('[data-share-native]');
+        const copyLabel = copy.textContent;
+
+        if (navigator.share) native.hidden = false;
+        native.querySelector('button').addEventListener('click', () => {
+            navigator.share({ title: current.title, url: current.url }).catch(() => {});
+        });
+
+        copy.addEventListener('click', async () => {
+            try {
+                await navigator.clipboard.writeText(field.value);
+            } catch {
+                field.select();
+                document.execCommand?.('copy');
+            }
+            copy.textContent = copy.dataset.copied;
+            setTimeout(() => (copy.textContent = copyLabel), 2000);
+        });
+
+        field.addEventListener('focus', () => field.select());
+
+        // A press on the dimmed page around the window closes it.
+        sheet.addEventListener('click', (event) => {
+            if (event.target === sheet) sheet.close();
+        });
+
+        const links = (url, title) => {
+            const u = encodeURIComponent(url);
+            const t = encodeURIComponent(title);
+            return {
+                line: `https://social-plugins.line.me/lineit/share?url=${u}`,
+                facebook: `https://www.facebook.com/sharer/sharer.php?u=${u}`,
+                x: `https://twitter.com/intent/tweet?url=${u}&text=${t}`,
+                email: `mailto:?subject=${t}&body=${u}`,
+                qr: `${sheet.dataset.qr}?to=${encodeURIComponent(new URL(url).pathname)}`,
+            };
+        };
+
+        buttons.forEach((button) => button.addEventListener('click', () => {
+            current = { url: button.dataset.shareUrl, title: button.dataset.shareTitle };
+            const to = links(current.url, current.title);
+            sheet.querySelectorAll('[data-share-to]').forEach((a) => (a.href = to[a.dataset.shareTo]));
+            sheet.querySelector('[data-share-sheet-title]').textContent = current.title;
+            // Thai addresses read as Thai, not as %E0%B8...; what is copied is the same address.
+            try { field.value = decodeURI(current.url); } catch { field.value = current.url; }
+            copy.textContent = copyLabel;
+            sheet.showModal();
+            // The window itself holds the focus at first, so no button is ringed before anyone touches it.
+            sheet.focus();
+        }));
+
+        return;
+    }
+
+    buttons.forEach((button) => {
         const label = button.querySelector('[data-share-label]');
         const usual = label.textContent;
 
