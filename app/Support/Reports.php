@@ -63,6 +63,10 @@ class Reports
     {
         $announcements = Announcement::query()->where('status', Announcement::STATUS_PUBLISHED)->whereBetween('starts_at', [$from, $until])->where('starts_at', '<=', now());
         $types = AnnouncementType::orderBy('sort_order')->get();
+        // Counted by the database in one grouped query each, not one query a department or kind (which grows with them).
+        $byType = (clone $announcements)->toBase()->selectRaw('announcement_type_id, count(*) as posts')->groupBy('announcement_type_id')->pluck('posts', 'announcement_type_id');
+        $byDepartment = (clone $announcements)->toBase()->whereNotNull('department_id')
+            ->selectRaw('department_id, count(*) as posts, sum(views) as views, sum(helpful) as helpful')->groupBy('department_id')->get()->keyBy('department_id');
 
         return [
             'from' => $from,
@@ -75,7 +79,7 @@ class Reports
             'announcements' => [
                 'total' => (clone $announcements)->count(),
                 // Every type, also those with none: an executive should see "0", not wonder whether it was left out.
-                'types' => $types->mapWithKeys(fn (AnnouncementType $type) => [$type->name => (clone $announcements)->where('announcement_type_id', $type->id)->count()])->all(),
+                'types' => $types->mapWithKeys(fn (AnnouncementType $type) => [$type->name => (int) ($byType[$type->id] ?? 0)])->all(),
                 'monthly' => self::perMonth((clone $announcements)->pluck('starts_at'), $from, $until),
                 'top' => (clone $announcements)->with('type')->where('views', '>', 0)->orderByDesc('views')->limit(10)->get(),
             ],
@@ -83,9 +87,9 @@ class Reports
             'departments' => Department::orderBy('sort_order')->orderBy('name')->get()
                 ->map(fn (Department $department) => [
                     'name' => $department->name,
-                    'posts' => (clone $announcements)->where('department_id', $department->id)->count(),
-                    'views' => (int) (clone $announcements)->where('department_id', $department->id)->sum('views'),
-                    'helpful' => (int) (clone $announcements)->where('department_id', $department->id)->sum('helpful'),
+                    'posts' => (int) ($byDepartment[$department->id]->posts ?? 0),
+                    'views' => (int) ($byDepartment[$department->id]->views ?? 0),
+                    'helpful' => (int) ($byDepartment[$department->id]->helpful ?? 0),
                 ])
                 ->filter(fn (array $row) => $row['posts'] > 0)->sortByDesc('posts')->values()->all(),
             // What readers typed into the search: the most often, and what found nothing.
