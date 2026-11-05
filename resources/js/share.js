@@ -23,3 +23,31 @@ export function startShare() {
         });
     });
 }
+
+/**
+ * "Share" under a post (components/site/post): the phone's own way of sharing where there is one, otherwise the
+ * address copied, said for a moment on the button.
+ */
+export function startPostShare() {
+    document.querySelectorAll('button[data-share-url]').forEach((button) => {
+        const label = button.querySelector('[data-share-label]');
+        const usual = label.textContent;
+
+        button.addEventListener('click', async () => {
+            const url = button.dataset.shareUrl;
+            try {
+                if (navigator.share) {
+                    await navigator.share({ title: button.dataset.shareTitle, url });
+                } else if (navigator.clipboard?.writeText) {
+                    await navigator.clipboard.writeText(url);
+                    label.textContent = button.dataset.shared;
+                    setTimeout(() => (label.textContent = usual), 2000);
+                } else {
+                    window.open(url, '_blank', 'noopener');
+                }
+            } catch {
+                // The reader closed the sharing sheet, or the browser refused: nothing to do.
+            }
+        });
+    });
+}

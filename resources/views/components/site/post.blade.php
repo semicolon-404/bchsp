@@ -1,69 +1,86 @@
 {{--
-    One announcement as a post in a department's timeline (departments/show): who put it out and when, its
-    title, the start of its text, and its picture whole. The title and the picture lead to the announcement.
-    In the feed of all departments (posts.blade.php, "linked") the department's name leads to its own page, and the
-    post says how often it has been read.
+    One announcement as a post in a department's timeline (departments/show) and in the feed of all of them
+    (posts.blade.php, "linked"): who put it out and how long ago, its title and the start of its text, then its
+    pictures, as a social page shows a post. An album of photographs shows as tiles that open in the photo viewer
+    (resources/js/lightbox.js); a poster shows whole over its own colours. Under it, a bar to read on, to share it,
+    and how often it has been read. In the feed the department's name leads to its own page.
 --}}
 @props(['announcement', 'department', 'linked' => false])
 @php
     $text = Str::limit(trim((string) preg_replace('/\s+/u', ' ', html_entity_decode(strip_tags($announcement->inLanguage('body'))))), 220);
-    $photos = count($announcement->photos());
+    $photos = $announcement->photos();
+    $image = $announcement->imageUrl();
+    $url = route('announcements.show', $announcement);
 @endphp
 
-<li class="card p-0">
-    <div class="flex items-center gap-3 px-4 pt-4">
-        <x-site.department-avatar :department="$department" class="size-10 text-base" />
-        <div class="min-w-0">
-            <p class="truncate font-medium">
+<li class="post">
+    <div class="flex items-start gap-3 px-4 pt-4 sm:px-5">
+        <x-site.department-avatar :department="$department" class="size-11 text-base" />
+        <div class="min-w-0 flex-1">
+            <p class="truncate font-semibold leading-snug">
                 @if ($linked)
                     <a href="{{ route('departments.show', $department) }}" class="text-ink no-underline hover:text-brand">{{ $department->localName() }}</a>
                 @else
                     {{ $department->localName() }}
                 @endif
             </p>
-            <p class="flex flex-wrap items-center gap-x-2 font-mono text-xs text-muted">
-                @if ($announcement->isNew())
-                    <span class="inline-flex items-center rounded bg-brand px-1.5 font-sans text-xs font-semibold text-on-brand">{{ __('New') }}</span>
-                @endif
-                @if ($announcement->pinned_in_department)
-                    <span class="inline-flex items-center gap-1 rounded border border-brand px-1.5 font-sans font-semibold text-brand"><x-heroicon-s-bookmark class="size-3" aria-hidden="true" />{{ __('Pinned') }}</span>
-                @endif
+            <p class="mt-0.5 flex flex-wrap items-center gap-x-1.5 text-sm text-muted">
                 <time datetime="{{ ($announcement->starts_at ?? $announcement->created_at)->toIso8601String() }}">{{ $announcement->shownAt() }}</time>
                 @if ($announcement->type)
-                    <span style="color: {{ $announcement->type->colour() }}">{{ $announcement->type->localName() }}</span>
+                    <span aria-hidden="true">·</span>
+                    <a href="{{ route('announcements.index', ['type' => $announcement->type->slug]) }}" class="inline-flex items-center gap-1.5 no-underline hover:underline" style="color: {{ $announcement->type->colour() }}">
+                        <span class="size-1.5 rounded-full" style="background: {{ $announcement->type->colour() }}" aria-hidden="true"></span>{{ $announcement->type->localName() }}
+                    </a>
                 @endif
             </p>
         </div>
-    </div>
-
-    <div class="px-4 py-3">
-        <h3 class="text-lg"><a href="{{ route('announcements.show', $announcement) }}" class="text-ink no-underline hover:text-brand">{{ $announcement->localTitle() }}</a></h3>
-        @if ($text !== '')
-            <p class="mt-1 text-muted">{{ $text }}</p>
+        @if ($announcement->pinned_in_department)
+            <span class="mt-1 shrink-0 text-brand" title="{{ __('Pinned') }}"><x-heroicon-s-bookmark class="size-5" aria-hidden="true" /><span class="sr-only">{{ __('Pinned') }}</span></span>
         @endif
     </div>
 
-    @if ($image = $announcement->imageUrl())
-        {{-- Whole, whatever its shape, up to most of a screen: a poster is read, not glimpsed. --}}
-        <a href="{{ route('announcements.show', $announcement) }}" class="block border-t border-line bg-raised">
-            <img src="{{ $image }}" alt="" loading="lazy" class="mx-auto max-h-[36rem] w-auto max-w-full">
+    <div class="px-4 pb-3 pt-3 sm:px-5">
+        <h3 class="text-xl font-semibold leading-snug"><a href="{{ $url }}" class="text-ink no-underline hover:text-brand">{{ $announcement->localTitle() }}</a></h3>
+        @if ($text !== '')
+            <p class="mt-1.5 line-clamp-3 text-muted">{{ $text }}</p>
+        @endif
+    </div>
+
+    @if (count($photos) > 1)
+        {{-- An album: up to four tiles, the last saying how many more; each opens the photo viewer on the whole album. --}}
+        <ul @class(['post-photos', 'is-two' => count($photos) === 2, 'is-three' => count($photos) === 3]) data-gallery data-gallery-title="{{ $announcement->localTitle() }}" data-gallery-kind="{{ $announcement->type?->localName() }}" data-gallery-kind-colour="{{ $announcement->type?->colour() }}" data-gallery-date="{{ $announcement->shownAt() }}">
+            @foreach ($photos as $photo)
+                <li @class(['hidden' => $loop->iteration > 4])>
+                    <a href="{{ $photo }}" target="_blank" rel="noopener" data-lightbox>
+                        <img src="{{ $photo }}" alt="{{ __('Photograph :number of :count', ['number' => $loop->iteration, 'count' => $loop->count]) }}" loading="lazy">
+                        @if ($loop->iteration === 4 && $loop->count > 4)
+                            <span class="post-photos-more" aria-hidden="true">+{{ $loop->count - 4 }}</span>
+                        @endif
+                    </a>
+                </li>
+            @endforeach
+        </ul>
+    @elseif ($image)
+        {{-- A poster whole, whatever its shape, over its own colours blurred: read, not cut. --}}
+        <a href="{{ $url }}" class="post-media" tabindex="-1" aria-hidden="true">
+            <img src="{{ $image }}" alt="" class="post-media-backdrop">
+            <img src="{{ $image }}" alt="" loading="lazy" class="relative mx-auto max-h-[28rem] w-auto max-w-full">
         </a>
     @endif
 
-    @if ($photos || $announcement->hasDocuments() || $linked)
-        <p class="flex flex-wrap items-center gap-x-4 gap-y-1 border-t border-line px-4 py-2 text-sm text-muted">
-            @if ($photos)
-                <span class="inline-flex items-center gap-1"><x-heroicon-m-photo class="size-4" aria-hidden="true" />{{ trans_choice('{1} :count photograph|[2,*] :count photographs', $photos, ['count' => $photos]) }}</span>
-            @endif
+    {{-- What can be done with it, as under a post: read on, share, and how often it has been read. --}}
+    <div class="post-bar">
+        <a href="{{ $url }}" class="post-action"><x-heroicon-o-book-open class="size-5" aria-hidden="true" />{{ __('Read') }}</a>
+        <button type="button" class="post-action" data-share-url="{{ $url }}" data-share-title="{{ $announcement->localTitle() }}" data-shared="{{ __('Link copied') }}">
+            <x-heroicon-o-share class="size-5" aria-hidden="true" /><span data-share-label>{{ __('Share') }}</span>
+        </button>
+        <span class="post-action is-quiet">
             @if ($announcement->hasDocuments())
-                <span class="inline-flex items-center gap-1"><x-heroicon-m-paper-clip class="size-4" aria-hidden="true" />{{ __('Has files attached') }}</span>
+                <x-heroicon-o-paper-clip class="size-5" aria-hidden="true" /><span class="sr-only">{{ __('Has files attached') }}</span>
             @endif
-            @if ($linked)
-                @if ($announcement->views > 0)
-                    <span class="inline-flex items-center gap-1"><x-heroicon-m-eye class="size-4" aria-hidden="true" />{{ trans_choice('{1} opened :count time|[2,*] opened :count times', $announcement->views, ['count' => number_format($announcement->views)]) }}</span>
-                @endif
-                <a href="{{ route('announcements.show', $announcement) }}" class="ml-auto inline-flex items-center gap-1 font-semibold text-brand no-underline">{{ __('Read') }}<x-heroicon-m-arrow-right class="size-4" aria-hidden="true" /></a>
+            @if ($announcement->views > 0)
+                <x-heroicon-o-eye class="size-5" aria-hidden="true" />{{ number_format($announcement->views) }}<span class="sr-only"> {{ __('views') }}</span>
             @endif
-        </p>
-    @endif
+        </span>
+    </div>
 </li>

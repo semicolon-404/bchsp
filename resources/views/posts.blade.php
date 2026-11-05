@@ -1,7 +1,7 @@
 {{--
     /posts: the feed. What the departments have posted, newest first, each as a post with the department's picture
     and name over it, as on a department's own page but all of them together (AnnouncementController::posts).
-    A row of the departments narrows it to one (?department=...); beside it, who posts and how much.
+    A row of the departments' round pictures narrows it to one (?department=...); beside it, what is read most.
 
     The list of announcements (/announcements) is for finding one; this is for reading down, to see what the
     hospital's people are doing.
@@ -27,14 +27,23 @@
     </x-site.page-header>
 
     @if ($departments->isNotEmpty())
-        {{-- The departments that have posted, one press away; the row stays in reach as the feed is read. --}}
+        {{-- The departments that have posted, as round pictures to press, as stories are: a ring round those that posted
+             this week. The row stays in reach as the feed is read, and slides sideways on a phone. --}}
         <nav class="sticky top-16 z-30 border-b border-line bg-page/90 backdrop-blur" aria-label="{{ __('Departments') }}">
-            <ul class="wrap flex max-w-5xl gap-2 overflow-x-auto py-3 [scrollbar-width:none]">
-                <li class="shrink-0"><a href="{{ $with(null) }}" @class(['chip whitespace-nowrap', 'is-on' => ! $department]) aria-current="{{ $department ? 'false' : 'page' }}">{{ __('All') }}</a></li>
+            <ul class="wrap flex max-w-5xl gap-1 overflow-x-auto py-3 [scrollbar-width:none]">
+                <li class="shrink-0">
+                    <a href="{{ $with(null) }}" @class(['story', 'is-on' => ! $department]) aria-current="{{ $department ? 'false' : 'page' }}">
+                        <span class="story-ring is-fresh"><span class="flex size-full items-center justify-center rounded-full bg-raised text-brand"><x-heroicon-o-squares-2x2 class="size-6" aria-hidden="true" /></span></span>
+                        <span class="story-name">{{ __('All') }}</span>
+                    </a>
+                </li>
                 @foreach ($departments as $one)
                     <li class="shrink-0">
-                        <a href="{{ $with($one->slug) }}" @class(['chip gap-2 whitespace-nowrap py-1 pl-1 pr-4', 'is-on' => $department?->is($one)]) aria-current="{{ $department?->is($one) ? 'page' : 'false' }}">
-                            <x-site.department-avatar :department="$one" class="size-8 text-sm" />{{ $one->localName() }}
+                        <a href="{{ $with($one->slug) }}" @class(['story', 'is-on' => $department?->is($one)]) aria-current="{{ $department?->is($one) ? 'page' : 'false' }}">
+                            <span @class(['story-ring', 'is-fresh' => $one->last_posted && Illuminate\Support\Carbon::parse($one->last_posted)->gte(now()->subWeek())])>
+                                <x-site.department-avatar :department="$one" class="size-full text-lg" />
+                            </span>
+                            <span class="story-name">{{ $one->localName() }}</span>
                         </a>
                     </li>
                 @endforeach
@@ -47,7 +56,7 @@
             @if ($posts->isEmpty())
                 <x-site.empty icon="newspaper">{{ __('No department has posted anything yet.') }}</x-site.empty>
             @else
-                <ul class="space-y-5">
+                <ul class="space-y-4 sm:space-y-5">
                     @foreach ($posts as $announcement)
                         <x-site.post :announcement="$announcement" :department="$announcement->department" linked />
                     @endforeach
@@ -68,20 +77,23 @@
                     @endif
                     <a href="{{ route('departments.show', $department) }}" class="btn btn-brand mt-4">{{ __('See the profile') }} &rarr;</a>
                 </section>
-            @elseif ($departments->isNotEmpty())
-                <section aria-labelledby="who-heading">
-                    <h2 id="who-heading" class="flex items-center gap-2 text-xl"><x-heroicon-o-building-office-2 class="size-5 text-brand" aria-hidden="true" />{{ __('Who is posting') }}</h2>
-                    <ul class="mt-3 space-y-2">
-                        @foreach ($departments as $one)
-                            <li>
-                                <a href="{{ $with($one->slug) }}" class="card flex items-center gap-3 px-3 py-2 text-ink no-underline">
-                                    <x-site.department-avatar :department="$one" class="size-9 text-sm" />
-                                    <span class="min-w-0 flex-1 truncate">{{ $one->localName() }}</span>
-                                    <span class="shrink-0 font-mono text-sm text-muted">{{ number_format($one->posted) }}</span>
+            @elseif ($mostRead->isNotEmpty())
+                {{-- Not the departments again (they are in the row above): what readers have opened most. --}}
+                <section aria-labelledby="most-read-heading">
+                    <h2 id="most-read-heading" class="flex items-center gap-2 text-xl"><x-heroicon-o-fire class="size-5 text-brand" aria-hidden="true" />{{ __('Most read') }}</h2>
+                    <ol class="card mt-3 p-0">
+                        @foreach ($mostRead as $one)
+                            <li class="border-b border-line last:border-b-0">
+                                <a href="{{ route('announcements.show', $one) }}" class="group flex items-start gap-3 px-4 py-3 no-underline">
+                                    <span class="w-5 shrink-0 text-center font-mono text-lg font-semibold text-brand" aria-hidden="true">{{ $loop->iteration }}</span>
+                                    <span class="min-w-0 flex-1">
+                                        <span class="line-clamp-2 block text-ink group-hover:text-brand">{{ $one->localTitle() }}</span>
+                                        <span class="mt-0.5 block font-mono text-xs text-muted">{{ trans_choice('{1} opened :count time|[2,*] opened :count times', $one->views, ['count' => number_format($one->views)]) }}</span>
+                                    </span>
                                 </a>
                             </li>
                         @endforeach
-                    </ul>
+                    </ol>
                 </section>
             @endif
 

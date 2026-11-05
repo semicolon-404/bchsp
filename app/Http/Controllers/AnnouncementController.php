@@ -165,6 +165,8 @@ class AnnouncementController extends Controller
     {
         $departments = Department::shown()
             ->withCount(['announcements as posted' => fn ($query) => $query->published()])
+            // When each last posted: a ring round its picture while that was in the last week.
+            ->withMax(['announcements as last_posted' => fn ($query) => $query->published()], 'starts_at')
             ->get()->filter(fn (Department $one) => $one->posted > 0)
             ->sortByDesc('posted')->values();
         $department = is_string($request->query('department')) ? $departments->firstWhere('slug', $request->query('department')) : null;
@@ -176,6 +178,8 @@ class AnnouncementController extends Controller
                 ->whereIn('department_id', $department ? [$department->id] : $departments->pluck('id'))
                 ->orderByDesc('starts_at')->orderByDesc('id')
                 ->paginate(10)->withQueryString(),
+            // Beside the feed: what has been read most lately, of the departments' posts.
+            'mostRead' => $request->query('page', 1) <= 1 ? Announcement::mostRead(20)->whereNotNull('department_id')->take(5)->values() : collect(),
         ]);
     }
 

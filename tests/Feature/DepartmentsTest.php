@@ -228,7 +228,8 @@ class DepartmentsTest extends TestCase
 
         $this->assertCount(3, $dental->photos());
 
-        $this->get(route('departments.show', $dental))->assertSeeInOrder(['3</span> photographs'], false)->assertDontSee('albums/a.webp', false);
+        // The count on the tab; the album itself shows in its post as tiles that open the photo viewer.
+        $this->get(route('departments.show', $dental))->assertSeeInOrder(['3</span> photographs'], false)->assertSee('data-lightbox', false);
 
         $this->get(route('departments.show', ['department' => $dental, 'tab' => 'photos']))
             ->assertOk()
