@@ -5,6 +5,7 @@ namespace App\Filament\Resources\Krathongs;
 use App\Filament\Resources\Krathongs\Pages\ManageKrathongs;
 use App\Models\Festival;
 use App\Models\Krathong;
+use App\Filament\Pages\SiteSettings;
 use BackedEnum;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\EditAction;
@@ -35,6 +36,12 @@ class KrathongResource extends Resource
     protected static string|UnitEnum|null $navigationGroup = 'System';
 
     protected static ?int $navigationSort = 3;
+
+    /** Under Site settings in the menu, shown as that is opened: the sidebar stays short. */
+    public static function getNavigationParentItem(): ?string
+    {
+        return SiteSettings::getNavigationLabel();
+    }
 
     public static function getNavigationLabel(): string
     {

@@ -6,6 +6,7 @@ use App\Filament\Concerns\NotForDepartments;
 use App\Filament\Resources\SitePopups\Pages\ManageSitePopups;
 use App\Models\SitePopup;
 use App\Support\OptimizedUpload;
+use App\Filament\Pages\SiteSettings;
 use BackedEnum;
 use Filament\Actions\Action;
 use Filament\Actions\DeleteAction;
@@ -44,6 +45,12 @@ class SitePopupResource extends Resource
     protected static ?int $navigationSort = 2;
 
     protected static ?string $recordTitleAttribute = 'title';
+
+    /** Under Site settings in the menu, shown as that is opened: the sidebar stays short. */
+    public static function getNavigationParentItem(): ?string
+    {
+        return SiteSettings::getNavigationLabel();
+    }
 
     public static function getNavigationLabel(): string
     {

@@ -5,6 +5,7 @@ namespace App\Filament\Resources\Festivals;
 use App\Filament\Concerns\NotForDepartments;
 use App\Filament\Resources\Festivals\Pages\ManageFestivals;
 use App\Models\Festival;
+use App\Filament\Pages\SiteSettings;
 use BackedEnum;
 use Filament\Actions\Action;
 use Filament\Actions\DeleteAction;
@@ -39,6 +40,12 @@ class FestivalResource extends Resource
     protected static ?int $navigationSort = 2;
 
     protected static ?string $recordTitleAttribute = 'name';
+
+    /** Under Site settings in the menu, shown as that is opened: the sidebar stays short. */
+    public static function getNavigationParentItem(): ?string
+    {
+        return SiteSettings::getNavigationLabel();
+    }
 
     public static function getNavigationLabel(): string
     {
