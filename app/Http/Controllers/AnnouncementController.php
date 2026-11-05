@@ -183,7 +183,8 @@ class AnnouncementController extends Controller
                 ->whereIn('department_id', $department ? [$department->id] : $departments->pluck('id'))
                 ->orderByDesc('starts_at')->orderByDesc('id')
                 ->paginate(10)->withQueryString(),
-            'wall' => $pictured->take(12)->values(),
+            // Eight: enough to fill the rows (each is shown twice for the drift), few enough to load quickly.
+            'wall' => $pictured->take(8)->values(),
             'covers' => $pictured->unique('department_id')->keyBy('department_id'),
             // Beside the feed: what has been read most lately, of the departments' posts.
             'mostRead' => $request->query('page', 1) <= 1 ? Announcement::mostRead(20)->whereNotNull('department_id')->take(5)->values() : collect(),

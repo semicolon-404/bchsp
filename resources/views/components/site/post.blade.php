@@ -40,9 +40,9 @@
     </div>
 
     <div class="px-4 pb-3 pt-3 sm:px-5">
-        <h3 class="text-xl font-semibold leading-snug"><a href="{{ $url }}" class="text-ink no-underline hover:text-brand">{{ $announcement->localTitle() }}</a></h3>
+        <h3 class="text-lg font-semibold leading-snug"><a href="{{ $url }}" class="text-ink no-underline hover:text-brand">{{ $announcement->localTitle() }}</a></h3>
         @if ($text !== '')
-            <p class="mt-1.5 line-clamp-3 text-muted">{{ $text }}</p>
+            <p class="mt-1.5 line-clamp-3 text-ink/90">{{ $text }}</p>
         @endif
     </div>
 
@@ -61,26 +61,32 @@
             @endforeach
         </ul>
     @elseif ($image)
-        {{-- A poster whole, whatever its shape, over its own colours blurred: read, not cut. --}}
+        {{-- A poster across the post, as a social page shows one; a very tall one shows its top, the rest a press away. --}}
         <a href="{{ $url }}" class="post-media" tabindex="-1" aria-hidden="true">
-            <img src="{{ $image }}" alt="" class="post-media-backdrop">
-            <img src="{{ $image }}" alt="" loading="lazy" class="relative mx-auto max-h-[28rem] w-auto max-w-full">
+            <img src="{{ $image }}" alt="" loading="lazy">
         </a>
     @endif
 
-    {{-- What can be done with it, as under a post: read on, share, and how often it has been read. --}}
+    {{-- How it has been received, then what can be done with it, as under a post on a social page. --}}
+    @if ($announcement->views > 0 || count($photos) > 1 || $announcement->hasDocuments())
+        <p class="post-stats">
+            @if ($announcement->views > 0)
+                <span class="inline-flex items-center gap-1.5"><x-heroicon-s-eye class="size-4" aria-hidden="true" />{{ trans_choice('{1} opened :count time|[2,*] opened :count times', $announcement->views, ['count' => number_format($announcement->views)]) }}</span>
+            @endif
+            <span class="ml-auto inline-flex items-center gap-3">
+                @if (count($photos) > 1)
+                    <span>{{ trans_choice('{1} :count photograph|[2,*] :count photographs', count($photos), ['count' => count($photos)]) }}</span>
+                @endif
+                @if ($announcement->hasDocuments())
+                    <span class="inline-flex items-center gap-1"><x-heroicon-m-paper-clip class="size-4" aria-hidden="true" />{{ __('Has files attached') }}</span>
+                @endif
+            </span>
+        </p>
+    @endif
     <div class="post-bar">
         <a href="{{ $url }}" class="post-action"><x-heroicon-o-book-open class="size-5" aria-hidden="true" />{{ __('Read') }}</a>
         <button type="button" class="post-action" data-share-url="{{ $url }}" data-share-title="{{ $announcement->localTitle() }}" data-shared="{{ __('Link copied') }}">
             <x-heroicon-o-share class="size-5" aria-hidden="true" /><span data-share-label>{{ __('Share') }}</span>
         </button>
-        <span class="post-action is-quiet">
-            @if ($announcement->hasDocuments())
-                <x-heroicon-o-paper-clip class="size-5" aria-hidden="true" /><span class="sr-only">{{ __('Has files attached') }}</span>
-            @endif
-            @if ($announcement->views > 0)
-                <x-heroicon-o-eye class="size-5" aria-hidden="true" />{{ number_format($announcement->views) }}<span class="sr-only"> {{ __('views') }}</span>
-            @endif
-        </span>
     </div>
 </li>

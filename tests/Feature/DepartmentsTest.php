@@ -149,7 +149,8 @@ class DepartmentsTest extends TestCase
             ->assertSeeInOrder(['departments/cover.webp', 'departments/avatars/tooth.webp', '<h1', 'กลุ่มงานทันตกรรม', 'Care for teeth and gums', 'href="tel:044579076"', 'href="https://www.facebook.com/dental"'], false)
             // What is not a web address over HTTPS is never a link.
             ->assertDontSee('javascript:alert', false)
-            ->assertDontSee('LINE');
+            // No LINE of its own (the share window's LINE button is another thing).
+            ->assertDontSee('btn btn-line">LINE<', false);
 
         // Without pictures: a band of colour, and the first letter of its name past "งาน".
         $this->assertSame('ท', $dental->initial());

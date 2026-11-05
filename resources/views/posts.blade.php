@@ -90,6 +90,8 @@
         </nav>
     @endif
 
+    {{-- The feed on a grey ground, the posts white on it, as a social page. --}}
+    <div class="bg-raised">
     <div class="wrap grid max-w-5xl items-start gap-10 py-10 sm:py-14 lg:grid-cols-3">
         <div class="min-w-0 lg:col-span-2">
             @if ($posts->isEmpty())
@@ -146,6 +148,8 @@
             </section>
         </aside>
     </div>
+    </div>
+
     {{-- The window that opens from "Share" under a post. --}}
     <x-site.share-sheet />
 </x-layouts.site>

@@ -13,16 +13,16 @@
     </div>
     <p class="mt-1 line-clamp-2 text-sm text-muted" data-share-sheet-title></p>
 
-    <ul class="share-targets mt-5">
+    <ul class="share-targets mt-4">
         <li><a data-share-to="line" target="_blank" rel="noopener noreferrer"><span class="share-target-face" style="background: #06c755">LINE</span>LINE</a></li>
-        <li><a data-share-to="facebook" target="_blank" rel="noopener noreferrer"><span class="share-target-face" style="background: #1877f2"><b class="text-2xl">f</b></span>Facebook</a></li>
-        <li><a data-share-to="x" target="_blank" rel="noopener noreferrer"><span class="share-target-face" style="background: #000"><b class="text-xl">X</b></span>X</a></li>
-        <li><a data-share-to="email"><span class="share-target-face" style="background: #64748b"><x-heroicon-o-envelope class="size-6" aria-hidden="true" /></span>{{ __('E-mail') }}</a></li>
-        <li><a data-share-to="qr" target="_blank" rel="noopener"><span class="share-target-face" style="background: var(--color-brand)"><x-heroicon-o-qr-code class="size-6" aria-hidden="true" /></span>{{ __('QR code') }}</a></li>
-        <li data-share-native hidden><button type="button"><span class="share-target-face" style="background: #475569"><x-heroicon-o-ellipsis-horizontal class="size-6" aria-hidden="true" /></span>{{ __('More') }}</button></li>
+        <li><a data-share-to="facebook" target="_blank" rel="noopener noreferrer"><span class="share-target-face" style="background: #1877f2"><b class="text-lg">f</b></span>Facebook</a></li>
+        <li><a data-share-to="x" target="_blank" rel="noopener noreferrer"><span class="share-target-face" style="background: #000"><b class="text-base">X</b></span>X</a></li>
+        <li><a data-share-to="email"><span class="share-target-face" style="background: #64748b"><x-heroicon-o-envelope class="size-5" aria-hidden="true" /></span>{{ __('E-mail') }}</a></li>
+        <li><a data-share-to="qr" target="_blank" rel="noopener"><span class="share-target-face" style="background: var(--color-brand)"><x-heroicon-o-qr-code class="size-5" aria-hidden="true" /></span>{{ __('QR code') }}</a></li>
+        <li data-share-native hidden><button type="button"><span class="share-target-face" style="background: #475569"><x-heroicon-o-ellipsis-horizontal class="size-5" aria-hidden="true" /></span>{{ __('More') }}</button></li>
     </ul>
 
-    <div class="share-link mt-5">
+    <div class="share-link mt-4">
         <label class="sr-only" for="share-sheet-url">{{ __('Link') }}</label>
         <input id="share-sheet-url" type="text" readonly data-share-sheet-url>
         <button type="button" class="btn btn-brand rounded-full px-5" data-share-sheet-copy data-copied="{{ __('Copied') }}">{{ __('Copy') }}</button>
