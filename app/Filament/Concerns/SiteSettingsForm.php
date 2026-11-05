@@ -266,6 +266,19 @@ trait SiteSettingsForm
                             ->label(__('Show the logo in the top bar'))
                             ->helperText(__('Switched off, the top bar shows the name alone. The home page keeps the logo.'))
                             ->inline(false),
+                        Radio::make(self::field('site.ambulance'))
+                            ->label(__('The ambulance along the foot of the home page'))
+                            ->helperText(__('It drives across every half minute, its lights thrown over the first screen. Off for a quieter page.'))
+                            ->options([
+                                'off' => __('Off'),
+                                'low' => __('Lights low'),
+                                'medium' => __('Lights medium'),
+                                'bright' => __('Lights bright'),
+                                'very' => __('Lights very bright'),
+                            ])
+                            ->default('medium')
+                            ->inline()
+                            ->columnSpanFull(),
                         Toggle::make(self::field('site.hero_welcome'))
                             ->label(__('Begin the home page with the welcome on the site\'s own drawing'))
                             ->helperText(__('The name, the motto, the numbers to call and today\'s clinics, on a drawing in the site\'s colour: no photograph needed. Photographs added below follow it, one after another. Switched off, the home page begins with the first photograph.'))

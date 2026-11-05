@@ -187,4 +187,15 @@ A - Agility'])
 
         $this->actingAs(User::factory()->admin()->create())->get('/admin/site-settings')->assertSee('การจัดวางหน้าแรก');
     }
+
+    public function test_the_ambulance_drives_with_its_lights_medium_until_the_administrator_turns_them_or_it_off(): void
+    {
+        $this->get('/')->assertSee('hero-siren is-medium', false)->assertSee('class="ambulance"', false);
+
+        SiteSettings::save(['site.ambulance' => 'very']);
+        $this->get('/')->assertSee('hero-siren is-very', false);
+
+        SiteSettings::save(['site.ambulance' => 'off']);
+        $this->get('/')->assertDontSee('class="ambulance"', false)->assertDontSee('hero-siren', false);
+    }
 }

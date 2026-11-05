@@ -78,7 +78,7 @@
         <span class="hero-crosses" aria-hidden="true"><span style="left: 6%; --size: 1.4rem; --time: 18s; --wait: 0s">+</span><span style="left: 18%; --size: 0.9rem; --time: 14s; --wait: 4s">+</span><span style="left: 31%; --size: 1.8rem; --time: 22s; --wait: 8s">+</span><span style="left: 47%; --size: 1.1rem; --time: 16s; --wait: 2s">+</span><span style="left: 58%; --size: 0.8rem; --time: 13s; --wait: 10s">+</span><span style="left: 69%; --size: 1.5rem; --time: 20s; --wait: 5s">+</span><span style="left: 82%; --size: 1rem; --time: 15s; --wait: 7s">+</span><span style="left: 93%; --size: 1.3rem; --time: 19s; --wait: 12s">+</span></span>
         {{-- The site's own drawing with the welcome, then the hospital's photographs, one after another (Site settings > The hospital). --}}
         <x-site.hero-photos :slides="$photos" />
-        <div @class(['hero-front wrap grid items-center gap-12 pb-28 pt-14 sm:pb-36 sm:pt-20', 'lg:grid-cols-2' => $sessions->isNotEmpty()])>
+        <div @class(['hero-front wrap grid items-center gap-12 pb-36 pt-14 sm:pb-48 sm:pt-20', 'lg:grid-cols-2' => $sessions->isNotEmpty()])>
             {{-- Beside today's clinics the words keep to the left; under the hospital's emblem they are centred, the emblem over their middle. --}}
             @php($logo = SiteSettings::logoUrl())
             @php($aside = $sessions->isNotEmpty() && ! $logo)
@@ -153,6 +153,13 @@
         <svg class="hero-pulse" viewBox="0 0 1200 120" preserveAspectRatio="none" fill="none" aria-hidden="true">
             <path d="M0 60H520l18-22 16 22h40l14-50 22 100 18-78 12 28h40l16-14 14 14H1200" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke" />
         </svg>
+
+        {{-- An ambulance driving slowly along the pulse, over its beat, its lights going: every half minute it comes by
+             again. Drawn here, no picture to fetch; still, parked at the end, for those who ask for less motion. --}}
+        {{-- The ambulance on the pulse, as the administrator set it (Site settings > The hospital). --}}
+        @if (SiteSettings::ambulance() !== 'off')
+            <x-site.ambulance :light="SiteSettings::ambulance()" />
+        @endif
     </section>
 
     {{-- What people most often come to do, as the way-signs along a hospital's corridors: each its own colour, an

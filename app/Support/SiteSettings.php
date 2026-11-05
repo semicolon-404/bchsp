@@ -56,6 +56,8 @@ class SiteSettings
         // Since several can be given, "site.hero_slides" holds them (rows of image, caption, caption_en, url) and
         // "site.hero_image" is kept as the first of them, for what wants one picture of the hospital.
         'site.name_en', 'site.logo', 'site.show_logo', 'site.hero_image', 'site.hero_slides', 'site.hero_welcome',
+        // The ambulance along the foot of the first screen: off, or how bright its lights are.
+        'site.ambulance',
         // What the home page says under the name, and of the hospital itself: plain text, one item to a line.
         'site.motto', 'identity.vision', 'identity.mission', 'identity.values',
         // Who runs the hospital and since when (App\Support\Organisation): the director, as one of the register
@@ -127,6 +129,14 @@ class SiteSettings
     }
 
     /** A content setting ("social.facebook"), or a config-backed one as it stands right now. */
+    /** How bright the ambulance's lights on the home page are: 'off', 'low', 'medium' (as it starts), 'bright' or 'very'. */
+    public static function ambulance(): string
+    {
+        $value = self::get('site.ambulance', 'medium');
+
+        return in_array($value, ['off', 'low', 'medium', 'bright', 'very'], true) ? $value : 'medium';
+    }
+
     public static function get(string $key, mixed $default = null): mixed
     {
         if (isset(self::CONFIG[$key])) {
