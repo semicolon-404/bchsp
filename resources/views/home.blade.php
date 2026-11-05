@@ -38,6 +38,8 @@
     // Beside the news as the page is read on: what has been given a day that is still to come, and what is read most.
     $coming = $shows('announcements') ? App\Models\Announcement::published()->whereDate('event_on', '>=', now()->toDateString())->orderBy('event_on')->orderBy('id')->limit(3)->get() : collect();
     $mostRead = $shows('announcements') ? App\Models\Announcement::mostRead(10) : collect();
+    // Each department's latest picture, behind its story card: one query for them all.
+    $covers = $posting->isNotEmpty() ? App\Models\Announcement::published()->whereIn('department_id', $posting->pluck('id'))->whereNotNull('image_path')->latest('starts_at')->limit(60)->get(['id', 'department_id', 'image_path', 'starts_at'])->unique('department_id')->keyBy('department_id') : collect();
     $types = $shows('announcements') ? App\Models\AnnouncementType::orderBy('sort_order')->orderBy('name')->get() : collect();
 
     // What people most often come to do, as large tiles under the first screen. A place is offered once it has something in it.
@@ -189,7 +191,7 @@
             the newest few announcements. The whole list, with its kinds and years, is a page of its own.
         --}}
         {{-- Read two ways, the visitor's choice (resources/js/news-view.js): with the details, or a plain list. --}}
-        <section id="news" class="scroll-mt-16" data-news-view="detail">
+        <section id="news" class="news-ground scroll-mt-16" data-news-view="detail">
             <div class="wrap py-16 sm:py-24">
                 <div class="flex flex-wrap items-end justify-between gap-3">
                     <div>
@@ -206,7 +208,19 @@
                     </div>
                 </div>
 
-                <div @class(['mt-10 grid gap-8', 'lg:grid-cols-12' => $slides->isNotEmpty() && $announcements->isNotEmpty()])>
+                {{-- Each kind of announcement, one press away: a chip each with its colour, sliding sideways on a phone. --}}
+                @if ($types->isNotEmpty())
+                    <nav class="news-kinds mt-6" aria-label="{{ __('Types') }}">
+                        <a href="{{ route('announcements.index') }}" class="kind-chip is-all">{{ __('All') }}</a>
+                        @foreach ($types as $one)
+                            <a href="{{ route('announcements.index', ['type' => $one->slug]) }}" class="kind-chip" style="--kind: {{ $one->colour() }}">
+                                <x-dynamic-component :component="'heroicon-s-'.$one->icon()" class="size-4" aria-hidden="true" />{{ $one->localName() }}
+                            </a>
+                        @endforeach
+                    </nav>
+                @endif
+
+                <div @class(['mt-6 grid gap-8', 'lg:grid-cols-12' => $slides->isNotEmpty() && $announcements->isNotEmpty()])>
                     @if ($slides->isNotEmpty())
                         {{-- The posters are mostly wide: a wide frame, the larger part of the row, so they stand out. --}}
                         {{-- As tall as the list beside it on a wide screen: the two end on one line. --}}
@@ -221,18 +235,6 @@
                     @endif
                 </div>
 
-                {{-- Each kind of announcement, one press away: a tile each, its badge in its colour, as on a shelf of apps. --}}
-                @if ($types->isNotEmpty())
-                    <nav class="kind-shelf mt-10" aria-label="{{ __('Types') }}">
-                        @foreach ($types as $one)
-                            <a href="{{ route('announcements.index', ['type' => $one->slug]) }}" class="kind-tile" style="--kind: {{ $one->colour() }}">
-                                <span class="kind-badge size-11 shrink-0" aria-hidden="true"><x-dynamic-component :component="'heroicon-s-'.$one->icon()" class="size-5" /></span>
-                                <span class="min-w-0 flex-1 text-sm font-medium leading-snug">{{ $one->localName() }}</span>
-                                <x-heroicon-m-arrow-up-right class="kind-tile-go size-4 shrink-0" aria-hidden="true" />
-                            </a>
-                        @endforeach
-                    </nav>
-                @endif
 
                 {{-- What is coming up, and what others have read most: each only when there is something to say. --}}
                 @if ($coming->isNotEmpty() || $mostRead->isNotEmpty())
@@ -334,22 +336,22 @@
                         </div>
                         {{-- The departments that posted lately, each a card with its picture, then the way to all their posts:
                              one row, swiped, dragged or moved with the arrows (resources/js/rail.js). --}}
-                        <ul class="dept-shelf mt-4" data-rail>
+                        <ul class="mt-4 flex gap-2.5 overflow-x-auto pb-2 [scrollbar-width:none]" data-rail>
                             @foreach ($posting as $one)
-                                <li>
-                                    <a href="{{ route('departments.show', $one) }}" class="dept-tile no-underline">
-                                        <x-site.department-avatar :department="$one" class="size-12 text-base" />
-                                        <span class="min-w-0 flex-1">
-                                            <span class="block truncate font-medium text-ink">{{ $one->localName() }}</span>
-                                            <span class="block text-xs text-muted">{{ __('See the profile') }} &rarr;</span>
-                                        </span>
+                                <li class="shrink-0">
+                                    <a href="{{ route('posts', ['department' => $one->slug]) }}" class="story-card">
+                                        @if ($cover = $covers->get($one->id)?->imageUrl())
+                                            <img src="{{ $cover }}" alt="" loading="lazy" class="story-card-picture">
+                                        @endif
+                                        <span class="story-ring is-fresh"><x-site.department-avatar :department="$one" class="size-full text-sm" /></span>
+                                        <span class="story-card-name">{{ $one->localName() }}</span>
                                     </a>
                                 </li>
                             @endforeach
-                            <li>
-                                <a href="{{ route('posts') }}" class="dept-tile is-feed no-underline">
-                                    <span class="grid size-12 shrink-0 place-items-center rounded-full bg-white/15" aria-hidden="true"><x-heroicon-s-newspaper class="size-6" /></span>
-                                    <span class="min-w-0 flex-1 font-semibold">{{ __('Read the feed') }} &rarr;</span>
+                            <li class="shrink-0">
+                                <a href="{{ route('posts') }}" class="story-card is-all">
+                                    <span class="story-card-face"><x-heroicon-o-newspaper class="size-8" aria-hidden="true" /></span>
+                                    <span class="story-card-name">{{ __('Read the feed') }} &rarr;</span>
                                 </a>
                             </li>
                         </ul>

@@ -4249,3 +4249,48 @@ html.is-mourning {
         .way-sign, .way-sign:hover, .way-sign:hover .way-sign-arrow { transition: none; transform: none; }
     }
 }
+
+@layer components {
+    /* The news on the home page, as the feed: a grey ground, the cards white on it. */
+    .news-ground { background: var(--color-raised); }
+    .news-ground .card { background: var(--color-page); }
+
+    /* The kinds as chips, each with its colour, in one row that slides sideways when it does not fit. */
+    .kind-chips {
+        display: flex;
+        gap: 0.5rem;
+        overflow-x: auto;
+        padding-bottom: 0.25rem;
+        scrollbar-width: none;
+    }
+
+    .kind-chip {
+        display: inline-flex;
+        flex: none;
+        align-items: center;
+        gap: 0.4rem;
+        min-height: 2.5rem;
+        padding: 0 1rem;
+        border-radius: 999px;
+        background: var(--color-page);
+        color: var(--color-ink);
+        font-size: 0.9rem;
+        font-weight: 500;
+        text-decoration: none;
+        box-shadow: 0 0 0 1px color-mix(in srgb, var(--color-line) 70%, transparent);
+        transition: box-shadow 0.15s ease, color 0.15s ease;
+    }
+
+    .kind-chip svg { color: var(--kind, var(--color-brand)); }
+
+    .kind-chip:hover {
+        color: var(--kind, var(--color-brand));
+        box-shadow: 0 0 0 1.5px var(--kind, var(--color-brand));
+    }
+
+    .kind-chip.is-all {
+        background: var(--color-brand);
+        color: var(--color-on-brand);
+        box-shadow: none;
+    }
+}

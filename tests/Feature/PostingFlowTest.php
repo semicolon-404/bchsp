@@ -275,7 +275,7 @@ class PostingFlowTest extends TestCase
 
         $this->get('/')
             ->assertOk()
-            ->assertSeeInOrder(['From the departments', route('departments.show', $pharmacy), 'Pharmacy', route('departments.show', $this->dental), 'Dental'], false)
+            ->assertSeeInOrder(['From the departments', e(route('posts', ['department' => $pharmacy->slug])), 'Pharmacy', e(route('posts', ['department' => $this->dental->slug])), 'Dental'], false)
             ->assertDontSee(route('departments.show', $quiet), false)
             ->assertDontSee('Hidden unit');
 
