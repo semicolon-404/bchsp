@@ -3230,26 +3230,13 @@ html.is-mourning {
         transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
     }
 
-    .kind-pick::before {
-        content: '';
-        position: absolute;
-        inset: 0 0 auto;
-        height: 4px;
-        background: var(--kind, var(--color-brand));
-        opacity: 0;
-        transition: opacity 0.15s ease;
-    }
-
     .kind-pick:hover { transform: translateY(-2px); }
-    .kind-pick:hover::before { opacity: 0.6; }
 
     .kind-pick.is-on {
         border: 2px solid var(--kind, var(--color-brand));
         background: color-mix(in srgb, var(--kind, var(--color-brand)) 9%, var(--color-surface));
         box-shadow: 0 12px 28px -16px var(--kind, var(--color-brand));
     }
-
-    .kind-pick.is-on::before { opacity: 1; }
 
     .kind-tick {
         position: absolute;
