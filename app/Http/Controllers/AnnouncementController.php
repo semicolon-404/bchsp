@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Announcement;
 use App\Models\AnnouncementType;
 use App\Models\Department;
+use App\Support\Menus;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
@@ -21,7 +22,13 @@ class AnnouncementController extends Controller
     private const PER_PAGE = 15;
 
     /** The ways the list can be looked at: rows, or cards with each announcement's cover. */
-    public const VIEWS = ['list', 'cards'];
+    public const VIEWS = ['list', 'cards', 'index'];
+
+    /** How the index (?view=index) gathers its titles => what the switch calls it. */
+    public const GROUPS = ['day' => 'Day', 'week' => 'Week', 'month' => 'Month', 'year' => 'Year', 'fiscal' => 'Fiscal year'];
+
+    /** Titles alone take little room: the index holds this many to a page. */
+    private const PER_INDEX_PAGE = 100;
 
     /** What "when" can be besides a fiscal year => what the list calls it. */
     public const PERIODS = ['today' => 'Today', 'week' => 'This week', 'month' => 'This month', 'custom' => 'Choose the dates'];
@@ -43,6 +50,10 @@ class AnnouncementController extends Controller
             'custom' => self::dates($request->query('from'), $request->query('to')),
             default => [null, null],
         };
+        $look = in_array($request->query('view'), self::VIEWS, true) ? $request->query('view') : self::VIEWS[0];
+        // Tenders are looked for by fiscal year; everything else by month, unless the reader picks.
+        $byDefault = $type?->slug === Menus::PROCUREMENT ? 'fiscal' : 'month';
+        $by = is_string($request->query('by')) && isset(self::GROUPS[$request->query('by')]) ? $request->query('by') : $byDefault;
         $term = is_string($request->query('q')) ? mb_substr(trim($request->query('q')), 0, 80) : '';
         // The departments that have put something out: only those are offered, and only one of those is taken.
         $departments = Department::shown()->whereHas('announcements', fn ($query) => $query->published())->get();
@@ -62,13 +73,13 @@ class AnnouncementController extends Controller
             'department' => $department,
             'departments' => $departments,
             // What is shown only on the whole list as it opens: narrowed, or further on, the reader is after something already.
-            'mostRead' => $opening ? Announcement::mostRead() : collect(),
+            'mostRead' => $opening && $look !== 'index' ? Announcement::mostRead() : collect(),
             // The three newest, set large; not while there are so few that the list below would only say them again.
-            'featured' => $opening && $stats['all'] >= 4 ? Announcement::current()->with('type', 'department')->inListOrder()->limit(3)->get() : collect(),
+            'featured' => $opening && $look !== 'index' && $stats['all'] >= 4 ? Announcement::current()->with('type', 'department')->inListOrder()->limit(3)->get() : collect(),
             // What has been given a day that is still to come (the calendar has the rest).
-            'coming' => $opening ? Announcement::published()->whereDate('event_on', '>=', now()->toDateString())->orderBy('event_on')->orderBy('id')->limit(4)->get() : collect(),
+            'coming' => $opening && $look !== 'index' ? Announcement::published()->whereDate('event_on', '>=', now()->toDateString())->orderBy('event_on')->orderBy('id')->limit(4)->get() : collect(),
             // The departments that posted most lately, newest first.
-            'posting' => $opening
+            'posting' => $opening && $look !== 'index'
                 ? Department::shown()->whereKey($lately = Announcement::current()->whereNotNull('department_id')->latest('starts_at')->limit(60)->pluck('department_id')->unique()->take(6)->values())->get()->sortBy(fn (Department $one) => $lately->search($one->id))->values()
                 : collect(),
             'stats' => $stats,
@@ -86,7 +97,9 @@ class AnnouncementController extends Controller
             'from' => $period === 'custom' ? $from?->toDateString() : null,
             'to' => $period === 'custom' ? $until?->toDateString() : null,
             'term' => $term,
-            'look' => in_array($request->query('view'), self::VIEWS, true) ? $request->query('view') : self::VIEWS[0],
+            'look' => $look,
+            'by' => $by,
+            'byDefault' => $byDefault,
             'announcements' => Announcement::published()
                 ->with('type', 'department')
                 ->when($type, fn ($query) => $query->where('announcement_type_id', $type->id))
@@ -98,8 +111,9 @@ class AnnouncementController extends Controller
                 ->when(mb_strlen($term) >= 2, fn ($query) => $query->where(fn ($query) => $query
                     ->whereRaw("title like ? escape '!'", ['%'.str_replace(['!', '%', '_'], ['!!', '!%', '!_'], $term).'%'])
                     ->orWhereRaw("title_en like ? escape '!'", ['%'.str_replace(['!', '%', '_'], ['!!', '!%', '!_'], $term).'%'])))
-                ->inListOrder()
-                ->paginate(self::PER_PAGE)
+                // The index is by date alone, pinned or not: a heading for each day or month must not be broken by one.
+                ->when($look === 'index', fn ($query) => $query->orderByDesc('starts_at')->orderByDesc('id'), fn ($query) => $query->inListOrder())
+                ->paginate($look === 'index' ? self::PER_INDEX_PAGE : self::PER_PAGE)
                 ->withQueryString(),
         ]);
     }

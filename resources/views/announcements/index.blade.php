@@ -11,7 +11,7 @@
 --}}
 @php
     // The address of this list with one thing changed, the rest kept; the page number starts over.
-    $with = fn (array $change) => route('announcements.index', array_filter(array_merge(['type' => $type?->slug, 'department' => $department?->slug, 'year' => $year ?? $period, 'from' => $from, 'to' => $to, 'q' => $term, 'view' => $look === 'cards' ? 'cards' : null], $change), fn ($value) => filled($value)));
+    $with = fn (array $change) => route('announcements.index', array_filter(array_merge(['type' => $type?->slug, 'department' => $department?->slug, 'year' => $year ?? $period, 'from' => $from, 'to' => $to, 'q' => $term, 'view' => $look !== 'list' ? $look : null, 'by' => $look === 'index' && $by !== $byDefault ? $by : null], $change), fn ($value) => filled($value)));
     $narrowed = $type || $department || $year || $period || $term !== '';
     $aside = $mostRead->isNotEmpty() || $coming->isNotEmpty() || $posting->isNotEmpty();
 @endphp
@@ -34,7 +34,7 @@
 
             {{-- Sent with GET: the address of what was found can be shared, and nothing typed here is kept by the site. --}}
             <form action="{{ route('announcements.index') }}" method="get" role="search" class="mt-6 max-w-3xl">
-                @foreach (array_filter(['type' => $type?->slug, 'department' => $department?->slug, 'year' => $year ?? $period, 'from' => $from, 'to' => $to, 'view' => $look === 'cards' ? 'cards' : null]) as $kept => $value)
+                @foreach (array_filter(['type' => $type?->slug, 'department' => $department?->slug, 'year' => $year ?? $period, 'from' => $from, 'to' => $to, 'view' => $look !== 'list' ? $look : null, 'by' => $look === 'index' && $by !== $byDefault ? $by : null]) as $kept => $value)
                     <input type="hidden" name="{{ $kept }}" value="{{ $value }}">
                 @endforeach
                 <label class="news-search relative block min-w-0 flex-1">
@@ -174,7 +174,7 @@
             <div @class(['min-w-0', 'lg:col-span-2' => $aside])>
                 {{-- Narrowing the list: by who put it out and by when. The word is kept from the search above. --}}
                 <form action="{{ route('announcements.index') }}" method="get" class="card group flex flex-wrap items-end gap-3 px-4 py-4">
-                    @foreach (array_filter(['type' => $type?->slug, 'q' => $term, 'view' => $look === 'cards' ? 'cards' : null]) as $kept => $value)
+                    @foreach (array_filter(['type' => $type?->slug, 'q' => $term, 'view' => $look !== 'list' ? $look : null, 'by' => $look === 'index' && $by !== $byDefault ? $by : null]) as $kept => $value)
                         <input type="hidden" name="{{ $kept }}" value="{{ $value }}">
                     @endforeach
                     @if ($departments->isNotEmpty())
@@ -225,12 +225,58 @@
                     <p class="text-sm text-muted" role="status">{{ trans_choice('{0} No announcements match.|{1} :count announcement|[2,*] :count announcements', $announcements->total(), ['count' => number_format($announcements->total())]) }}</p>
                     <nav class="flex gap-2" aria-label="{{ __('Way of looking') }}">
                         <a href="{{ $with(['view' => null, 'page' => $announcements->currentPage() > 1 ? $announcements->currentPage() : null]) }}" @class(['chip gap-2', 'is-on' => $look === 'list']) aria-current="{{ $look === 'list' ? 'true' : 'false' }}"><x-heroicon-m-list-bullet class="size-4" aria-hidden="true" />{{ __('Rows') }}</a>
-                        <a href="{{ $with(['view' => 'cards', 'page' => $announcements->currentPage() > 1 ? $announcements->currentPage() : null]) }}" @class(['chip gap-2', 'is-on' => $look === 'cards']) aria-current="{{ $look === 'cards' ? 'true' : 'false' }}"><x-heroicon-m-squares-2x2 class="size-4" aria-hidden="true" />{{ __('Cards') }}</a>
+                        <a href="{{ $with(['view' => 'cards', 'by' => null, 'page' => $announcements->currentPage() > 1 ? $announcements->currentPage() : null]) }}" @class(['chip gap-2', 'is-on' => $look === 'cards']) aria-current="{{ $look === 'cards' ? 'true' : 'false' }}"><x-heroicon-m-squares-2x2 class="size-4" aria-hidden="true" />{{ __('Cards') }}</a>
+                        <a href="{{ $with(['view' => 'index', 'by' => null, 'page' => null]) }}" @class(['chip gap-2', 'is-on' => $look === 'index']) aria-current="{{ $look === 'index' ? 'true' : 'false' }}"><x-heroicon-m-bars-3-bottom-left class="size-4" aria-hidden="true" />{{ __('Index') }}</a>
                     </nav>
                 </div>
 
+                {{-- The index gathers its titles under a heading for each day, week, month, year or fiscal year: the reader picks. --}}
+                @if ($look === 'index')
+                    <nav class="mt-4 flex flex-wrap items-center gap-2" aria-label="{{ __('Group by') }}">
+                        <span class="mr-1 text-sm font-semibold text-ink">{{ __('Group by') }}</span>
+                        @foreach (App\Http\Controllers\AnnouncementController::GROUPS as $one => $label)
+                            <a href="{{ $with(['by' => $one === $byDefault ? null : $one, 'page' => null]) }}" @class(['chip', 'is-on' => $by === $one]) aria-current="{{ $by === $one ? 'true' : 'false' }}">{{ __($label) }}</a>
+                        @endforeach
+                    </nav>
+                @endif
+
                 @if ($announcements->isNotEmpty())
-                    @if ($look === 'cards')
+                    @if ($look === 'index')
+                        @php
+                            $th = app()->getLocale() === 'th';
+                            $era = fn ($date) => $date->year + ($th ? 543 : 0);
+                            $local = fn ($date) => $date->copy()->locale(app()->getLocale());
+                            // The heading each title falls under, by the grouping picked.
+                            $heading = fn ($date) => match ($by) {
+                                'day' => $local($date)->translatedFormat('l j F ').$era($date),
+                                'week' => __('Week of :from – :to', ['from' => $local($date->copy()->startOfWeek())->translatedFormat('j M'), 'to' => $local($date->copy()->endOfWeek())->translatedFormat('j M ').$era($date->copy()->endOfWeek())]),
+                                'month' => $local($date)->translatedFormat('F ').$era($date),
+                                'year' => ($th ? 'พ.ศ. ' : '').$era($date),
+                                default => __('Fiscal year :year', ['year' => App\Models\Announcement::fiscalYearOf($date)]),
+                            };
+                            $groups = $announcements->getCollection()->groupBy(fn ($one) => $heading($one->starts_at ?? $one->created_at));
+                        @endphp
+                        <div class="toc mt-4">
+                            @foreach ($groups as $title => $ones)
+                                <section aria-label="{{ $title }}">
+                                    <h3 class="toc-head"><span>{{ $title }}</span><span class="font-mono text-xs font-normal text-muted">{{ trans_choice('{1} :count announcement|[2,*] :count announcements', $ones->count(), ['count' => $ones->count()]) }}</span></h3>
+                                    <ol>
+                                        @foreach ($ones as $one)
+                                            @php($at = $one->starts_at ?? $one->created_at)
+                                            <li>
+                                                <a href="{{ route('announcements.show', $one) }}" class="toc-row">
+                                                    <span class="size-2 shrink-0 rounded-full" style="background: {{ $one->type?->colour() ?? 'var(--color-muted)' }}" title="{{ $one->type?->localName() }}" aria-hidden="true"></span>
+                                                    <span class="min-w-0 flex-1 truncate">{{ $one->localTitle() }}</span>
+                                                    @if ($one->type)<span class="sr-only">({{ $one->type->localName() }})</span>@endif
+                                                    <time datetime="{{ $at->toIso8601String() }}" class="shrink-0 font-mono text-xs text-muted">{{ $by === 'day' ? '' : $local($at)->translatedFormat('j M').' · ' }}{{ $at->format('H:i') }}{{ $th ? ' น.' : '' }}</time>
+                                                </a>
+                                            </li>
+                                        @endforeach
+                                    </ol>
+                                </section>
+                            @endforeach
+                        </div>
+                    @elseif ($look === 'cards')
                         <ul @class(['mt-3 grid gap-4 sm:grid-cols-2', 'lg:grid-cols-3' => ! $aside])>
                             @foreach ($announcements as $announcement)
                                 <li><x-site.announcement-card :announcement="$announcement" /></li>

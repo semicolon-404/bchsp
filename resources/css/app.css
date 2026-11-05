@@ -3322,3 +3322,45 @@ html.is-mourning {
         .news-band-mark { width: 16rem; height: 16rem; right: -4rem; top: 2rem; transform: rotate(-12deg); }
     }
 }
+
+@layer components {
+    /* The news list as an index (?view=index): titles alone, one to a line, under a heading for each day, month or year. */
+    .toc {
+        overflow: clip;
+        border: 1px solid var(--color-line);
+        border-radius: 18px;
+        background: var(--color-surface);
+    }
+
+    .toc-head {
+        position: sticky;
+        top: 4rem;
+        z-index: 1;
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: 1rem;
+        padding: 0.625rem 1rem;
+        border-block: 1px solid var(--color-line);
+        background: color-mix(in srgb, var(--color-raised) 92%, transparent);
+        backdrop-filter: blur(12px);
+        font-size: 0.95rem;
+        font-weight: 600;
+    }
+
+    .toc section:first-child .toc-head { border-top: 0; }
+
+    .toc-row {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        min-height: 2.75rem;
+        padding: 0.375rem 1rem;
+        color: var(--color-ink);
+        text-decoration: none;
+    }
+
+    .toc li + li .toc-row { border-top: 1px dashed color-mix(in srgb, var(--color-line) 70%, transparent); }
+
+    .toc-row:hover { background: color-mix(in srgb, var(--color-brand) 6%, transparent); color: var(--color-brand); }
+}
