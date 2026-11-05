@@ -36,6 +36,12 @@ class SiteUpdateResource extends Resource
 
     protected static string|UnitEnum|null $navigationGroup = 'System';
 
+    /** Under System status in the menu, shown as that is opened: the sidebar stays short. */
+    public static function getNavigationParentItem(): ?string
+    {
+        return __(\App\Filament\Pages\SystemStatus::getNavigationLabel());
+    }
+
     protected static ?string $navigationLabel = 'Website updates';
 
     protected static ?string $modelLabel = 'update';

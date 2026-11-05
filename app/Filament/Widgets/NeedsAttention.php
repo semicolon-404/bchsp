@@ -64,6 +64,9 @@ class NeedsAttention extends Widget
         if (auth()->user()?->isAdmin()) {
             $add(Complaint::where('status', 'received')->count(), '{1} :count matter sent in has not been looked at|[2,*] :count matters sent in have not been looked at', ComplaintResource::getUrl('index'), 'danger');
             $add(Complaint::whereNotIn('status', Complaint::CLOSED)->where('created_at', '<', now()->subDays(SiteSettings::complaintDays()))->count(), '{1} :count matter is past the days it should be dealt with in|[2,*] :count matters are past the days they should be dealt with in', ComplaintResource::getUrl('index'), 'danger');
+            // Festivals coming within two months, put in off for their date to be checked first.
+            $add(\App\Models\Festival::where('is_active', false)->where('name', 'like', '%ตรวจวันที่%')->whereBetween('starts_on', [today(), today()->addMonths(2)])->count(), '{1} :count festival coming soon needs its date checked and switching on|[2,*] :count festivals coming soon need their dates checked and switching on', \App\Filament\Resources\Festivals\FestivalResource::getUrl('index'), 'warning');
+            $add(\App\Models\SitePopup::showing()->whereNotNull('ends_at')->where('ends_at', '<=', now()->addDays(3))->count(), '{1} :count popup ends within three days|[2,*] :count popups end within three days', \App\Filament\Resources\SitePopups\SitePopupResource::getUrl('index'), 'info');
             $add(SystemHealth::problems(), '{1} :count thing is wrong on System status|[2,*] :count things are wrong on System status', SystemStatus::getUrl(), 'danger');
         }
 

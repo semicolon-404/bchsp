@@ -7,6 +7,7 @@ use App\Filament\Resources\Departments\Pages\ManageDepartments;
 use App\Models\Department;
 use App\Support\OptimizedUpload;
 use BackedEnum;
+use Filament\Actions\Action;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\EditAction;
 use Filament\Forms\Components\FileUpload;
@@ -235,6 +236,13 @@ class DepartmentResource extends Resource
                     ->disabled(fn () => ! auth()->user()->isAdmin()),
             ])
             ->recordActions([
+                Action::make('view')
+                    ->label(__('View on the site'))
+                    ->icon(Heroicon::OutlinedArrowTopRightOnSquare)
+                    ->color('gray')
+                    ->visible(fn (Department $record) => $record->is_active)
+                    ->url(fn (Department $record) => route('departments.show', $record))
+                    ->openUrlInNewTab(),
                 EditAction::make(),
                 DeleteAction::make()->visible(fn () => self::canCreate()),
             ]);
