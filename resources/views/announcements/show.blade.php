@@ -23,7 +23,7 @@
         @if ($announcement->type)
             <p class="eyebrow mt-6"><a href="{{ route('announcements.index', ['type' => $announcement->type->slug]) }}" class="inline-flex items-center gap-2 no-underline" style="color: {{ $announcement->type->colour() }}"><x-site.type-mark :type="$announcement->type" bare />{{ $announcement->type->localName() }}</a></p>
         @endif
-        <h1 class="hero-name mt-2 text-3xl leading-tight sm:text-4xl">{{ $announcement->localTitle() }}</h1>
+        <h1 class="mt-2 text-ink text-3xl leading-tight sm:text-4xl">{{ $announcement->localTitle() }}</h1>
         <p class="mt-3 font-mono text-sm text-muted">
             <time datetime="{{ ($announcement->starts_at ?? $announcement->created_at)->toDateString() }}">{{ $announcement->shownOn() }}</time>
             · <a href="{{ route('announcements.index', array_filter(['type' => $announcement->type?->slug, 'year' => App\Models\Announcement::fiscalYearOf($announcement->starts_at ?? $announcement->created_at)])) }}" class="underline">{{ __('Fiscal year :year', ['year' => App\Models\Announcement::fiscalYearOf($announcement->starts_at ?? $announcement->created_at)]) }}</a>
