@@ -89,7 +89,7 @@
                 @endif
                 <p class="text-lg text-muted">{{ __(['morning' => 'Good morning', 'day' => 'Good afternoon', 'evening' => 'Good evening', 'night' => 'Good night'][$daypart]) }} · {{ __('Welcome to') }}</p>
                 <h1 class="hero-name hero-shine mt-4 text-4xl leading-tight sm:text-5xl md:text-6xl">{{ $name }}</h1>
-                <p @class(['mx-auto mt-6 max-w-xl text-lg text-muted sm:text-xl lg:max-w-none lg:whitespace-nowrap lg:text-base xl:text-xl', 'lg:mx-0' => $aside])>{{ $motto ? '“'.$motto.'”' : __('News, announcements and services of the hospital, in one place.') }}</p>
+                <p @class(['motto-line mx-auto mt-6 max-w-none text-muted sm:text-xl lg:text-base xl:text-xl', 'lg:mx-0' => $aside])>{{ $motto ? '“'.$motto.'”' : __('News, announcements and services of the hospital, in one place.') }}</p>
 
                 @if ($phone || $emergency)
                     <div @class(['mt-8 flex flex-wrap justify-center gap-3', 'lg:justify-start' => $aside])>

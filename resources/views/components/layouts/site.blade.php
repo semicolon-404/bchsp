@@ -208,7 +208,7 @@
                 @if ($about = App\Support\Footer::about())
                     <p class="mt-2 max-w-sm whitespace-pre-line text-sm text-muted">{{ $about }}</p>
                 @elseif ($motto = SiteSettings::get('site.motto'))
-                    <p class="mt-2 max-w-sm text-sm text-muted">“{{ $motto }}”</p>
+                    <p class="motto-line mt-2 text-sm text-muted">“{{ $motto }}”</p>
                 @endif
                 @if ($address)
                     <p class="mt-2 flex max-w-sm items-start gap-1.5 text-sm text-muted"><x-heroicon-m-map-pin class="mt-0.5 size-4 shrink-0 text-brand" aria-hidden="true" /><span class="whitespace-pre-line">{{ $address }}</span></p>
@@ -226,7 +226,7 @@
                 </nav>
             @endforeach
 
-            <div class="col-span-2 sm:col-span-1 lg:col-span-3">
+            <div class="col-span-1 lg:col-span-3">
                 <h2 class="foot-heading">{{ __('Contact us') }}</h2>
                 <ul class="mt-2.5 space-y-1 text-sm">
                     @if ($phone)

@@ -3922,7 +3922,8 @@ html.is-mourning {
         position: relative;
         padding-top: 5.5rem;
         transform-origin: 50% -16rem;
-        animation: sign-in 3.2s both, sign-stir 9s ease-in-out 3.2s infinite;
+        /* Swings in, then rests still: text on a board that keeps turning a fraction of a degree is drawn blurred. */
+        animation: sign-in 3.2s forwards;
     }
 
     .sign-rope {
@@ -4016,7 +4017,7 @@ html.is-mourning {
         57% { transform: translate(0.42rem, 0) rotate(0.2deg); animation-timing-function: ease-in-out; }
         73% { transform: translate(-0.22rem, 0) rotate(-0.1deg); animation-timing-function: ease-in-out; }
         88% { transform: translate(0.08rem, 0) rotate(0.04deg); animation-timing-function: ease-in-out; }
-        100% { transform: translate(0, 0) rotate(0); }
+        100% { transform: none; }
     }
 
     /* Then a slow stir, as in a breeze, barely seen. */
@@ -5589,4 +5590,41 @@ html.is-mourning {
         .dial.is-emergency .dial-ring { animation: none; }
         .dial, .dial:hover { transition: none; transform: none; }
     }
+}
+
+@layer components {
+    /* Lines of text set as a typesetter would: no word left alone on a last line. */
+    p, li, dd, h1, h2, h3 { text-wrap: pretty; }
+
+    /* On a phone the footer is two columns side by side; a link too long for its column shows on one line, cut. */
+    @media (max-width: 39.99rem) {
+        .site-foot .foot-link:not(.break-all) {
+            display: block;
+            overflow: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+        }
+
+        .site-foot .foot-link.break-all { word-break: break-all; }
+    }
+
+    /* The values on a phone or a tablet: letters to fit their tiles, the open one wide enough for its word. */
+    @media (max-width: 63.99rem) {
+        .values-row { height: 9.5rem; gap: 0.3rem; }
+        .values-row > li { padding: 0.6rem 0.5rem; border-radius: 14px; }
+        .values-row b { top: 0.45rem; font-size: clamp(1.4rem, 5.5vw, 2.5rem); }
+        .values-row span { min-width: 0; font-size: clamp(0.85rem, 2.6vw, 1.1rem); }
+
+        .values-row > li:is(:hover, :focus-visible, :focus),
+        .values-row:not(:hover, :focus-within) > li:first-child { flex-grow: 3.2; }
+
+        .values-row > li:is(:hover, :focus-visible, :focus) b,
+        .values-row:not(:hover, :focus-within) > li:first-child b { left: 0.6rem; }
+    }
+}
+
+@layer components {
+    /* The motto on one line, at any width: its letters shrink with the screen rather than break. */
+    .motto-line { white-space: nowrap; font-size: clamp(0.65rem, 3.25vw, 1.25rem); }
+    .site-foot .motto-line { font-size: clamp(0.62rem, 2.85vw, 0.875rem); }
 }
