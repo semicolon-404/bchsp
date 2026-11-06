@@ -50,10 +50,8 @@
             <a href="{{ route('filament.admin.pages.notifications') }}" class="account-item"><x-heroicon-o-bell class="size-5" aria-hidden="true" />{{ __('Notifications') }}</a>
             {{-- Language and look, here rather than behind a button of their own in the bar. --}}
             <div class="account-prefs">
-                <p class="account-prefs-label"><x-heroicon-o-language class="size-4" aria-hidden="true" />{{ __('Language') }}</p>
-                <x-site.language-switch />
-                <p class="account-prefs-label mt-3"><x-heroicon-o-swatch class="size-4" aria-hidden="true" />{{ __('Theme') }}</p>
-                <x-site.theme-switch />
+                <div class="account-pref"><span><x-heroicon-o-language class="size-5" aria-hidden="true" />{{ __('Language') }}</span><x-site.language-switch class="slide-switch" /></div>
+                <div class="account-pref"><span><x-heroicon-o-swatch class="size-5" aria-hidden="true" />{{ __('Theme') }}</span><x-site.theme-switch class="slide-switch" /></div>
             </div>
             <form method="POST" action="{{ route('filament.admin.auth.logout') }}" class="border-t border-line">
                 @csrf

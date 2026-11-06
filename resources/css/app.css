@@ -5963,7 +5963,38 @@ html.is-mourning {
 }
 
 @layer components {
-    /* Language and look inside one's own menu (components/site/account). */
-    .account-panel .account-prefs { padding: 0.75rem 1rem 1rem; border-top: 1px solid var(--color-line); background: color-mix(in srgb, var(--color-raised) 45%, transparent); }
-    .account-prefs-label { display: flex; align-items: center; gap: 0.4rem; margin-bottom: 0.4rem; color: var(--color-muted); font-size: 0.75rem; font-weight: 600; }
+    /* Language and look inside one's own menu (components/site/account): a row each, a small sliding switch at its end. */
+    .account-panel .account-prefs { display: grid; gap: 0.25rem; padding: 0.5rem 0; border-top: 1px solid var(--color-line); }
+
+    .account-pref { display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; padding: 0.35rem 1rem; }
+    .account-pref > span { display: flex; align-items: center; gap: 0.75rem; color: var(--color-ink); font-size: 0.925rem; }
+    .account-pref > span > svg { color: var(--color-muted); }
+
+    /* The pill slides under the one chosen, rather than jumping. */
+    .slide-switch { position: relative; flex: none; isolation: isolate; background: var(--color-raised); border-color: transparent; }
+    .slide-switch > * { position: relative; min-width: 2.1rem; min-height: 1.75rem; padding-inline: 0.5rem; font-size: 0.75rem; }
+    .slide-switch > * > svg { width: 1rem; height: 1rem; }
+    .slide-switch > [aria-pressed='true'], .slide-switch > [aria-current='true'] { background: none; }
+
+    .slide-switch::before {
+        content: "";
+        position: absolute;
+        z-index: -1;
+        top: 0.125rem;
+        bottom: 0.125rem;
+        left: 0.125rem;
+        width: calc((100% - 0.25rem - 0.125rem * (var(--n) - 1)) / var(--n));
+        border-radius: 999px;
+        background: var(--color-brand);
+        box-shadow: 0 2px 6px -2px rgb(0 0 0 / 0.35);
+        transform: translateX(calc(var(--at, 0) * (100% + 0.125rem)));
+        transition: transform 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
+    }
+
+    .slide-switch.grid-cols-2 { --n: 2; }
+    .slide-switch.grid-cols-3 { --n: 3; }
+    .slide-switch:has(> :nth-child(2):is([aria-pressed='true'], [aria-current='true'])) { --at: 1; }
+    .slide-switch:has(> :nth-child(3):is([aria-pressed='true'], [aria-current='true'])) { --at: 2; }
+    .slide-switch > :is([aria-pressed='true'], [aria-current='true']), .slide-switch > :is([aria-pressed='true'], [aria-current='true']):hover { color: var(--color-on-brand); }
+    .slide-switch:not(:has([aria-pressed='true'], [aria-current='true']))::before { opacity: 0; }
 }
