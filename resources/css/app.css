@@ -3164,8 +3164,8 @@ html.is-mourning {
         }
 
         .lightbox-card {
-            grid-template-columns: 1fr;
-            grid-template-rows: minmax(0, 1fr) auto;
+            grid-template-columns: minmax(0, 1fr);
+            grid-template-rows: minmax(0, 1fr) minmax(0, 45%);
             border-radius: 0;
         }
 
@@ -5626,5 +5626,35 @@ html.is-mourning {
 @layer components {
     /* The motto on one line, at any width: its letters shrink with the screen rather than break. */
     .motto-line { white-space: nowrap; font-size: clamp(0.65rem, 3.25vw, 1.25rem); }
-    .site-foot .motto-line { font-size: clamp(0.62rem, 2.85vw, 0.875rem); }
+    .site-foot .motto-line { font-size: clamp(0.55rem, 2.55vw, 0.875rem); }
+    /* Never wider than its column, whatever the motto says: a longer one is cut rather than widen the page. */
+    .motto-line { max-width: 100%; overflow: hidden; text-overflow: ellipsis; }
+}
+
+@layer components {
+    /* The post's words beside its picture in the viewer: the panel scrolls on its own, the picture stays. */
+    .lightbox-side { overflow-y: auto; scrollbar-width: thin; }
+
+    .lightbox-details {
+        margin-top: 1.25rem;
+        padding-top: 1.25rem;
+        border-top: 1px solid var(--color-line);
+        font-size: 0.95rem;
+        line-height: 1.7;
+    }
+
+    .lightbox-details > :first-child { margin-top: 0; }
+    .lightbox-details img { display: none; }
+}
+
+@layer components {
+    /* On a phone the details fit the screen: no line wider than it. */
+    .lightbox-side { min-width: 0; }
+    .lightbox-details, .lightbox-title { overflow-wrap: anywhere; }
+    .lightbox-details * { max-width: 100%; }
+}
+
+@layer components {
+    /* The side panel scrolls; its parts keep their own height rather than being squeezed to nothing. */
+    .lightbox-side > * { flex-shrink: 0; }
 }

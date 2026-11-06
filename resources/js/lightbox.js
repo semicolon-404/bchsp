@@ -31,12 +31,13 @@ export function startLightbox() {
                 <p class="lightbox-date"></p>
                 <p class="lightbox-count" aria-live="polite"></p>
                 <div class="lightbox-tiles"></div>
+                <div class="lightbox-details rich"></div>
             </aside>
         </div>`;
     document.body.append(dialog);
 
     const $ = (selector) => dialog.querySelector(selector);
-    const [picture, stage, side, kind, title, date, count, tiles] = ['.lightbox-picture', '.lightbox-stage', '.lightbox-side', '.lightbox-kind', '.lightbox-title', '.lightbox-date', '.lightbox-count', '.lightbox-tiles'].map($);
+    const [picture, stage, side, kind, title, date, count, tiles, details] = ['.lightbox-picture', '.lightbox-stage', '.lightbox-side', '.lightbox-kind', '.lightbox-title', '.lightbox-date', '.lightbox-count', '.lightbox-tiles', '.lightbox-details'].map($);
     const [close, previous, next] = ['[data-close]', '[data-prev]', '[data-next]'].map($);
     // The words for the buttons come from the page, in the reader's language.
     const words = document.body.dataset;
@@ -61,13 +62,18 @@ export function startLightbox() {
         tiles.children[at]?.scrollIntoView({ block: 'nearest', inline: 'nearest' });
     };
 
-    const fill = (gallery) => {
-        const about = gallery?.dataset ?? {};
+    const fill = (gallery, link) => {
+        // What it is about: from its album, or from the picture itself when it stands alone.
+        const about = gallery?.dataset ?? link?.dataset ?? {};
+        // The post's own words beside the picture, as they are on the page (already made safe there).
+        const words = document.querySelector(about.lightboxDetails || '#none');
+        details.innerHTML = words ? words.innerHTML : '';
+        details.hidden = !words;
         kind.textContent = about.galleryKind || '';
         kind.style.color = about.galleryKindColour || '';
         title.textContent = about.galleryTitle || document.querySelector('h1')?.textContent.trim() || '';
         date.textContent = about.galleryDate || '';
-        side.hidden = !title.textContent && set.length < 2;
+        side.hidden = !title.textContent && set.length < 2 && details.hidden;
         tiles.replaceChildren(...set.map((link, i) => {
             const tile = document.createElement('button');
             tile.type = 'button';
@@ -88,7 +94,7 @@ export function startLightbox() {
         event.preventDefault();
         const gallery = link.closest('[data-gallery]');
         set = gallery ? [...gallery.querySelectorAll('a[data-lightbox]')] : [link];
-        fill(gallery);
+        fill(gallery, link);
         dialog.showModal();
         show(set.indexOf(link));
     });

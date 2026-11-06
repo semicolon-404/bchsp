@@ -58,14 +58,14 @@
     <article class="wrap max-w-3xl py-10 sm:py-14">
         @if ($image = $announcement->imageUrl())
             {{-- The announcement as one picture, shown whole whatever its shape; a press opens it at full size. --}}
-            <a href="{{ $image }}" target="_blank" rel="noopener" class="block" data-lightbox>
+            <a href="{{ $image }}" target="_blank" rel="noopener" class="block" data-lightbox data-lightbox-details="#post-body" data-gallery-kind="{{ $announcement->type?->localName() }}" data-gallery-kind-colour="{{ $announcement->type?->colour() }}" data-gallery-date="{{ $announcement->shownAt() }}">
                 <img src="{{ $image }}" alt="{{ $announcement->localTitle() }}" class="mx-auto max-h-[85vh] w-auto max-w-full rounded-xl border border-line">
                 <span class="sr-only">{{ __('Open the picture at full size') }}</span>
             </a>
         @endif
 
         @if ($announcement->hasBody())
-            <div class="rich mt-8">{!! $announcement->renderedBody() !!}</div>
+            <div class="rich mt-8" id="post-body">{!! $announcement->renderedBody() !!}</div>
         @endif
 
         @if ($photos = $announcement->photos())
@@ -76,7 +76,7 @@
             --}}
             <section class="mt-10" aria-label="{{ __('Photographs') }}">
                 <h2 class="flex items-center gap-2 text-lg"><x-heroicon-o-photo class="size-5 text-brand" aria-hidden="true" />{{ trans_choice('{1} :count photograph|[2,*] :count photographs', count($photos), ['count' => count($photos)]) }}</h2>
-                <ul @class(['album mt-4', 'is-one' => count($photos) === 1, 'is-two' => count($photos) === 2]) data-gallery data-gallery-title="{{ $announcement->localTitle() }}" data-gallery-kind="{{ $announcement->type?->localName() }}" data-gallery-kind-colour="{{ $announcement->type?->colour() }}" data-gallery-date="{{ $announcement->shownAt() }}">
+                <ul @class(['album mt-4', 'is-one' => count($photos) === 1, 'is-two' => count($photos) === 2]) data-gallery data-lightbox-details="#post-body" data-gallery-title="{{ $announcement->localTitle() }}" data-gallery-kind="{{ $announcement->type?->localName() }}" data-gallery-kind-colour="{{ $announcement->type?->colour() }}" data-gallery-date="{{ $announcement->shownAt() }}">
                     @foreach ($photos as $photo)
                         <li @class(['is-hidden' => $loop->iteration > 9])>
                             <a href="{{ $photo }}" target="_blank" rel="noopener" data-lightbox>
