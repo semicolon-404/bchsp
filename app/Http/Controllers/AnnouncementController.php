@@ -175,21 +175,22 @@ class AnnouncementController extends Controller
             // Who posted last first, as stories are.
             ->sortByDesc('last_posted')->values();
         $department = is_string($request->query('department')) ? $departments->firstWhere('slug', $request->query('department')) : null;
-        // The newest posts with a picture, in one query: the wall of pictures at the top, and each department's latest
-        // picture behind its card in the row of stories.
+        // The newest posts with a picture, in one query: each department's latest picture behind its story card.
         $pictured = Announcement::published()->whereIn('department_id', $departments->pluck('id'))->whereNotNull('image_path')
             ->orderByDesc('starts_at')->orderByDesc('id')->limit(60)->get();
+
+        // Five at a time: posts are mostly pictures, so the page opens quickly; "Show more posts" brings the next five.
+        $posts = Announcement::published()->with('type', 'department')
+            ->whereIn('department_id', $department ? [$department->id] : $departments->pluck('id'))
+            ->orderByDesc('starts_at')->orderByDesc('id')
+            ->paginate(5)->withQueryString();
 
         return view('posts', [
             'department' => $department,
             'departments' => $departments,
-            'posts' => Announcement::published()->with('type', 'department')
-                ->whereIn('department_id', $department ? [$department->id] : $departments->pluck('id'))
-                ->orderByDesc('starts_at')->orderByDesc('id')
-                // Five at a time: posts are mostly pictures, so the page opens quickly; "Show more posts" brings the next five.
-                ->paginate(5)->withQueryString(),
-            // Eight: enough to fill the rows (each is shown twice for the drift), few enough to load quickly.
-            'wall' => $pictured->take(8)->values(),
+            'posts' => $posts,
+            // The newest three, pictured or not, fanned out as cards in the banner: those already on this page, no query more.
+            'fan' => $posts->getCollection()->take(3)->values(),
             'covers' => $pictured->unique('department_id')->keyBy('department_id'),
             // Beside the feed: what has been read most lately, of the departments' posts.
             'mostRead' => $request->query('page', 1) <= 1 ? Announcement::mostRead(20)->whereNotNull('department_id')->take(5)->values() : collect(),

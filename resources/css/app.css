@@ -3488,65 +3488,6 @@ html.is-mourning {
 }
 
 @layer components {
-    /* The feed's top (posts.blade.php): rows of the departments' latest pictures drifting past, behind the title. */
-    .wall {
-        position: relative;
-        overflow: hidden;
-        background: #0c1410;
-        isolation: isolate;
-    }
-
-    .wall-rows {
-        position: absolute;
-        inset: -1rem 0;
-        display: grid;
-        gap: 0.75rem;
-        align-content: center;
-        transform: rotate(-4deg) scale(1.1);
-        opacity: 0.9;
-    }
-
-    .wall-row {
-        display: flex;
-        gap: 0.75rem;
-        width: max-content;
-        animation: wall-drift 90s linear infinite;
-    }
-
-    .wall-row.is-back { animation-direction: reverse; animation-duration: 110s; }
-
-    .wall-tile {
-        display: block;
-        flex: none;
-        width: 9rem;
-        height: 11rem;
-        overflow: hidden;
-        border-radius: 14px;
-        background: #1c2a22;
-    }
-
-    .wall-tile img { width: 100%; height: 100%; object-fit: cover; }
-
-    @media (min-width: 40rem) {
-        .wall-tile { width: 12rem; height: 14rem; }
-    }
-
-    .wall-shade {
-        position: absolute;
-        inset: 0;
-        background:
-            linear-gradient(90deg, rgb(8 14 11 / 0.92) 0%, rgb(8 14 11 / 0.7) 45%, rgb(8 14 11 / 0.25) 100%),
-            linear-gradient(0deg, rgb(8 14 11 / 0.6), transparent 40%);
-    }
-
-    @keyframes wall-drift {
-        to { transform: translateX(-50%); }
-    }
-
-    @media (prefers-reduced-motion: reduce) {
-        .wall-row { animation: none; }
-    }
-
     /* The departments as story cards: each one's latest picture behind its round picture and its name. */
     .story-card {
         position: relative;
@@ -5814,4 +5755,103 @@ html.is-mourning {
     .blog-back { color: rgb(255 255 255 / 0.85); font-weight: 600; text-decoration: none; }
     .blog-back:hover { color: #fff; text-decoration: underline; }
     .blog-hero [role='status'] { background: rgb(255 255 255 / 0.92); color: #111; }
+}
+
+@layer components {
+    /* The feed's banner (posts.blade.php): deep green, the words on the left, the newest posts fanned on the right. */
+    .feed-hero {
+        position: relative;
+        overflow: hidden;
+        background:
+            radial-gradient(40rem 24rem at 85% 30%, rgb(253 230 138 / 0.12), transparent 70%),
+            radial-gradient(1px 1px at 12px 12px, rgb(255 255 255 / 0.1) 1px, transparent 1.5px) 0 0 / 24px 24px,
+            linear-gradient(150deg, color-mix(in srgb, var(--color-brand) 85%, #052e16), color-mix(in srgb, var(--color-brand) 45%, #021a0c));
+        color: #fff;
+    }
+
+    .feed-hero-eyebrow { color: #fde68a; font-weight: 600; }
+    .feed-hero-back { color: rgb(255 255 255 / 0.85); font-weight: 600; text-decoration: none; }
+    .feed-hero-back:hover { color: #fff; text-decoration: underline; }
+    .feed-hero-title { margin-top: 0.5rem; font-size: clamp(2.1rem, 5vw, 3.6rem); font-weight: 700; line-height: 1.15; }
+
+    .feed-hero-facts { display: flex; flex-wrap: wrap; gap: 0.6rem; margin-top: 1.75rem; }
+
+    .feed-hero-facts > li {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.45rem 0.95rem;
+        border-radius: 999px;
+        background: rgb(255 255 255 / 0.1);
+        box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.18);
+        font-size: 0.9rem;
+    }
+
+    .feed-hero-facts b { font-family: var(--font-mono); font-size: 1.05rem; color: #fde68a; }
+    .feed-hero-live { width: 0.55rem; height: 0.55rem; border-radius: 999px; background: #4ade80; box-shadow: 0 0 0 4px rgb(74 222 128 / 0.25); }
+
+    /* The newest posts as cards fanned out, the newest in front; pointing at one lifts it. */
+    .feed-fan { position: relative; height: 22rem; }
+
+    .feed-fan-card {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        display: flex;
+        flex-direction: column;
+        width: 15rem;
+        height: 19rem;
+        overflow: hidden;
+        border-radius: 20px;
+        background: #fff;
+        color: var(--color-ink);
+        text-decoration: none;
+        box-shadow: 0 30px 60px -25px rgb(0 0 0 / 0.6);
+        transition: transform 0.35s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.35s ease;
+    }
+
+    .feed-fan-card.is-1 { z-index: 3; transform: translate(-50%, -50%) rotate(-2deg); }
+    .feed-fan-card.is-2 { z-index: 2; transform: translate(-95%, -46%) rotate(-10deg); }
+    .feed-fan-card.is-3 { z-index: 1; transform: translate(-5%, -44%) rotate(8deg); }
+
+    .feed-fan-card:hover { z-index: 4; box-shadow: 0 40px 70px -25px rgb(0 0 0 / 0.7); }
+    .feed-fan-card.is-1:hover { transform: translate(-50%, -54%) rotate(0); }
+    .feed-fan-card.is-2:hover { transform: translate(-95%, -50%) rotate(-6deg); }
+    .feed-fan-card.is-3:hover { transform: translate(-5%, -48%) rotate(4deg); }
+
+    .feed-fan-card img { width: 100%; height: 12.5rem; flex: none; object-fit: cover; }
+
+    .feed-fan-plain {
+        display: grid;
+        flex: none;
+        place-items: center;
+        height: 12.5rem;
+        background: linear-gradient(150deg, var(--kind), color-mix(in srgb, var(--kind) 55%, #000));
+        color: rgb(255 255 255 / 0.85);
+    }
+
+    .feed-fan-caption {
+        display: -webkit-box;
+        overflow: hidden;
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 3;
+        padding: 0.75rem 0.9rem;
+        font-size: 0.9rem;
+        font-weight: 600;
+        line-height: 1.4;
+    }
+
+    .feed-fan-caption small { display: block; color: var(--kind); font-size: 0.75rem; font-weight: 600; }
+
+    @media (max-width: 63.99rem) {
+        .feed-fan { height: 17rem; }
+        .feed-fan-card { width: 11.5rem; height: 14.5rem; }
+        .feed-fan-card img, .feed-fan-plain { height: 9rem; }
+        .feed-fan-card.is-2 { transform: translate(-100%, -46%) rotate(-10deg); }
+        .feed-fan-card.is-3 { transform: translate(0%, -44%) rotate(8deg); }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .feed-fan-card { transition: none; }
+    }
 }
