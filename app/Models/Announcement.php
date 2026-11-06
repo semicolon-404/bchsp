@@ -476,6 +476,12 @@ class Announcement extends Model
             : $date->locale('en')->translatedFormat('j M Y');
     }
 
+    /** About how many minutes its text takes to read: Thai at some 500 letters a minute, at least one. */
+    public function minutesToRead(): int
+    {
+        return max(1, (int) ceil(mb_strlen(trim(strip_tags((string) $this->inLanguage('body')))) / 500));
+    }
+
     /** Its short address, to share: /a/123, not the title spelt out as %E0%B8... */
     public function shortUrl(): string
     {

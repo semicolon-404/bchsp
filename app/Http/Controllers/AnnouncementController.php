@@ -135,7 +135,10 @@ class AnnouncementController extends Controller
             // Somewhere to go next: the newest others of the same kind that are showing now.
             'more' => Announcement::current()->with('type')->whereKeyNot($announcement->id)
                 ->when($announcement->announcement_type_id, fn ($query, $type) => $query->where('announcement_type_id', $type))
-                ->orderByDesc('starts_at')->orderByDesc('id')->limit(4)->get(),
+                ->orderByDesc('starts_at')->orderByDesc('id')->limit(3)->get(),
+            // The one before and after it in time, to read on in order.
+            'before' => Announcement::current()->where('starts_at', '<', $announcement->starts_at ?? now())->orderByDesc('starts_at')->first(['id', 'slug', 'title', 'title_en', 'starts_at']),
+            'after' => Announcement::current()->where('starts_at', '>', $announcement->starts_at ?? now())->orderBy('starts_at')->first(['id', 'slug', 'title', 'title_en', 'starts_at']),
         ]);
     }
 

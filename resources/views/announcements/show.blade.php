@@ -1,16 +1,20 @@
 {{--
-    /announcements/{slug}: one announcement. In the band at the top: what kind it is, its title, when it came out,
-    the day it happens, who put it out and the ways to pass it on. Under it, in a column to read: its picture, its
-    text, its album and its files. Then a few more of the same kind, so the reader has somewhere to go next.
+    /announcements/{slug}: one announcement, read as a blog's post: its kind, its title, a byline (who put it out, when,
+    how long it takes to read); its picture wide, then its text in a column easy to read, its album and its files,
+    with share, copy and print held beside it on a wide screen and a line along the top for how far down the reader is.
+    At its foot, who put it out, the one before and after, and a few more of the same kind.
 --}}
 @php($files = $announcement->files())
 @php($links = $announcement->documentLinks())
 <x-layouts.site :title="$announcement->localTitle()" :image="$announcement->imageUrl()">
     {{-- Read: the lists stop calling it new for this visitor (resources/js/seen.js). --}}
     <span hidden data-seen-mark="{{ $announcement->id }}"></span>
-    <section class="home-screen !min-h-0 border-b border-line">
-    <div class="wrap max-w-3xl py-10 sm:py-12">
-        <p class="text-sm"><a href="{{ route('announcements.index') }}" class="font-semibold text-brand underline">&larr; {{ __('All announcements') }}</a></p>
+    {{-- How far down the reader is, as a thin line along the top (resources/js/progress.js). --}}
+    <div class="read-progress" data-read-progress aria-hidden="true"></div>
+
+    <header class="blog-head">
+    <div class="wrap max-w-3xl pb-6 pt-8 sm:pt-12">
+        <p class="text-sm"><a href="{{ route('announcements.index') }}" class="font-semibold text-brand no-underline hover:underline">&larr; {{ __('All announcements') }}</a></p>
 
         @if (! $announcement->isPublished())
             {{-- Only staff who are signed in get this far (AnnouncementController::show). --}}
@@ -21,17 +25,26 @@
         @endif
 
         @if ($announcement->type)
-            <p class="eyebrow mt-6"><a href="{{ route('announcements.index', ['type' => $announcement->type->slug]) }}" class="inline-flex items-center gap-2 no-underline" style="color: {{ $announcement->type->colour() }}"><x-site.type-mark :type="$announcement->type" bare />{{ $announcement->type->localName() }}</a></p>
+            <p class="mt-6"><a href="{{ route('announcements.index', ['type' => $announcement->type->slug]) }}" class="kind-pill no-underline" style="--kind: {{ $announcement->type->colour() }}">{{ $announcement->type->localName() }}</a></p>
         @endif
-        <h1 class="mt-2 text-ink text-3xl leading-tight sm:text-4xl">{{ $announcement->localTitle() }}</h1>
+        <h1 class="blog-title">{{ $announcement->localTitle() }}</h1>
+
+        {{-- The byline: who put it out, when, and how long it takes to read. --}}
         @php($postedAt = $announcement->starts_at ?? $announcement->created_at)
-        <p class="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 font-mono text-sm text-muted">
-            <time datetime="{{ $postedAt->toIso8601String() }}" class="inline-flex items-center gap-x-4">
-                <span class="inline-flex items-center gap-1.5"><x-heroicon-o-calendar class="size-4" aria-hidden="true" />{{ $announcement->shownOn() }}</span>
-                <span class="inline-flex items-center gap-1.5"><x-heroicon-o-clock class="size-4" aria-hidden="true" />{{ $postedAt->format('H:i') }}{{ app()->getLocale() === 'th' ? ' น.' : '' }}</span>
-            </time>
-            <a href="{{ route('announcements.index', array_filter(['type' => $announcement->type?->slug, 'year' => App\Models\Announcement::fiscalYearOf($announcement->starts_at ?? $announcement->created_at)])) }}" class="underline">{{ __('Fiscal year :year', ['year' => App\Models\Announcement::fiscalYearOf($announcement->starts_at ?? $announcement->created_at)]) }}</a>
-        </p>
+        <div class="blog-byline">
+            @if ($announcement->department?->is_active)
+                <a href="{{ route('departments.show', $announcement->department) }}" class="flex items-center gap-3 no-underline">
+                    <x-site.department-avatar :department="$announcement->department" class="size-11 text-base" />
+                    <span>
+                        <span class="block font-semibold text-ink">{{ $announcement->department->localName() }}</span>
+                        <span class="block text-sm text-muted"><time datetime="{{ $postedAt->toIso8601String() }}">{{ $announcement->shownAt() }}</time> · {{ trans_choice('{1} :count min read|[2,*] :count min read', $announcement->minutesToRead(), ['count' => $announcement->minutesToRead()]) }}</span>
+                    </span>
+                </a>
+            @else
+                <span class="text-sm text-muted"><time datetime="{{ $postedAt->toIso8601String() }}">{{ $announcement->shownAt() }}</time> · {{ trans_choice('{1} :count min read|[2,*] :count min read', $announcement->minutesToRead(), ['count' => $announcement->minutesToRead()]) }}</span>
+            @endif
+            <a href="{{ route('announcements.index', array_filter(['type' => $announcement->type?->slug, 'year' => App\Models\Announcement::fiscalYearOf($postedAt)])) }}" class="ms-auto text-sm text-muted no-underline hover:text-brand">{{ __('Fiscal year :year', ['year' => App\Models\Announcement::fiscalYearOf($postedAt)]) }}</a>
+        </div>
 
         @if ($announcement->event_on)
             {{-- The day of what it is about, which is not the day it was posted. --}}
@@ -44,18 +57,19 @@
             </p>
         @endif
 
-        @if ($announcement->isPublished())
-            <x-site.share class="mt-4" :url="$announcement->shortUrl()" :title="$announcement->localTitle()" />
-        @endif
-
-        @if ($announcement->department?->is_active)
-            <p class="mt-2 text-sm text-muted">{{ __('Put out by') }} <a href="{{ route('departments.show', $announcement->department) }}" class="font-semibold text-brand underline">{{ $announcement->department->localName() }}</a></p>
-        @endif
-
     </div>
-    </section>
+    </header>
 
-    <article class="wrap max-w-3xl py-10 sm:py-14">
+    <div class="blog-body wrap">
+    {{-- Beside the text on a wide screen, held in view: share, copy the link, print. --}}
+    @if ($announcement->isPublished())
+        <aside class="blog-tools" aria-label="{{ __('Share') }}">
+            <button type="button" class="blog-tool" data-share-url="{{ $announcement->shortUrl() }}" data-share-title="{{ $announcement->localTitle() }}" data-shared="{{ __('Link copied') }}" title="{{ __('Share') }}"><x-heroicon-o-share class="size-5" aria-hidden="true" /><span class="sr-only" data-share-label>{{ __('Share') }}</span></button>
+            <button type="button" class="blog-tool" data-copy="{{ $announcement->shortUrl() }}" data-copied="✓" title="{{ __('Copy link') }}" hidden><x-heroicon-o-link class="size-5" aria-hidden="true" /><span class="sr-only" data-copy-label>{{ __('Copy link') }}</span></button>
+            <button type="button" class="blog-tool" data-print title="{{ __('Print') }}" hidden><x-heroicon-o-printer class="size-5" aria-hidden="true" /><span class="sr-only">{{ __('Print') }}</span></button>
+        </aside>
+    @endif
+    <article class="blog-article">
         @if ($image = $announcement->imageUrl())
             {{-- The announcement as one picture, shown whole whatever its shape; a press opens it at full size. --}}
             <a href="{{ $image }}" target="_blank" rel="noopener" class="block" data-lightbox data-lightbox-details="#post-body" data-gallery-kind="{{ $announcement->type?->localName() }}" data-gallery-kind-colour="{{ $announcement->type?->colour() }}" data-gallery-date="{{ $announcement->shownAt() }}">
@@ -134,7 +148,34 @@
         @if ($announcement->isPublished())
             <x-site.helpful :announcement="$announcement" />
         @endif
+        {{-- Who put it out, and the way to all they have posted. --}}
+        @if ($announcement->department?->is_active)
+            <div class="blog-author">
+                <x-site.department-avatar :department="$announcement->department" class="size-14 text-lg" />
+                <div class="min-w-0 flex-1">
+                    <p class="text-sm text-muted">{{ __('Put out by') }}</p>
+                    <p class="text-lg font-semibold">{{ $announcement->department->localName() }}</p>
+                    @if (filled($announcement->department->localHeadline()))
+                        <p class="mt-1 text-sm text-muted">{{ $announcement->department->localHeadline() }}</p>
+                    @endif
+                </div>
+                <a href="{{ route('posts', ['department' => $announcement->department->slug]) }}" class="btn btn-line shrink-0">{{ __('See their posts') }} &rarr;</a>
+            </div>
+        @endif
+
+        {{-- The one before and after it, to read on in order. --}}
+        @if ($before || $after)
+            <nav class="blog-pager" aria-label="{{ __('Next and previous') }}">
+                @if ($before)
+                    <a href="{{ route('announcements.show', $before) }}" class="is-before"><small>&larr; {{ __('Older') }}</small><span>{{ $before->localTitle() }}</span></a>
+                @endif
+                @if ($after)
+                    <a href="{{ route('announcements.show', $after) }}" class="is-after"><small>{{ __('Newer') }} &rarr;</small><span>{{ $after->localTitle() }}</span></a>
+                @endif
+            </nav>
+        @endif
     </article>
+    </div>
 
     {{-- Somewhere to go next: the newest others of the same kind. Words only: the page above may be one large picture already. --}}
     @if ($more->isNotEmpty())
