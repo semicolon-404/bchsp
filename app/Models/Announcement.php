@@ -173,6 +173,30 @@ class Announcement extends Model
         return 'slug';
     }
 
+    /**
+     * Its address, short and in plain letters: its number, and its English title when it has one
+     * (/announcements/123-dental-clinic-closed-on-friday), never the Thai title spelled out in percent signs.
+     */
+    public function getRouteKey(): mixed
+    {
+        $words = \Illuminate\Support\Str::of((string) $this->title_en)->slug()->limit(60, '')->rtrim('-')->toString();
+
+        return $this->id.($words !== '' ? '-'.$words : '');
+    }
+
+    /**
+     * Found by its number (on the site and in the panel alike); an address made before, with its title as it was,
+     * still leads to it.
+     */
+    public function resolveRouteBindingQuery($query, $value, $field = null)
+    {
+        if (in_array($field ?? $this->getRouteKeyName(), ['slug', 'id'], true) && preg_match('/^(\d+)(?:-[a-z0-9-]*)?$/', (string) $value, $number)) {
+            return $query->whereKey((int) $number[1]);
+        }
+
+        return parent::resolveRouteBindingQuery($query, $value, $field);
+    }
+
     public function type(): BelongsTo
     {
         return $this->belongsTo(AnnouncementType::class, 'announcement_type_id');

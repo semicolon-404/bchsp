@@ -125,10 +125,15 @@ class AnnouncementController extends Controller
         ]);
     }
 
-    public function show(Announcement $announcement): View
+    public function show(Request $request, Announcement $announcement): View|RedirectResponse
     {
         // Staff who are signed in can read one before its time, to check it.
         abort_unless($announcement->isPublished() || auth()->check(), 404);
+
+        // An older or mistyped address: on to the one it has now, once and for good.
+        if (rawurldecode((string) $request->route()->originalParameter('announcement')) !== (string) $announcement->getRouteKey()) {
+            return redirect()->route('announcements.show', $announcement, 301);
+        }
 
         return view('announcements.show', [
             'announcement' => $announcement->load('type', 'department'),

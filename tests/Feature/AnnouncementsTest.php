@@ -524,4 +524,18 @@ class AnnouncementsTest extends TestCase
         $this->get('/admin/announcements')->assertOk()->assertSee('ประกาศ');
         $this->get('/admin/announcements/create')->assertOk()->assertSee('ปักหมุดไว้บนสุด')->assertSee('ไฟล์ PDF');
     }
+
+    public function test_its_address_is_its_number_and_english_title_and_an_old_one_still_leads_to_it(): void
+    {
+        $one = Announcement::factory()->create(['title' => 'ปิดคลินิกทันตกรรมวันศุกร์', 'title_en' => 'Dental clinic closed on Friday', 'starts_at' => now()->subDay()]);
+        $thai = Announcement::factory()->create(['title' => 'ประกาศรับสมัครงาน', 'starts_at' => now()->subDay()]);
+
+        $this->assertSame(url('/announcements/'.$one->id.'-dental-clinic-closed-on-friday'), route('announcements.show', $one));
+        $this->assertSame(url('/announcements/'.$thai->id), route('announcements.show', $thai));
+
+        $this->get(route('announcements.show', $one))->assertOk()->assertSee('Dental clinic closed on Friday');
+        $this->get('/announcements/'.rawurlencode($one->slug))->assertRedirect(route('announcements.show', $one))->assertStatus(301);
+        $this->get('/announcements/'.$one->id)->assertRedirect(route('announcements.show', $one));
+        $this->get('/announcements/999999')->assertNotFound();
+    }
 }
