@@ -58,8 +58,6 @@
     $departments = $shows('departments') ? App\Models\Department::shown()->limit(6)->get() : collect();
 @endphp
 <x-layouts.site :description="__('News, announcements and services of :name.', ['name' => $name])">
-    {{-- Marks the page for the gentle pull of each section into place as scrolling stops near it (app.css, .home-snap). --}}
-    <span class="home-snap" hidden></span>
     @foreach ($sections as $section)
     @switch($section)
     @case('slides')
