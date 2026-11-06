@@ -142,9 +142,17 @@
                     </a>
                 </div>
             </details>
+
+                {{-- For a visitor, the emergency number stays in reach; someone signed in has their bell and menu there instead. --}}
+                @if ($emergency)
+                    <a href="{{ $dial($emergency) }}" class="btn btn-danger shrink-0 min-h-10 px-4 py-2 text-sm max-sm:px-3">
+                        <x-heroicon-s-phone class="size-4" aria-hidden="true" />
+                        <span><span class="hidden sm:inline">{{ __('Emergency') }} </span><span class="font-mono">{{ $emergency }}</span></span>
+                    </a>
+                @endif
             @endguest
 
-            {{-- Signed in: the bell and one's own menu. The emergency number is on the home page by the other numbers. --}}
+            {{-- Signed in: the bell and one's own menu. A visitor has the emergency number there instead. --}}
             <x-site.account />
         </div>
     </header>
@@ -188,7 +196,7 @@
     <x-site.site-popups :home="request()->routeIs('home')" />
 
     <footer class="site-foot">
-        {{-- The numbers to call are on the home page (by the emergency number) and on Contact us: not again here. --}}
+        {{-- The numbers to call are in the header (the emergency button, for a visitor) and on Contact us: not again here. --}}
 
         {{--
             2. The hospital, the site in columns, how to reach it: the columns as they always were, kept low,

@@ -5941,7 +5941,7 @@ html.is-mourning {
     .account-panel .account-panel-foot { display: block; padding: 0.7rem 1rem; border-top: 1px solid var(--color-line); color: var(--color-brand); font-size: 0.875rem; font-weight: 600; text-align: center; text-decoration: none; }
     .account-panel .account-panel-foot:hover { background: var(--color-raised); }
 
-    .account-who { display: flex; align-items: center; gap: 0.75rem; padding: 1rem; border-bottom: 1px solid var(--color-line); }
+    .account-who { display: flex; align-items: center; gap: 0.75rem; padding: 1rem 3.5rem 1rem 1rem; border-bottom: 1px solid var(--color-line); }
 
     .account-panel .account-item {
         display: flex;
@@ -5997,4 +5997,26 @@ html.is-mourning {
     .slide-switch:has(> :nth-child(3):is([aria-pressed='true'], [aria-current='true'])) { --at: 2; }
     .slide-switch > :is([aria-pressed='true'], [aria-current='true']), .slide-switch > :is([aria-pressed='true'], [aria-current='true']):hover { color: var(--color-on-brand); }
     .slide-switch:not(:has([aria-pressed='true'], [aria-current='true']))::before { opacity: 0; }
+}
+
+@layer components {
+    /* The gear at the top right of one's menu: opens language and look under who one is, folded away otherwise. */
+    .account-gear {
+        position: absolute;
+        top: 1.15rem;
+        right: 0.75rem;
+        display: grid;
+        width: 2.25rem;
+        height: 2.25rem;
+        cursor: pointer;
+        list-style: none;
+        place-items: center;
+        border-radius: 999px;
+        color: var(--color-muted);
+        transition: transform 0.3s ease, background-color 0.2s;
+    }
+    .account-gear::-webkit-details-marker { display: none; }
+    .account-gear:hover { background: var(--color-raised); color: var(--color-ink); }
+    .account-settings[open] > .account-gear { transform: rotate(60deg); background: var(--color-raised); color: var(--color-brand); }
+    .account-panel .account-settings > .account-prefs { border-top: 0; border-bottom: 1px solid var(--color-line); }
 }

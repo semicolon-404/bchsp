@@ -6,10 +6,12 @@ use App\Filament\Resources\Announcements\AnnouncementResource;
 use App\Filament\Resources\Announcements\Pages\CreateAnnouncement;
 use App\Filament\Resources\Announcements\Pages\EditAnnouncement;
 use App\Filament\Resources\Announcements\Pages\ListAnnouncements;
+use App\Filament\Resources\ClinicSessions\Pages\ManageClinicSessions;
 use App\Filament\Resources\Departments\Pages\ManageDepartments;
 use App\Filament\Resources\Users\Pages\ManageUsers;
 use App\Models\Announcement;
 use App\Models\AnnouncementType;
+use App\Models\ClinicSession;
 use App\Models\Department;
 use App\Models\User;
 use Filament\Actions\DeleteAction;
@@ -137,11 +139,11 @@ class DepartmentAccountsTest extends TestCase
     {
         $this->actingAs($this->account);
 
-        foreach (['/admin/documents', '/admin/ita-items', '/admin/clinic-sessions', '/admin/users', '/admin/site-settings', '/admin/announcement-types'] as $address) {
+        foreach (['/admin/documents', '/admin/ita-items', '/admin/users', '/admin/site-settings', '/admin/announcement-types'] as $address) {
             $this->get($address)->assertForbidden();
         }
 
-        foreach (['/admin', '/admin/announcements', '/admin/departments'] as $address) {
+        foreach (['/admin', '/admin/announcements', '/admin/departments', '/admin/clinic-sessions'] as $address) {
             $this->get($address)->assertOk();
         }
 
@@ -153,6 +155,23 @@ class DepartmentAccountsTest extends TestCase
         }
 
         $this->get('/admin/departments')->assertForbidden();
+    }
+
+    public function test_it_keeps_its_own_clinic_schedule_and_only_that(): void
+    {
+        $own = ClinicSession::factory()->create(['name' => 'Dental clinic', 'department_id' => $this->dental->id]);
+        $other = ClinicSession::factory()->create(['name' => 'Pharmacy counter', 'department_id' => $this->pharmacy->id]);
+        $central = ClinicSession::factory()->create(['name' => 'Emergency room']);
+
+        $this->actingAs($this->account);
+
+        Livewire::test(ManageClinicSessions::class)
+            ->assertCanSeeTableRecords([$own])
+            ->assertCanNotSeeTableRecords([$other, $central])
+            ->callAction('create', ['name' => 'Dentures', 'days' => [1, 2], 'starts_at' => '13:00', 'ends_at' => '16:00', 'department_id' => $this->pharmacy->id])
+            ->assertHasNoActionErrors();
+
+        $this->assertSame($this->dental->id, ClinicSession::where('name', 'Dentures')->value('department_id'));
     }
 
     public function test_an_administrator_gives_an_account_to_a_department(): void

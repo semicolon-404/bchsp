@@ -2,7 +2,6 @@
 
 namespace App\Filament\Resources\ClinicSessions;
 
-use App\Filament\Concerns\NotForDepartments;
 use App\Filament\Concerns\TranslatesNames;
 use App\Filament\Resources\ClinicSessions\Pages\ManageClinicSessions;
 use App\Models\ClinicSession;
@@ -19,16 +18,19 @@ use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\ToggleColumn;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 use UnitEnum;
 
 /**
  * The weekly schedule of clinics and services: what is open on which days,
  * from when to when. One line can cover several days ("Monday to Friday,
  * 08.00–16.00"); a clinic with a morning and an afternoon is two lines.
+ *
+ * The account of one department sees and keeps only its own lines: the department is set for it, not chosen.
  */
 class ClinicSessionResource extends Resource
 {
-    use NotForDepartments, TranslatesNames;
+    use TranslatesNames;
 
     protected static ?string $model = ClinicSession::class;
 
@@ -45,6 +47,24 @@ class ClinicSessionResource extends Resource
     protected static ?int $navigationSort = 0;
 
     protected static ?string $recordTitleAttribute = 'name';
+
+    /** One department's account: only its own lines, in the list and at any address. */
+    public static function getEloquentQuery(): Builder
+    {
+        $user = auth()->user();
+
+        return parent::getEloquentQuery()->when($user?->postsForOneDepartment(), fn (Builder $query) => $query->where('department_id', $user->department_id));
+    }
+
+    /** What a department's account saves is always its own, whatever the form held. */
+    public static function ownDepartment(array $data): array
+    {
+        if (auth()->user()?->postsForOneDepartment()) {
+            $data['department_id'] = auth()->user()->department_id;
+        }
+
+        return $data;
+    }
 
     public static function form(Schema $schema): Schema
     {
@@ -83,7 +103,8 @@ class ClinicSessionResource extends Resource
                     ->label(__('Department (optional)'))
                     ->relationship('department', 'name')
                     ->preload()
-                    ->searchable(),
+                    ->searchable()
+                    ->hidden(fn () => (bool) auth()->user()?->postsForOneDepartment()),
                 Toggle::make('is_active')
                     ->label(__('Shown on the site'))
                     ->default(true)
@@ -114,7 +135,7 @@ class ClinicSessionResource extends Resource
                     ->label(__('Shown on the site')),
             ])
             ->recordActions([
-                EditAction::make(),
+                EditAction::make()->mutateDataUsing(fn (array $data) => self::ownDepartment($data)),
                 DeleteAction::make(),
             ]);
     }

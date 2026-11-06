@@ -45,14 +45,17 @@
                     <span class="block truncate text-xs text-muted">{{ $user->department?->localName() ?? ($user->isAdmin() ? __('Administrator') : $user->email) }}</span>
                 </span>
             </div>
-            <a href="{{ url('/admin') }}" class="account-item"><x-heroicon-o-squares-2x2 class="size-5" aria-hidden="true" />{{ __('Back office') }}</a>
-            <a href="{{ route('filament.admin.auth.profile') }}" class="account-item"><x-heroicon-o-user-circle class="size-5" aria-hidden="true" />{{ __('Profile') }}</a>
-            <a href="{{ route('filament.admin.pages.notifications') }}" class="account-item"><x-heroicon-o-bell class="size-5" aria-hidden="true" />{{ __('Notifications') }}</a>
-            {{-- Language and look, here rather than behind a button of their own in the bar. --}}
+            {{-- Language and look, folded away behind the gear at the top right of the menu. --}}
+            <details class="account-settings">
+                <summary class="account-gear" aria-label="{{ __('Language and display') }}" title="{{ __('Language and display') }}"><x-heroicon-o-cog-6-tooth class="size-5" aria-hidden="true" /></summary>
             <div class="account-prefs">
                 <div class="account-pref"><span><x-heroicon-o-language class="size-5" aria-hidden="true" />{{ __('Language') }}</span><x-site.language-switch class="slide-switch" /></div>
                 <div class="account-pref"><span><x-heroicon-o-swatch class="size-5" aria-hidden="true" />{{ __('Theme') }}</span><x-site.theme-switch class="slide-switch" /></div>
             </div>
+            </details>
+            <a href="{{ url('/admin') }}" class="account-item"><x-heroicon-o-squares-2x2 class="size-5" aria-hidden="true" />{{ __('Back office') }}</a>
+            <a href="{{ route('filament.admin.auth.profile') }}" class="account-item"><x-heroicon-o-user-circle class="size-5" aria-hidden="true" />{{ __('Profile') }}</a>
+            <a href="{{ route('filament.admin.pages.notifications') }}" class="account-item"><x-heroicon-o-bell class="size-5" aria-hidden="true" />{{ __('Notifications') }}</a>
             <form method="POST" action="{{ route('filament.admin.auth.logout') }}" class="border-t border-line">
                 @csrf
                 <button type="submit" class="account-item is-out w-full"><x-heroicon-o-arrow-right-on-rectangle class="size-5" aria-hidden="true" />{{ __('Sign out') }}</button>
