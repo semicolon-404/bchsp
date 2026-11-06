@@ -402,35 +402,85 @@
 
     @case('shortcuts')
     {{--
-        The rest of the site as one list, drawn as a window of the editor: each line a part of the site,
-        what is in it, and the way there. A list, not a wall of cards: read top to bottom in a few seconds.
+        The rest of the site as tiles of different sizes, each showing what is in it now: the newest tender and how
+        many there are this fiscal year, the latest activity's and health article's pictures, how many clinics are
+        open, the hospital itself, and where it is. Each tile is the link. Two queries for all of it.
     --}}
+    @php($fresh = App\Models\Announcement::current()->with('type')->whereHas('type', fn ($query) => $query->whereIn('slug', ['procurement', 'activities', 'knowledge']))->latest('starts_at')->limit(40)->get()->groupBy(fn ($one) => $one->type->slug)->map->first())
+    @php($tenders = App\Models\Announcement::published()->whereHas('type', fn ($query) => $query->where('slug', 'procurement'))->ofFiscalYear(App\Models\Announcement::fiscalYearOf(now()))->count())
+    @php($hospitalPhoto = ($one = SiteSettings::get('site.hero_image')) ? Illuminate\Support\Facades\Storage::disk('public')->url($one) : null)
     <section class="bg-surface" aria-label="{{ __('Shortcuts') }}">
         <div class="wrap py-16 sm:py-24">
             <div class="mx-auto max-w-2xl text-center">
                 <h2 class="mt-2 text-3xl sm:text-4xl">{{ __('The rest of the site') }}</h2>
                 <p class="mt-4 text-lg text-muted">{{ __('Each has a page of its own. Choose one from the list.') }}</p>
             </div>
-            <ul class="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                @foreach ([
-                    [route('announcements.index', ['type' => 'procurement']), 'Procurement', 'Procurement plans, invitations to bid and results, by fiscal year.', 'clipboard-document-list'],
-                    [route('announcements.index', ['type' => 'activities']), 'Activities', 'Photographs and news of what the hospital has been doing.', 'camera'],
-                    [route('announcements.index', ['type' => 'knowledge']), 'Health knowledge', 'Health knowledge written by the hospital\'s own staff.', 'heart'],
-                    [route('schedule'), 'Clinic schedule', 'Which clinic is open on which day, and at what time.', 'calendar-days'],
-                    [route('about'), 'About us', 'History, vision, structure and the people who run the hospital.', 'building-office-2'],
-                    [route('contact'), 'Contact and map', 'Address, phone numbers, opening hours and a map.', 'map-pin'],
-                ] as $index => [$address, $label, $about, $mark])
+            <ul class="bento mt-10">
+                {{-- Procurement, large: the newest tender, and how many this fiscal year. --}}
+                <li class="bento-big">
+                    <a href="{{ route('announcements.index', ['type' => 'procurement']) }}" id="door-0" class="bento-tile is-procurement">
+                        <span class="door-mark" aria-hidden="true"><x-heroicon-o-clipboard-document-list class="size-5" /></span>
+                        <span class="bento-title">{{ __('Procurement') }}</span>
+                        <span class="bento-text">{{ __('Procurement plans, invitations to bid and results, by fiscal year.') }}</span>
+                        @if ($latest = $fresh->get('procurement'))
+                            <span class="bento-latest"><small>{{ __('Latest') }} · {{ $latest->shownOn() }}</small>{{ $latest->localTitle() }}</span>
+                        @endif
+                        <span class="bento-figure">{{ __('Fiscal year :year', ['year' => App\Models\Announcement::fiscalYearOf(now())]) }} · {{ trans_choice('{0} none yet|{1} :count announcement|[2,*] :count announcements', $tenders, ['count' => number_format($tenders)]) }}</span>
+                        <x-heroicon-m-arrow-up-right class="bento-go" aria-hidden="true" />
+                    </a>
+                </li>
+                @foreach ([['activities', 'Activities', 'camera', 'Photographs and news of what the hospital has been doing.'], ['knowledge', 'Health knowledge', 'heart', 'Health knowledge written by the hospital\'s own staff.']] as [$slug, $label, $mark, $about])
+                    @php($latest = $fresh->get($slug))
+                    @php($picture = $latest?->imageUrl())
                     <li>
-                        <a href="{{ $address }}" id="door-{{ $index }}" class="card group flex h-full flex-col bg-page text-ink no-underline">
-                            <span class="flex items-center justify-between gap-3">
-                                <span class="door-mark" aria-hidden="true"><x-dynamic-component :component="'heroicon-o-'.$mark" class="size-5" /></span>
-                            </span>
-                            <span class="mt-4 block text-lg font-medium group-hover:text-brand">{{ __($label) }}</span>
-                            <span class="mt-1 block flex-1 text-sm text-muted">{{ __($about) }}</span>
-                            <span class="mt-4 inline-flex items-center gap-1 text-sm font-semibold text-brand">{{ __('Open') }}<x-heroicon-m-arrow-right class="size-4 transition group-hover:translate-x-1" aria-hidden="true" /></span>
+                        <a href="{{ route('announcements.index', ['type' => $slug]) }}" id="door-{{ $loop->iteration }}" @class(['bento-tile', 'has-picture' => $picture])>
+                            @if ($picture)
+                                <img src="{{ $picture }}" alt="" loading="lazy" class="bento-picture">
+                            @endif
+                            <span class="door-mark" aria-hidden="true"><x-dynamic-component :component="'heroicon-o-'.$mark" class="size-5" /></span>
+                            <span class="bento-title">{{ __($label) }}</span>
+                            <span class="bento-text">{{ $latest ? $latest->localTitle() : __($about) }}</span>
+                            <x-heroicon-m-arrow-up-right class="bento-go" aria-hidden="true" />
                         </a>
                     </li>
                 @endforeach
+                <li>
+                    <a href="{{ route('schedule') }}" id="door-3" class="bento-tile">
+                        <span class="door-mark" aria-hidden="true"><x-heroicon-o-calendar-days class="size-5" /></span>
+                        <span class="bento-title">{{ __('Clinic schedule') }}</span>
+                        @if ($openNow)
+                            <span class="bento-live"><span class="hero-live-dot" aria-hidden="true"></span>{{ trans_choice('{1} :count open now|[2,*] :count open now', $openNow, ['count' => $openNow]) }}</span>
+                        @else
+                            <span class="bento-text">{{ __('Which clinic is open on which day, and at what time.') }}</span>
+                        @endif
+                        <x-heroicon-m-arrow-up-right class="bento-go" aria-hidden="true" />
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ route('about') }}" id="door-4" @class(['bento-tile', 'has-picture' => $hospitalPhoto])>
+                        @if ($hospitalPhoto)
+                            <img src="{{ $hospitalPhoto }}" alt="" loading="lazy" class="bento-picture">
+                        @endif
+                        <span class="door-mark" aria-hidden="true"><x-heroicon-o-building-office-2 class="size-5" /></span>
+                        <span class="bento-title">{{ __('About us') }}</span>
+                        <span class="bento-text">{{ __('History, vision, structure and the people who run the hospital.') }}</span>
+                        <x-heroicon-m-arrow-up-right class="bento-go" aria-hidden="true" />
+                    </a>
+                </li>
+                {{-- Contact, wide: where it is and the number to call, at a glance. --}}
+                <li class="bento-wide">
+                    <a href="{{ route('contact') }}" id="door-5" class="bento-tile is-contact">
+                        <span class="door-mark" aria-hidden="true"><x-heroicon-o-map-pin class="size-5" /></span>
+                        <span class="min-w-0 flex-1">
+                            <span class="bento-title">{{ __('Contact and map') }}</span>
+                            <span class="bento-text">{{ $where ?: __('Address, phone numbers, opening hours and a map.') }}</span>
+                        </span>
+                        @if ($phone)
+                            <span class="bento-phone"><x-heroicon-s-phone class="size-4" aria-hidden="true" />{{ $phone }}</span>
+                        @endif
+                        <x-heroicon-m-arrow-up-right class="bento-go" aria-hidden="true" />
+                    </a>
+                </li>
             </ul>
         </div>
     </section>

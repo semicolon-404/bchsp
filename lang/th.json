@@ -1355,6 +1355,7 @@
     "{0} No announcements match.|{1} :count announcement|[2,*] :count announcements": "{0} ไม่พบประกาศที่ตรงกับเงื่อนไข|[1,*] พบ :count ประกาศ",
     "{0} No documents yet|{1} :count document|[2,*] :count documents": "{0} ยังไม่มีเอกสาร|[1,*] :count เอกสาร",
     "{0} None of them was waiting for approval|{1} :count post approved|[2,*] :count posts approved": "{0} ไม่มีรายการที่รออนุมัติ|[1,*] อนุมัติแล้ว :count โพสต์",
+    "{0} none yet|{1} :count announcement|[2,*] :count announcements": "{0} ยังไม่มีประกาศ|[1,*] :count ประกาศ",
     "{0} Nothing was found for \":term\".|{1} :count result for \":term\"|[2,*] :count results for \":term\"": "{0} ไม่พบผลลัพธ์สำหรับ \":term\"|[1,*] พบ :count รายการสำหรับ \":term\"",
     "{0} |{1} :count clinic|[2,*] :count clinics": "{0} |[1,*] :count คลินิก",
     "{1} :count account has not set it up yet|[2,*] :count accounts have not set it up yet": "มี :count บัญชีที่ยังไม่ได้ตั้งค่า",
