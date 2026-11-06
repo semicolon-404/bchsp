@@ -59,7 +59,7 @@ A - Agility'])
 
         auth()->logout();
         $page = $this->get('/')
-            ->assertSeeInOrder(['Welcome to', '<h1', '“Service from the heart”', '<section id="identity"', '“A', 'quality”', 'Quality:', 'works', 'Teamwork', 'Agility'], false)
+            ->assertSeeInOrder(['Welcome to', '<h1', '“Service from the heart”', '<section id="identity"', 'A', 'hospital', 'quality', '<b>Quality</b>', 'works', 'Teamwork', 'Agility'], false)
             // Nothing was written for the mission: it has no card.
             ->assertDontSee('id="identity-mission"', false)
             ->assertSee('id="identity-core-values"', false)

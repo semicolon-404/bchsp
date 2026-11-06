@@ -515,31 +515,62 @@
                             <li class="identity-slide w-full shrink-0 snap-center" id="identity-{{ Str::slug($heading) }}" aria-roledescription="slide" aria-label="{{ __($heading) }}">
                                 <span class="identity-ghost" aria-hidden="true">0{{ $loop->iteration }}</span>
                                 @if ($heading === 'Vision')
-                                    <p class="identity-vision">{!! $whole('“'.$items[0].'”') !!}</p>
-                                    @if (count($items) > 1)
-                                        <ul class="identity-notes">
-                                            @foreach (array_slice($items, 1) as $item)
-                                                <li>{!! $whole($item) !!}</li>
+                                    {{-- The vision as one large statement, its phrases lit in gold one after another, the others dim;
+                                         under it, in one place, what the lit phrase means ("Quality: …"), changing with it. Pointing
+                                         at it holds it still. All CSS: four phrases take twelve seconds round. --}}
+                                    @php($phrases = preg_split('/\s+/u', trim($items[0])))
+                                    @php($notes = array_slice($items, 1))
+                                    <div class="vision" style="--n: {{ max(count($phrases), 1) }}">
+                                        <p class="vision-statement">
+                                            @foreach ($phrases as $phrase)
+                                                <span style="--i: {{ $loop->index }}">{{ $phrase }}</span>
                                             @endforeach
-                                        </ul>
-                                    @endif
+                                        </p>
+                                        @if ($notes)
+                                            <ul class="vision-notes">
+                                                @foreach ($notes as $item)
+                                                    @php([$word, $rest] = str_contains($item, ':') ? array_map('trim', explode(':', $item, 2)) : [null, $item])
+                                                    <li style="--i: {{ $loop->index }}">@if ($word)<b>{{ $word }}</b>@endif<span>{{ $rest }}</span></li>
+                                                @endforeach
+                                            </ul>
+                                        @endif
+                                    </div>
                                 @elseif ($heading === 'Mission')
-                                    <ol class="identity-mission">
-                                        @foreach ($items as $number => $item)
-                                            <li><span class="identity-number">{{ $number + 1 }}</span><span>{!! $whole($item) !!}</span></li>
-                                        @endforeach
-                                    </ol>
+                                    {{-- The mission as an index: each line lit in turn (four seconds each), its number large on the left
+                                         changing with it; pointing at the list holds it. CSS only. --}}
+                                    <div class="mission" style="--n: {{ count($items) }}">
+                                        <div class="mission-number" aria-hidden="true">
+                                            @foreach ($items as $number => $item)
+                                                <span style="--i: {{ $number }}">{{ str_pad($number + 1, 2, '0', STR_PAD_LEFT) }}</span>
+                                            @endforeach
+                                        </div>
+                                        <ol class="mission-lines">
+                                            @foreach ($items as $number => $item)
+                                                <li style="--i: {{ $number }}"><span class="mission-index">{{ str_pad($number + 1, 2, '0', STR_PAD_LEFT) }}</span><span>{!! $whole($item) !!}</span></li>
+                                            @endforeach
+                                        </ol>
+                                    </div>
                                 @else
                                     {{-- Values written as a word of initials ("T — Teamwork", one to a line): a row of letters, each
                                          widening to its meaning as it is pointed at or pressed. Otherwise, a tile for each. --}}
-                                    @php($letters = collect($items)->map(fn ($item) => preg_match('/^\s*(\S{1,2})\s*[—–\-:.]\s*(.+)$/u', $item, $m) ? [$m[1], $m[2]] : null))
+                                    {{-- "T (Teamwork): what it means", "T — Teamwork: what it means" or just "T — Teamwork". --}}
+                                    @php($letters = collect($items)->map(fn ($item) => preg_match('/^[\s•\-*]*(\S{1,2})\s*(?:\(([^)]+)\)|[—–\-.]\s*([^:]+))\s*(?::\s*(.+))?$/u', $item, $m) ? [$m[1], trim(($m[2] ?? '') !== '' ? $m[2] : ($m[3] ?? '')), trim($m[4] ?? '')] : null))
                                     @if ($letters->every(fn ($pair) => $pair !== null))
                                         {{-- One row: each a large letter; the one pointed at or pressed widens to say what it stands for. --}}
-                                        <ul class="values-row">
-                                            @foreach ($letters as [$letter, $meaning])
-                                                <li tabindex="0" style="--i: {{ $loop->index }}"><b>{{ $letter }}</b><span>{!! $whole($meaning) !!}</span></li>
+                                        <div class="values"><ul class="values-row">
+                                            @foreach ($letters as [$letter, $word, $detail])
+                                                <li tabindex="0" style="--i: {{ $loop->index }}"><b>{{ $letter }}</b><span>{{ $word }}</span></li>
                                             @endforeach
                                         </ul>
+                                        {{-- What the open one means, in white under the row, changing with it (app.css, .values-say). --}}
+                                        @if ($letters->contains(fn ($pair) => $pair[2] !== ''))
+                                            <div class="values-say">
+                                                @foreach ($letters as [$letter, $word, $detail])
+                                                    <p><b>{{ $letter }} · {{ $word }}</b>{{ $detail }}</p>
+                                                @endforeach
+                                            </div>
+                                        @endif
+                                        </div>
                                     @else
                                         <ul class="identity-values">
                                             @foreach ($items as $item)
