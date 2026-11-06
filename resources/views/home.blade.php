@@ -623,32 +623,55 @@
     @endswitch
     @endforeach
 
-    {{-- The last thing on the page, whatever the sections above: the numbers to call, large. Left out when there are none. --}}
+    {{--
+        The last thing on the page, whatever the sections above: how to reach the hospital, set out as an editor
+        would, not as a template. On the left what to say and where it is: the address, the hours, the way there. On
+        the right the numbers to dial, large: the emergency one red, its receiver ringing; a press on either calls.
+        Left out when there are no numbers.
+    --}}
     @if ($phone || $emergency)
-        <section class="home-screen !min-h-0 border-t border-line" aria-labelledby="reach-heading">
-            <div class="wrap max-w-4xl py-16 text-center sm:py-20">
-                <h2 id="reach-heading" class="mt-2 text-3xl sm:text-4xl">{{ __('We are here when you need us') }}</h2>
-                <div @class(['mx-auto mt-8 grid max-w-3xl gap-4', 'sm:grid-cols-2' => $emergency && $phone])>
+        @php($hours = trim((string) SiteSettings::get('contact.hours')))
+        <section class="reach" aria-labelledby="reach-heading">
+            <div class="wrap grid gap-10 py-16 sm:py-20 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)] lg:items-center lg:gap-16">
+                <div>
+                    <p class="reach-eyebrow">{{ __('Contact the hospital') }}</p>
+                    <h2 id="reach-heading" class="reach-title">{{ __('We are here when you need us') }}</h2>
+                    <dl class="reach-facts">
+                        @if ($where)
+                            <div><dt><x-heroicon-o-map-pin class="size-5" aria-hidden="true" />{{ __('Address') }}</dt><dd>{{ $where }}</dd></div>
+                        @endif
+                        @if ($hours !== '')
+                            <div><dt><x-heroicon-o-clock class="size-5" aria-hidden="true" />{{ __('Opening hours') }}</dt><dd class="whitespace-pre-line">{{ $hours }}</dd></div>
+                        @endif
+                    </dl>
+                    <p class="mt-8 flex flex-wrap gap-3">
+                        <a href="{{ route('contact') }}" class="btn btn-brand"><x-heroicon-m-map class="size-5" aria-hidden="true" />{{ __('Map and directions') }}</a>
+                        <a href="{{ route('phones') }}" class="btn btn-line">{{ __('Phone numbers of every department') }}</a>
+                    </p>
+                </div>
+
+                <div class="grid gap-3">
                     @if ($emergency)
-                        <a href="{{ $dial($emergency) }}" class="card border-danger text-ink no-underline">
-                            <span class="block text-sm text-danger">{{ __('Emergency, 24 hours a day') }}</span>
-                            <span class="block font-mono text-4xl font-semibold text-danger">{{ $emergency }}</span>
+                        <a href="{{ $dial($emergency) }}" class="dial is-emergency">
+                            <span class="dial-ring" aria-hidden="true"><x-heroicon-s-phone class="size-7" /></span>
+                            <span class="min-w-0 flex-1">
+                                <span class="dial-label">{{ __('Emergency, 24 hours a day') }}</span>
+                                <span class="dial-number">{{ $emergency }}</span>
+                            </span>
+                            <span class="dial-go">{{ __('Call') }}</span>
                         </a>
                     @endif
                     @if ($phone)
-                        <a href="{{ $dial($phone) }}" class="card text-ink no-underline">
-                            <span class="block text-sm text-muted">{{ __('The hospital') }}</span>
-                            <span class="block font-mono text-4xl font-semibold text-brand">{{ $phone }}</span>
+                        <a href="{{ $dial($phone) }}" class="dial">
+                            <span class="dial-ring" aria-hidden="true"><x-heroicon-o-phone class="size-6" /></span>
+                            <span class="min-w-0 flex-1">
+                                <span class="dial-label">{{ __('The hospital') }}</span>
+                                <span class="dial-number">{{ $phone }}</span>
+                            </span>
+                            <span class="dial-go">{{ __('Call') }}</span>
                         </a>
                     @endif
                 </div>
-                @if ($where)
-                    <p class="mx-auto mt-6 inline-flex max-w-2xl items-start gap-2 text-muted"><x-heroicon-m-map-pin class="mt-1 size-5 shrink-0 text-brand" aria-hidden="true" /><span>{{ $where }}</span></p>
-                @endif
-                <p class="mt-6 flex flex-wrap justify-center gap-3">
-                    <a href="{{ route('contact') }}" class="btn btn-brand"><x-heroicon-m-map-pin class="size-5" aria-hidden="true" />{{ __('Map and directions') }}</a>
-                    <a href="{{ route('phones') }}" class="btn btn-line">{{ __('Phone numbers of every department') }}</a>
-                </p>
             </div>
         </section>
     @endif

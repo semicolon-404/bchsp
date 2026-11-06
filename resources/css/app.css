@@ -5510,3 +5510,83 @@ html.is-mourning {
         .mission-number > span { font-size: 4.5rem; }
     }
 }
+
+@layer components {
+    /* How to reach the hospital, at the foot of the home page: the facts on the left, the numbers to dial on the right. */
+    .reach { border-top: 1px solid var(--color-line); background: var(--color-page); }
+
+    .reach-eyebrow { color: var(--color-brand); font-weight: 600; }
+    .reach-title { margin-top: 0.4rem; font-size: clamp(2rem, 4vw, 3rem); font-weight: 700; line-height: 1.2; }
+
+    .reach-facts { display: grid; gap: 1.25rem; margin-top: 2rem; }
+    .reach-facts dt { display: flex; align-items: center; gap: 0.5rem; color: var(--color-muted); font-size: 0.9rem; }
+    .reach-facts dt svg { color: var(--color-brand); }
+    .reach-facts dd { margin-top: 0.25rem; padding-left: 1.75rem; font-size: 1.1rem; line-height: 1.6; }
+
+    /* A number to dial: large, the whole row the button. */
+    .dial {
+        display: flex;
+        align-items: center;
+        gap: 1.1rem;
+        padding: 1.25rem 1.4rem;
+        border-radius: 22px;
+        background: var(--color-surface);
+        color: var(--color-ink);
+        text-decoration: none;
+        box-shadow: 0 0 0 1px var(--color-line);
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .dial:hover { transform: translateY(-2px); box-shadow: 0 0 0 1px var(--color-brand), 0 18px 40px -24px rgb(0 0 0 / 0.35); }
+
+    .dial-ring {
+        display: grid;
+        flex: none;
+        place-items: center;
+        width: 3.5rem;
+        height: 3.5rem;
+        border-radius: 999px;
+        background: color-mix(in srgb, var(--color-brand) 12%, transparent);
+        color: var(--color-brand);
+    }
+
+    .dial-label { display: block; color: var(--color-muted); font-size: 0.9rem; }
+    .dial-number { display: block; font-family: var(--font-mono); font-size: clamp(2rem, 4vw, 2.75rem); font-weight: 700; line-height: 1.1; color: var(--color-brand); }
+
+    .dial-go {
+        flex: none;
+        padding: 0.55rem 1.1rem;
+        border-radius: 999px;
+        background: var(--color-brand);
+        color: var(--color-on-brand);
+        font-weight: 600;
+    }
+
+    /* The emergency number: red, its receiver ringing now and then. */
+    .dial.is-emergency { background: linear-gradient(135deg, #b91c1c, #dc2626); color: #fff; box-shadow: 0 20px 44px -22px rgb(185 28 28 / 0.7); }
+    .dial.is-emergency:hover { box-shadow: 0 24px 50px -22px rgb(185 28 28 / 0.85); }
+    .dial.is-emergency .dial-label { color: rgb(255 255 255 / 0.85); }
+    .dial.is-emergency .dial-number { color: #fff; font-size: clamp(2.75rem, 6vw, 3.75rem); }
+    .dial.is-emergency .dial-ring { background: #fff; color: #b91c1c; animation: ring 3s ease-in-out infinite; }
+    .dial.is-emergency .dial-go { background: #fff; color: #b91c1c; }
+
+    @keyframes ring {
+        0%, 70%, 100% { transform: rotate(0); }
+        74% { transform: rotate(-14deg); }
+        78% { transform: rotate(12deg); }
+        82% { transform: rotate(-10deg); }
+        86% { transform: rotate(8deg); }
+        90% { transform: rotate(0); }
+    }
+
+    @media (max-width: 39.99rem) {
+        .dial { padding: 1rem; gap: 0.8rem; }
+        .dial-ring { width: 2.75rem; height: 2.75rem; }
+        .dial-go { display: none; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .dial.is-emergency .dial-ring { animation: none; }
+        .dial, .dial:hover { transition: none; transform: none; }
+    }
+}
