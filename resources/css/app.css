@@ -5620,7 +5620,10 @@ html.is-mourning {
         font-size: clamp(1.75rem, 3.8vw, 2.6rem);
         font-weight: 700;
         line-height: 1.25;
-        text-wrap: balance;
+        /* One line when it fits; otherwise broken between words, the last line not left with one alone. */
+        word-break: keep-all;
+        overflow-wrap: anywhere;
+        text-wrap: pretty;
     }
 
     .blog-title.is-long { font-size: clamp(1.5rem, 3vw, 2.15rem); line-height: 1.3; }
@@ -5772,7 +5775,9 @@ html.is-mourning {
     .feed-hero-eyebrow { color: #fde68a; font-weight: 600; }
     .feed-hero-back { color: rgb(255 255 255 / 0.85); font-weight: 600; text-decoration: none; }
     .feed-hero-back:hover { color: #fff; text-decoration: underline; }
-    .feed-hero-title { margin-top: 0.5rem; font-size: clamp(2.1rem, 5vw, 3.6rem); font-weight: 700; line-height: 1.15; }
+    .feed-hero-title { margin-top: 0.5rem; font-size: clamp(2.1rem, 5vw, 3.6rem); font-weight: 700; line-height: 1.15; word-break: keep-all; overflow-wrap: anywhere; text-wrap: pretty; }
+    /* A long name (a group of work's) a size down, so it keeps to one line where the width allows. */
+    .feed-hero-title.is-long { font-size: clamp(1.75rem, 3.3vw, 2.6rem); line-height: 1.25; }
 
     .feed-hero-facts { display: flex; flex-wrap: wrap; gap: 0.6rem; margin-top: 1.75rem; }
 
@@ -6033,4 +6038,9 @@ html.is-mourning {
     .account-read-all { padding: 0.15rem 0.5rem; border-radius: 6px; color: var(--color-brand); font-size: 0.8rem; font-weight: 600; cursor: pointer; }
     .account-read-all:hover { background: var(--color-raised); }
     .account-panel-head { align-items: center; }
+}
+
+@layer components {
+    /* A post's title breaks only where its writer typed a space; on a phone a run too long for the screen may break too. */
+    @media (max-width: 40rem) { .blog-title .whole { white-space: normal; } }
 }

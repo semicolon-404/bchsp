@@ -26,7 +26,8 @@
                 @else
                     <p class="feed-hero-eyebrow">{{ __('Feed') }}</p>
                 @endif
-                <h1 id="feed-heading" class="feed-hero-title">{{ $department ? $department->localName() : __('From the departments') }}</h1>
+                @php($heading = $department ? $department->localName() : __('From the departments'))
+                <h1 id="feed-heading" @class(['feed-hero-title', 'is-long' => mb_strlen($heading) > 16])>{{ $heading }}</h1>
                 <p class="mt-3 max-w-xl text-lg text-white/85">{{ __('What the hospital\'s departments are doing and saying, newest first.') }}</p>
                 <ul class="feed-hero-facts">
                     @if ($latest = $fan->first())

@@ -18,7 +18,7 @@
         <img src="{{ $cover }}" alt="" class="blog-hero-backdrop" aria-hidden="true">
     @endif
     <span class="blog-hero-shade" aria-hidden="true"></span>
-    <div class="wrap relative max-w-3xl pb-8 pt-8 sm:pb-12 sm:pt-12">
+    <div class="wrap relative max-w-4xl pb-8 pt-8 sm:pb-12 sm:pt-12">
         <p class="text-sm"><a href="{{ route('announcements.index') }}" class="blog-back">&larr; {{ __('All announcements') }}</a></p>
 
         @if (! $announcement->isPublished())
@@ -34,7 +34,7 @@
         @endif
         {{-- Its size follows its length: a short title large, a long one a step smaller, never cramped or shouting. --}}
         @php($length = mb_strlen($announcement->localTitle()))
-        <h1 @class(['blog-title', 'is-long' => $length > 70 && $length <= 130, 'is-very-long' => $length > 130])>{{ $announcement->localTitle() }}</h1>
+        <h1 @class(['blog-title', 'is-long' => $length > 70 && $length <= 130, 'is-very-long' => $length > 130])>{!! collect(preg_split('/\s+/u', trim($announcement->localTitle())))->map(fn ($run) => '<span class="whole">'.e($run).'</span>')->implode(' ') !!}</h1>
 
         {{-- The byline: who put it out, when, and how long it takes to read. --}}
         @php($postedAt = $announcement->starts_at ?? $announcement->created_at)
