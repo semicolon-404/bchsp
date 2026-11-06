@@ -5590,3 +5590,20 @@ html.is-mourning {
         .dial, .dial:hover { transition: none; transform: none; }
     }
 }
+
+@layer components {
+    /* The home page: stopping a scroll near the top of a section draws it into place under the bar, by the browser
+       alone (no script); stopping inside a long one leaves it be. Not for those who ask for less motion. */
+    @media (prefers-reduced-motion: no-preference) {
+        html:has(.home-snap) {
+            scroll-snap-type: y proximity;
+            scroll-padding-top: 4rem;
+        }
+
+        html:has(.home-snap) main > section,
+        html:has(.home-snap) main > div > section,
+        html:has(.home-snap) .site-foot {
+            scroll-snap-align: start;
+        }
+    }
+}
