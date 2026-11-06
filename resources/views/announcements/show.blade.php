@@ -12,9 +12,14 @@
     {{-- How far down the reader is, as a thin line along the top (resources/js/progress.js). --}}
     <div class="read-progress" data-read-progress aria-hidden="true"></div>
 
-    <header class="blog-head">
-    <div class="wrap max-w-3xl pb-6 pt-8 sm:pt-12">
-        <p class="text-sm"><a href="{{ route('announcements.index') }}" class="font-semibold text-brand no-underline hover:underline">&larr; {{ __('All announcements') }}</a></p>
+    {{-- The banner: the post's own picture, blurred and darkened, behind its title in white; without one, its kind's colour. --}}
+    <header @class(['blog-head blog-hero', 'has-picture' => $announcement->imageUrl()]) style="--kind: {{ $announcement->type?->colour() ?? 'var(--color-brand)' }}">
+    @if ($cover = $announcement->imageUrl())
+        <img src="{{ $cover }}" alt="" class="blog-hero-backdrop" aria-hidden="true">
+    @endif
+    <span class="blog-hero-shade" aria-hidden="true"></span>
+    <div class="wrap relative max-w-3xl pb-8 pt-8 sm:pb-12 sm:pt-12">
+        <p class="text-sm"><a href="{{ route('announcements.index') }}" class="blog-back">&larr; {{ __('All announcements') }}</a></p>
 
         @if (! $announcement->isPublished())
             {{-- Only staff who are signed in get this far (AnnouncementController::show). --}}
@@ -27,7 +32,9 @@
         @if ($announcement->type)
             <p class="mt-6"><a href="{{ route('announcements.index', ['type' => $announcement->type->slug]) }}" class="kind-pill no-underline" style="--kind: {{ $announcement->type->colour() }}">{{ $announcement->type->localName() }}</a></p>
         @endif
-        <h1 class="blog-title">{{ $announcement->localTitle() }}</h1>
+        {{-- Its size follows its length: a short title large, a long one a step smaller, never cramped or shouting. --}}
+        @php($length = mb_strlen($announcement->localTitle()))
+        <h1 @class(['blog-title', 'is-long' => $length > 70 && $length <= 130, 'is-very-long' => $length > 130])>{{ $announcement->localTitle() }}</h1>
 
         {{-- The byline: who put it out, when, and how long it takes to read. --}}
         @php($postedAt = $announcement->starts_at ?? $announcement->created_at)
@@ -146,7 +153,7 @@
         @endif
 
         @if ($announcement->isPublished())
-            <x-site.helpful :announcement="$announcement" />
+            <div data-helpful><x-site.helpful :announcement="$announcement" /></div>
         @endif
         {{-- Who put it out, and the way to all they have posted. --}}
         @if ($announcement->department?->is_active)
@@ -179,7 +186,7 @@
 
     {{-- Somewhere to go next: the newest others of the same kind. Words only: the page above may be one large picture already. --}}
     @if ($more->isNotEmpty())
-        <section class="border-t border-line bg-surface">
+        <section class="blog-more border-t border-line bg-surface">
             <div class="wrap max-w-3xl py-10 sm:py-14">
                 <div class="flex flex-wrap items-end justify-between gap-3">
                     <h2 class="text-2xl">{{ $announcement->type ? __('More: :type', ['type' => $announcement->type->localName()]) : __('More announcements') }}</h2>
