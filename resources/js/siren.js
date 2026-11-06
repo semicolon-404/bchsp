@@ -55,7 +55,7 @@ export function startSiren() {
         screen.classList.remove('is-driving');
         void screen.offsetWidth;
         screen.classList.add('is-driving');
-        setTimeout(wail, DROP);
+        setTimeout(() => screen.classList.contains('is-away') || wail(), DROP);
         setTimeout(() => screen.classList.remove('is-driving'), RUN);
     };
     setTimeout(drive, 2500);

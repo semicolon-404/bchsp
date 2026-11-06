@@ -62,7 +62,7 @@ $app = require __DIR__.'/../bchsp/bootstrap/app.php';
 $app->usePublicPath(__DIR__);
 $kernel = $app->make(Illuminate\Contracts\Console\Kernel::class);
 $kernel->bootstrap();
-foreach ([['migrate', ['--force' => true]], ['optimize:clear', []], ['site:shrink-pictures', ['--at-most' => 20]]] as [$command, $options]) {
+foreach ([['migrate', ['--force' => true]], ['optimize:clear', []], ['route:cache', []], ['view:cache', []], ['site:shrink-pictures', ['--at-most' => 20]]] as [$command, $options]) {
     $code = $kernel->call($command, $options);
     echo "> $command\n", $kernel->output(), "\n";
     if ($code !== 0) { http_response_code(500); exit; }

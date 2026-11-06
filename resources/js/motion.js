@@ -75,3 +75,20 @@ function run(figure) {
 
     requestAnimationFrame(step);
 }
+
+/**
+ * Parts that keep moving by themselves (the vision's and mission's lines lighting in turn, the shine across the
+ * banner) change colours or backgrounds, which the browser redraws on its main thread every frame, seen or not.
+ * Held still while scrolled away, they cost nothing; they carry on when back in view.
+ */
+export function startPauseAway() {
+    if (!('IntersectionObserver' in window)) return;
+
+    const parts = new Set([...document.querySelectorAll('.vision-statement, .mission-lines, .hero-shine')].map((part) => part.closest('section') ?? part));
+    if (!parts.size) return;
+
+    const seen = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => entry.target.classList.toggle('is-away', !entry.isIntersecting));
+    });
+    parts.forEach((part) => seen.observe(part));
+}

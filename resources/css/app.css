@@ -5855,3 +5855,8 @@ html.is-mourning {
         .feed-fan-card { transition: none; }
     }
 }
+
+@layer components {
+    /* Scrolled away: what moves by itself holds still (resources/js/motion.js, startPauseAway). */
+    .is-away, .is-away *, .is-away *::after { animation-play-state: paused !important; }
+}
