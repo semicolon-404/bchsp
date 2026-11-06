@@ -3,6 +3,7 @@
 use App\Http\Controllers\AnnouncementController;
 use App\Http\Controllers\ComplaintController;
 use App\Http\Controllers\DepartmentController;
+use App\Http\Controllers\FilesArchiveController;
 use App\Http\Controllers\KrathongController;
 use App\Http\Controllers\ItaController;
 use App\Http\Controllers\QrController;
@@ -66,6 +67,8 @@ Route::get('/qr.svg', QrController::class)->middleware('throttle:60,1')->name('q
 // The report for executives, to print or to open in Excel: for administrators (App\Http\Controllers\ReportController).
 Route::get('/admin/reports-print', [ReportController::class, 'print'])->name('reports.print');
 Route::get('/admin/reports-download', [ReportController::class, 'download'])->name('reports.download');
+// Every file of a fiscal year's announcements in one zip, to keep (App\Http\Controllers\FilesArchiveController).
+Route::get('/admin/files-archive/{year}', FilesArchiveController::class)->whereNumber('year')->name('files.archive');
 
 // For search engines (App\Http\Controllers\SeoController).
 Route::get('/robots.txt', [SeoController::class, 'robots'])->name('robots');
