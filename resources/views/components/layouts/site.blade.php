@@ -95,7 +95,7 @@
         @if ($day)
             <div class="day-line" aria-hidden="true"></div>
         @endif
-        <div class="wrap flex min-h-16 items-center gap-3 py-2">
+        <div class="wrap flex min-h-16 items-center gap-1 py-2 sm:gap-3">
             <a href="{{ route('home') }}" class="flex min-w-0 items-center gap-3 font-semibold text-ink no-underline">
                 {{-- Switched off in Site settings: the name alone, with neither the logo nor the mark that stands in for it. --}}
                 @if (! SiteSettings::showsLogo())
@@ -114,7 +114,7 @@
 
             {{--
                 Language, the light or dark look, and the way to the staff page are tucked behind one button,
-                so the bar holds only the menu and the emergency number. Closed by resources/js/menu.js like
+                so the bar holds only the menu (and, for someone signed in, their bell and menu). Closed by resources/js/menu.js like
                 the groups of the menu.
             --}}
             <a href="{{ route('search') }}" class="ml-auto flex size-10 shrink-0 items-center justify-center rounded-md text-muted hover:bg-raised hover:text-ink lg:ml-0" aria-label="{{ __('Search') }}" title="{{ __('Search') }}">
@@ -141,12 +141,8 @@
                 </div>
             </details>
 
-            @if ($emergency)
-                <a href="{{ $dial($emergency) }}" class="btn btn-danger shrink-0 min-h-10 px-4 py-2 text-sm max-sm:px-3">
-                    <x-heroicon-s-phone class="size-4" aria-hidden="true" />
-                    <span><span class="hidden sm:inline">{{ __('Emergency') }} </span><span class="font-mono">{{ $emergency }}</span></span>
-                </a>
-            @endif
+            {{-- Signed in: the bell and one's own menu. The emergency number is on the home page by the other numbers. --}}
+            <x-site.account />
         </div>
     </header>
 
@@ -189,7 +185,7 @@
     <x-site.site-popups :home="request()->routeIs('home')" />
 
     <footer class="site-foot">
-        {{-- The numbers to call are in the header (the emergency button) and on Contact us: not again here. --}}
+        {{-- The numbers to call are on the home page (by the emergency number) and on Contact us: not again here. --}}
 
         {{--
             2. The hospital, the site in columns, how to reach it: the columns as they always were, kept low,
