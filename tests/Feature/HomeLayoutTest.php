@@ -59,12 +59,11 @@ A - Agility'])
 
         auth()->logout();
         $page = $this->get('/')
-            ->assertSeeInOrder(['Welcome to', '<h1', '“Service from the heart”', '<section id="identity"', '“A hospital of quality”', 'Quality: a service that works', 'T - Teamwork', 'A - Agility'], false)
-            // Nothing was written for the mission: it has no tab.
-            ->assertDontSee('for="identity-2"', false)
+            ->assertSeeInOrder(['Welcome to', '<h1', '“Service from the heart”', '<section id="identity"', '“A', 'quality”', 'Quality:', 'works', 'Teamwork', 'Agility'], false)
+            // Nothing was written for the mission: it has no card.
+            ->assertDontSee('id="identity-mission"', false)
+            ->assertSee('id="identity-core-values"', false)
             ->getContent();
-
-        $this->assertSame(2, substr_count($page, 'class="tab-panel'));
     }
 
     public function test_an_administrator_reorders_the_sections_and_hides_some(): void

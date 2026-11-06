@@ -1,0 +1,136 @@
+/**
+ * Does every public page fit a phone, a tablet and a desktop without scrolling sideways?
+ *
+ * Opens each page in a real browser (headless Edge or Chrome, over the DevTools protocol; nothing
+ * to install) at each width, in the dark look and the light one, and compares the width of the
+ * page with the width of the window. Also saves a picture of each to storage/app/fit, to look at.
+ *
+ * The site must be running:   php artisan serve
+ * Then:                       npm run check:fit            (or: node tests/browser/fit.mjs http://127.0.0.1:8000)
+ *
+ * To check another page, add its address to PAGES.
+ */
+import { spawn } from 'node:child_process';
+import { existsSync, mkdirSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+
+const PAGES = (process.env.FIT_PAGES ?? '/,/announcements,/announcements?view=cards,/departments,/contact,/about,/schedule,/downloads,/ita,/menu,/staff,/search?q=test').split(',');
+
+const SCREENS = [
+    ['phone', 360, 740],
+    ['large-phone', 414, 896],
+    ['tablet', 768, 1024],
+    ['tablet-wide', 1024, 768],
+    ['desktop', 1366, 768],
+];
+
+const BROWSERS = [
+    'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe',
+    'C:/Program Files/Microsoft/Edge/Application/msedge.exe',
+    'C:/Program Files/Google/Chrome/Application/chrome.exe',
+    '/usr/bin/google-chrome',
+    '/usr/bin/chromium',
+    '/usr/bin/chromium-browser',
+    '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
+];
+
+const base = (process.argv[2] ?? 'http://127.0.0.1:8000').replace(/\/$/, '');
+const browser = process.env.BROWSER_PATH ?? BROWSERS.find(existsSync);
+const out = join(process.cwd(), 'storage', 'app', 'fit');
+const port = 9333;
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+if (!browser) {
+    console.error('No Edge or Chrome found. Set BROWSER_PATH to one.');
+    process.exit(2);
+}
+
+mkdirSync(out, { recursive: true });
+
+const running = spawn(browser, ['--headless', '--disable-gpu', `--remote-debugging-port=${port}`, `--user-data-dir=${join(tmpdir(), 'bchsp-fit-profile')}`, 'about:blank'], { stdio: 'ignore' });
+
+let target;
+
+for (let tries = 0; tries < 40 && !target; tries++) {
+    await sleep(250);
+
+    try {
+        target = (await (await fetch(`http://127.0.0.1:${port}/json`)).json()).find((one) => one.type === 'page');
+    } catch {
+        // Not up yet.
+    }
+}
+
+const socket = new WebSocket(target.webSocketDebuggerUrl);
+await new Promise((resolve) => (socket.onopen = resolve));
+
+let id = 0;
+const waiting = new Map();
+
+socket.onmessage = (message) => {
+    const data = JSON.parse(message.data);
+
+    if (data.id && waiting.has(data.id)) {
+        waiting.get(data.id)(data.result);
+    }
+};
+
+const send = (method, params = {}) => new Promise((resolve) => {
+    waiting.set(++id, resolve);
+    socket.send(JSON.stringify({ id, method, params }));
+});
+
+const evaluate = async (expression) => (await send('Runtime.evaluate', { expression, returnByValue: true })).result.value;
+
+await send('Page.enable');
+
+// To look at pages rather than only measure them:
+//   FIT_WHOLE=1            each picture is of the whole page, top to bottom, not just the first screen
+//   FIT_SCREENS=phone      only these screens (names from SCREENS, comma-separated)
+//   FIT_LOOKS=light        only this look
+const whole = process.env.FIT_WHOLE === '1';
+const screens = process.env.FIT_SCREENS ? SCREENS.filter(([name]) => process.env.FIT_SCREENS.split(',').includes(name)) : SCREENS;
+const looks = process.env.FIT_LOOKS ? process.env.FIT_LOOKS.split(',') : ['dark', 'light'];
+
+// What rises into place as it is scrolled to would never rise in a picture of the whole page: ask for no motion.
+if (whole) await send('Emulation.setEmulatedMedia', { features: [{ name: 'prefers-reduced-motion', value: 'reduce' }] });
+
+let failures = 0;
+
+for (const page of PAGES) {
+    for (const [name, width, height] of screens) {
+        await send('Emulation.setDeviceMetricsOverride', { width, height, deviceScaleFactor: 1, mobile: width < 1024 });
+
+        for (const look of looks) {
+            await send('Page.navigate', { url: base + page });
+            await sleep(900);
+            await evaluate(`localStorage.setItem('theme', '${look}')`);
+            await send('Page.reload');
+            await sleep(900);
+
+            if (process.env.FIT_HOOK) { await evaluate(process.env.FIT_HOOK); await sleep(3500); }
+            const measured = JSON.parse(await evaluate('JSON.stringify({ page: document.documentElement.scrollWidth, window: window.innerWidth, title: document.title })'));
+            const fits = measured.title !== '' && measured.page <= measured.window;
+
+            failures += fits ? 0 : 1;
+            console.log(`${fits ? 'ok  ' : 'FAIL'} ${page.padEnd(8)} ${name.padEnd(12)} ${look.padEnd(5)} page ${measured.page}px in a window of ${measured.window}px`);
+
+            const tall = whole ? Math.min(12000, await evaluate('document.documentElement.scrollHeight')) : 0;
+            const picture = await send('Page.captureScreenshot', whole
+                ? { format: 'png', captureBeyondViewport: true, clip: { x: 0, y: 0, width, height: tall, scale: 1 } }
+                : { format: 'png' });
+            // A long Thai address would make a file name longer than Windows allows: the start of it is enough to tell pages apart.
+            const file = page === '/' ? 'home' : `${String(PAGES.indexOf(page)).padStart(2, '0')}-${page.replace(/\W+/g, '-').replace(/^-/, '').slice(0, 40)}`;
+
+            writeFileSync(join(out, `${file}-${name}-${look}.png`), Buffer.from(picture.data, 'base64'));
+        }
+    }
+}
+
+await evaluate("localStorage.removeItem('theme')");
+socket.close();
+running.kill();
+
+console.log(failures ? `\n${failures} did not fit.` : `\nEverything fits. Pictures are in ${out}`);
+process.exit(failures ? 1 : 0);

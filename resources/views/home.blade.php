@@ -489,50 +489,81 @@
     @case('identity')
     @if ($identity)
         {{--
-            Vision, mission and core values, one at a time. The tabs are radio buttons and the stylesheet shows the
-            panel of the one that is ticked (.tabs in app.css): no script, and the arrow keys move between them.
+            Vision, mission and core values, one at a time on the hospital's own deep green, swiped or moved with the
+            arrows, or picked by name at the top (resources/js/slider.js): each a slide with its large number faint
+            behind it. A part with nothing written has no slide.
         --}}
-        <section id="identity" class="scroll-mt-16">
-            <div class="wrap py-16 sm:py-24">
-                <h2 class="text-center text-3xl sm:text-4xl">{{ __('Identity of the organisation') }}</h2>
-                <span class="mx-auto mt-4 block h-1 w-16 rounded-full bg-brand" aria-hidden="true"></span>
+        @php($parts = collect($identity))
+        {{-- Each run between the spaces kept whole: a line breaks where a space was typed, never inside a word (ประทับ|ใจ). --}}
+        @php($whole = fn (string $text) => collect(preg_split('/\s+/u', trim($text)))->map(fn ($run) => '<span class="whole">'.e($run).'</span>')->implode(' '))
+        <section id="identity" class="identity scroll-mt-16">
+            <div class="wrap relative py-16 sm:py-20">
+                <h2 class="identity-eyebrow">{{ __('Identity of the organisation') }}</h2>
 
-                <div class="tabs mx-auto mt-10 max-w-4xl">
-                    @foreach (array_keys($identity) as $index => $heading)
-                        <input type="radio" name="identity" id="identity-{{ $index }}" class="sr-only" @checked($index === 0)>
-                    @endforeach
-                    <div class="flex flex-wrap justify-center gap-2">
-                        @foreach (array_keys($identity) as $index => $heading)
-                            <label for="identity-{{ $index }}" class="chip cursor-pointer">{{ __($heading) }}</label>
+                <div class="relative mt-6" data-slider data-slider-still aria-roledescription="carousel">
+                    {{-- The names, as tabs: the one showing is lit (aria-current, kept by the slider). --}}
+                    <div class="identity-tabs" role="tablist">
+                        @foreach ($parts->keys() as $heading)
+                            <button type="button" class="identity-tab" data-slider-dot aria-current="{{ $loop->first ? 'true' : 'false' }}">
+                                <span class="identity-tab-number">0{{ $loop->iteration }}</span>{{ __($heading) }}
+                            </button>
                         @endforeach
                     </div>
-                    <div class="mt-8">
-                        @foreach ($identity as $heading => $items)
-                            <div class="tab-panel card bg-page px-6 py-10 sm:px-10">
-                                <p class="eyebrow">{{ __($heading) }}</p>
+
+                    <ul class="slider-track mt-6" data-slider-track>
+                        @foreach ($parts as $heading => $items)
+                            <li class="identity-slide w-full shrink-0 snap-center" id="identity-{{ Str::slug($heading) }}" aria-roledescription="slide" aria-label="{{ __($heading) }}">
+                                <span class="identity-ghost" aria-hidden="true">0{{ $loop->iteration }}</span>
                                 @if ($heading === 'Vision')
-                                    <p class="mt-4 text-2xl leading-relaxed sm:text-3xl">“{{ $items[0] }}”</p>
-                                    @foreach (array_slice($items, 1) as $item)
-                                        <p class="mt-4 text-muted">{{ $item }}</p>
-                                    @endforeach
+                                    <p class="identity-vision">{!! $whole('“'.$items[0].'”') !!}</p>
+                                    @if (count($items) > 1)
+                                        <ul class="identity-notes">
+                                            @foreach (array_slice($items, 1) as $item)
+                                                <li>{!! $whole($item) !!}</li>
+                                            @endforeach
+                                        </ul>
+                                    @endif
                                 @elseif ($heading === 'Mission')
-                                    <ol class="mt-6 grid gap-3 sm:grid-cols-2">
+                                    <ol class="identity-mission">
                                         @foreach ($items as $number => $item)
-                                            <li class="flex gap-3 rounded-lg border border-line border-l-4 border-l-brand bg-surface px-4 py-3"><span class="font-mono text-brand">{{ $number + 1 }}</span><span>{{ $item }}</span></li>
+                                            <li><span class="identity-number">{{ $number + 1 }}</span><span>{!! $whole($item) !!}</span></li>
                                         @endforeach
                                     </ol>
                                 @else
-                                    <ul class="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
-                                        @foreach ($items as $item)
-                                            <li class="rounded-lg border border-line bg-surface px-3 py-4 text-center font-medium">{{ $item }}</li>
-                                        @endforeach
-                                    </ul>
+                                    {{-- Values written as a word of initials ("T — Teamwork", one to a line): a row of letters, each
+                                         widening to its meaning as it is pointed at or pressed. Otherwise, a tile for each. --}}
+                                    @php($letters = collect($items)->map(fn ($item) => preg_match('/^\s*(\S{1,2})\s*[—–\-:.]\s*(.+)$/u', $item, $m) ? [$m[1], $m[2]] : null))
+                                    @if ($letters->every(fn ($pair) => $pair !== null))
+                                        {{-- One row: each a large letter; the one pointed at or pressed widens to say what it stands for. --}}
+                                        <ul class="values-row">
+                                            @foreach ($letters as [$letter, $meaning])
+                                                <li tabindex="0" style="--i: {{ $loop->index }}"><b>{{ $letter }}</b><span>{!! $whole($meaning) !!}</span></li>
+                                            @endforeach
+                                        </ul>
+                                    @else
+                                        <ul class="identity-values">
+                                            @foreach ($items as $item)
+                                                <li>{!! $whole($item) !!}</li>
+                                            @endforeach
+                                        </ul>
+                                    @endif
                                 @endif
-                            </div>
+                            </li>
                         @endforeach
-                    </div>
+                    </ul>
+
+                    @if ($parts->count() > 1)
+                        <div class="mt-6 flex items-center justify-between gap-4">
+                            <a href="{{ route('about') }}" class="identity-more">{{ __('Get to know the hospital') }} &rarr;</a>
+                            <div class="flex gap-2">
+                                <button type="button" class="identity-arrow" data-slider-prev aria-label="{{ __('Previous slide') }}"><x-heroicon-m-chevron-left class="size-6" aria-hidden="true" /></button>
+                                <button type="button" class="identity-arrow" data-slider-next aria-label="{{ __('Next slide') }}"><x-heroicon-m-chevron-right class="size-6" aria-hidden="true" /></button>
+                            </div>
+                        </div>
+                    @else
+                        <p class="mt-6"><a href="{{ route('about') }}" class="identity-more">{{ __('Get to know the hospital') }} &rarr;</a></p>
+                    @endif
                 </div>
-                <p class="mt-10 text-center"><a href="{{ route('about') }}" class="btn btn-line">{{ __('Get to know the hospital') }} &rarr;</a></p>
             </div>
         </section>
     @endif
