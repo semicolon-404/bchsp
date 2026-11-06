@@ -20,11 +20,14 @@
             <p class="account-panel-head">
                 <span>{{ __('Notifications') }}</span>
                 @if ($unread)
-                    <span class="text-xs text-muted">{{ __(':count unread', ['count' => $unread]) }}</span>
+                    <form method="POST" action="{{ route('my-notifications.read') }}">
+                        @csrf
+                        <button type="submit" class="account-read-all">{{ __('Mark all as read') }}</button>
+                    </form>
                 @endif
             </p>
             @forelse ($latest as $one)
-                <a href="{{ $one->data['actions'][0]['url'] ?? route('filament.admin.pages.notifications') }}" @class(['account-note', 'is-unread' => ! $one->read_at])>
+                <a href="{{ route('my-notifications.open', $one->id) }}" @class(['account-note', 'is-unread' => ! $one->read_at])>
                     <span class="account-note-title">{{ $one->data['title'] ?? __('Notification') }}</span>
                     <span class="text-xs text-muted">{{ $one->created_at->diffForHumans() }}</span>
                 </a>

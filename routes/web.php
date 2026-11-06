@@ -6,6 +6,7 @@ use App\Http\Controllers\DepartmentController;
 use App\Http\Controllers\FilesArchiveController;
 use App\Http\Controllers\KrathongController;
 use App\Http\Controllers\ItaController;
+use App\Http\Controllers\MyNotificationsController;
 use App\Http\Controllers\QrController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\SearchController;
@@ -45,6 +46,11 @@ Route::get('/ita/{year?}', [ItaController::class, 'show'])->whereNumber('year')-
 // Everything on the site in one list (the dock's "Menu" tab), and the page of services for staff.
 Route::view('/menu', 'menu')->name('menu');
 Route::view('/staff', 'staff')->name('staff');
+// The bell in the bar for someone signed in: open one (marked read on the way), or mark them all read.
+Route::middleware('auth')->group(function () {
+    Route::get('/me/notifications/{id}', [MyNotificationsController::class, 'open'])->name('my-notifications.open');
+    Route::post('/me/notifications/read', [MyNotificationsController::class, 'readAll'])->name('my-notifications.read');
+});
 
 // Pages of text written in the panel (System > Pages).
 Route::get('/p/{page}', [SitePageController::class, 'show'])->name('pages.show');

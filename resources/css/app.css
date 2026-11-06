@@ -6027,3 +6027,10 @@ html.is-mourning {
     .account-panel a.account-who:hover { background: var(--color-raised); color: var(--color-ink); }
     .account-panel a.account-who .account-me.is-large { cursor: pointer; }
 }
+
+@layer components {
+    /* "Mark all as read" at the head of the bell's list. */
+    .account-read-all { padding: 0.15rem 0.5rem; border-radius: 6px; color: var(--color-brand); font-size: 0.8rem; font-weight: 600; cursor: pointer; }
+    .account-read-all:hover { background: var(--color-raised); }
+    .account-panel-head { align-items: center; }
+}

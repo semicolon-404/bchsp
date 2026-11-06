@@ -28,6 +28,8 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->append(SecurityHeaders::class);
         // Where the server has no scheduler: the day's work after a page has been sent (SCHEDULE_ON_VISITS; App\Support\WebCron).
         $middleware->append(RunDailyWorkOnVisits::class);
+        // Someone not signed in, at an address only for staff on the site itself (the bell's): to the panel's sign-in.
+        $middleware->redirectGuestsTo(fn () => route('filament.admin.auth.login'));
         // The visitor's language first, so that the closed page is in it; that one runs after the session, so that it knows an administrator when it sees one.
         $middleware->web(append: [SetLocale::class, MaintenanceMode::class, CountVisit::class]);
         // The language cookie is read as it is; it only ever holds "th" or "en".
