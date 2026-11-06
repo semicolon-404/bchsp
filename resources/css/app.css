@@ -5961,3 +5961,9 @@ html.is-mourning {
     .account-panel .account-item > svg { color: var(--color-muted); }
     .account-panel .account-item.is-out, .account-item.is-out > svg { color: #dc2626; }
 }
+
+@layer components {
+    /* Language and look inside one's own menu (components/site/account). */
+    .account-panel .account-prefs { padding: 0.75rem 1rem 1rem; border-top: 1px solid var(--color-line); background: color-mix(in srgb, var(--color-raised) 45%, transparent); }
+    .account-prefs-label { display: flex; align-items: center; gap: 0.4rem; margin-bottom: 0.4rem; color: var(--color-muted); font-size: 0.75rem; font-weight: 600; }
+}

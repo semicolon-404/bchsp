@@ -121,6 +121,8 @@
                 <x-heroicon-o-magnifying-glass class="size-5" aria-hidden="true" />
             </a>
 
+            {{-- For a visitor. Someone signed in finds language and look in their own menu (components/site/account). --}}
+            @guest
             <details class="menu-group relative shrink-0" data-menu>
                 <summary class="flex size-10 cursor-pointer list-none items-center justify-center rounded-md text-muted hover:bg-raised hover:text-ink" aria-label="{{ __('Language and display') }}" title="{{ __('Language and display') }}">
                     <x-heroicon-o-adjustments-horizontal class="size-5" aria-hidden="true" />
@@ -140,6 +142,7 @@
                     </a>
                 </div>
             </details>
+            @endguest
 
             {{-- Signed in: the bell and one's own menu. The emergency number is on the home page by the other numbers. --}}
             <x-site.account />
