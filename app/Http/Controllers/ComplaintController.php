@@ -144,10 +144,10 @@ class ComplaintController extends Controller
         return view('complaint.track', ['complaint' => $complaint->load('workGroup')]);
     }
 
-    /** A file attached to a matter, for an administrator in the panel and nobody else. */
+    /** A file attached to a matter, in the panel, for an administrator or the department it is about; nobody else. */
     public function file(Complaint $complaint, int $index): StreamedResponse
     {
-        abort_unless((bool) auth()->user()?->isAdmin(), 403);
+        abort_unless($complaint->isVisibleTo(auth()->user()), 403);
 
         $file = $complaint->files()[$index] ?? null;
         abort_unless($file && Storage::disk(Complaint::DISK)->exists($file['path']), 404);

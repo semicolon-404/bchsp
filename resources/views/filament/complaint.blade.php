@@ -43,7 +43,10 @@
     </dl>
 
     <x-filament::section :heading="__('Who sent it')" icon="heroicon-o-user" compact>
-        @if ($record->is_anonymous || ! $who)
+        @if (! auth()->user()?->isAdmin())
+            {{-- A department deals with the matter; who sent it stays with the administrators. --}}
+            <p style="opacity: 0.8;">{{ __('Who sent it is kept with the administrators. Reply here: the sender reads it on the tracking page.') }}</p>
+        @elseif ($record->is_anonymous || ! $who)
             <p style="opacity: 0.8;">{{ __('The sender chose to stay unnamed. They follow the matter with the tracking number and code.') }}</p>
         @else
             <dl>

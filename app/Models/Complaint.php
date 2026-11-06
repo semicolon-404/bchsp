@@ -8,6 +8,7 @@ use App\Support\SiteSettings;
 use Filament\Actions\Action;
 use Filament\Notifications\Notification;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
@@ -97,7 +98,11 @@ class Complaint extends Model
         // The bell in the panel rings for the administrators when one comes in.
         static::created(function (Complaint $complaint) {
             try {
-                $admins = User::where('role', Role::Admin->value)->get();
+                // The administrators, and the accounts of the department whose group of work it is about.
+                $departmentId = $complaint->workGroup?->department_id;
+                $admins = User::where('role', Role::Admin->value)
+                    ->when($departmentId, fn ($query) => $query->orWhere('department_id', $departmentId))
+                    ->get()->filter(fn (User $user) => $user->isAdmin() || $user->postsForOneDepartment());
 
                 if ($admins->isNotEmpty()) {
                     Notification::make()
@@ -115,6 +120,30 @@ class Complaint extends Model
 
         // What was attached belongs to the matter alone.
         static::deleted(fn (Complaint $complaint) => Storage::disk(self::DISK)->deleteDirectory('complaints/'.$complaint->id));
+    }
+
+    /**
+     * What one account may open: an administrator everything; a department's account what is about one of its groups
+     * of work; anyone else nothing.
+     */
+    public function scopeVisibleTo(Builder $query, ?User $user): void
+    {
+        if ($user?->isAdmin()) {
+            return;
+        }
+
+        if ($user?->postsForOneDepartment()) {
+            $query->whereHas('workGroup', fn (Builder $group) => $group->where('department_id', $user->department_id));
+
+            return;
+        }
+
+        $query->whereRaw('1 = 0');
+    }
+
+    public function isVisibleTo(?User $user): bool
+    {
+        return static::query()->visibleTo($user)->whereKey($this->getKey())->exists();
     }
 
     public function workGroup(): BelongsTo

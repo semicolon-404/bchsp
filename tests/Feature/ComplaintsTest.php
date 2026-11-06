@@ -6,6 +6,7 @@ use App\Enums\Role;
 use App\Filament\Resources\Complaints\Pages\ManageComplaints;
 use App\Filament\Widgets\NeedsAttention;
 use App\Models\Complaint;
+use App\Models\Department;
 use App\Models\User;
 use App\Models\WorkGroup;
 use App\Support\SiteSettings;
@@ -229,6 +230,39 @@ class ComplaintsTest extends TestCase
         // Removed, its files go with it.
         $complaint->delete();
         Storage::disk('local')->assertMissing('complaints/1/abc.pdf');
+    }
+
+    public function test_a_department_deals_with_what_is_about_its_own_groups_without_learning_who_sent_it(): void
+    {
+        Storage::fake('local');
+        Storage::disk('local')->put('complaints/9/x.pdf', 'proof');
+        $dental = Department::factory()->create();
+        $ours = Complaint::factory()->create([
+            'title' => 'Long wait at the dental clinic', 'is_anonymous' => false, 'name' => 'Somsri Jaidee', 'phone' => '0812345678',
+            'work_group_id' => WorkGroup::factory()->create(['department_id' => $dental->id])->id,
+            'attachments' => [['name' => 'x.pdf', 'path' => 'complaints/9/x.pdf']],
+        ]);
+        $theirs = Complaint::factory()->create(['title' => 'Parking', 'work_group_id' => WorkGroup::factory()->create()->id]);
+        $account = User::factory()->create(['role' => Role::Author, 'department_id' => $dental->id]);
+
+        // Told when one comes in about it.
+        $this->assertSame(0, $account->notifications()->count());
+        Complaint::factory()->create(['work_group_id' => $ours->work_group_id]);
+        $this->assertSame(1, $account->notifications()->count());
+
+        $this->actingAs($account);
+        $this->get('/admin/complaints')->assertOk();
+        $this->get(route('complaint.file', [$ours, 0]))->assertOk();
+        $this->get(route('complaint.file', [$theirs, 0]))->assertForbidden();
+
+        Livewire::test(ManageComplaints::class)
+            ->assertCanSeeTableRecords([$ours])
+            ->assertCanNotSeeTableRecords([$theirs])
+            ->mountAction(TestAction::make('edit')->table($ours))
+            ->assertDontSee('Somsri Jaidee')
+            ->assertDontSee('0812345678')
+            ->callMountedAction()
+            ->assertActionHidden(TestAction::make('delete')->table($ours));
     }
 
     public function test_a_matter_left_too_long_is_said_to_be_overdue(): void

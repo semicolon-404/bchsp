@@ -2,7 +2,6 @@
 
 namespace App\Filament\Resources\Complaints;
 
-use App\Filament\Concerns\AdminOnly;
 use App\Filament\Concerns\TranslatesNames;
 use App\Filament\Resources\Complaints\Pages\ManageComplaints;
 use App\Models\Complaint;
@@ -14,6 +13,7 @@ use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\ViewField;
 use Filament\Resources\Resource;
+use Illuminate\Database\Eloquent\Model;
 use Filament\Schemas\Schema;
 use Filament\Support\Enums\Width;
 use Filament\Support\Icons\Heroicon;
@@ -35,7 +35,25 @@ use UnitEnum;
  */
 class ComplaintResource extends Resource
 {
-    use AdminOnly, TranslatesNames;
+    use TranslatesNames;
+
+    /** An administrator, or a department's account for what is about its own groups of work. */
+    public static function canAccess(): bool
+    {
+        $user = auth()->user();
+
+        return (bool) ($user?->isAdmin() || $user?->postsForOneDepartment());
+    }
+
+    public static function getEloquentQuery(): Builder
+    {
+        return parent::getEloquentQuery()->visibleTo(auth()->user());
+    }
+
+    public static function canDelete(Model $record): bool
+    {
+        return (bool) auth()->user()?->isAdmin();
+    }
 
     protected static ?string $model = Complaint::class;
 
@@ -56,7 +74,7 @@ class ComplaintResource extends Resource
     /** Those not yet looked at, beside the menu entry. */
     public static function getNavigationBadge(): ?string
     {
-        $new = Complaint::where('status', 'received')->count();
+        $new = static::getEloquentQuery()->where('status', 'received')->count();
 
         return $new ? (string) $new : null;
     }
@@ -162,6 +180,8 @@ class ComplaintResource extends Resource
                     // Whoever moves it along is the one handling it.
                     ->mutateDataUsing(fn (array $data) => $data + ['handled_by' => auth()->id()]),
                 DeleteAction::make()
+                    // Removing a matter for good is the administrators' alone.
+                    ->visible(fn () => (bool) auth()->user()?->isAdmin())
                     ->modalDescription(__('The matter, who sent it and what was attached are removed for good. The sender can no longer follow it.')),
             ]);
     }
