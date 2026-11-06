@@ -56,10 +56,18 @@ require __DIR__.'/../bchsp/vendor/autoload.php';
 \$app->usePublicPath(__DIR__);
 \$kernel = \$app->make(Illuminate\Contracts\Console\Kernel::class);
 \$kernel->bootstrap();
-foreach ([['migrate', ['--force' => true]], ['optimize:clear', []], ['route:cache', []], ['view:cache', []], ['site:shrink-pictures', ['--at-most' => 20]]] as [\$command, \$options]) {
-    \$code = \$kernel->call(\$command, \$options);
-    echo "> \$command\n", \$kernel->output(), "\n";
-    if (\$code !== 0) { http_response_code(500); exit; }
+// Each step says what it did; what goes wrong is said too, so the reason shows instead of a bare error.
+// Building the caches is a help, not a must: if it fails they are cleared again and the site runs without them.
+foreach ([['migrate', ['--force' => true], true], ['optimize:clear', [], true], ['route:cache', [], false], ['view:cache', [], false], ['site:shrink-pictures', ['--at-most' => 20], false]] as [\$command, \$options, \$must]) {
+    try {
+        \$code = \$kernel->call(\$command, \$options);
+        echo "> \$command" , PHP_EOL, \$kernel->output(), PHP_EOL;
+    } catch (Throwable \$e) {
+        \$code = 1;
+        echo "> \$command FAILED: ", get_class(\$e), ': ', \$e->getMessage(), ' (', basename(\$e->getFile()), ':', \$e->getLine(), ")", PHP_EOL;
+    }
+    if (\$code !== 0 && \$must) { http_response_code(500); exit; }
+    if (\$code !== 0 && in_array(\$command, ['route:cache', 'view:cache'], true)) { \$kernel->call('optimize:clear'); echo "(caches cleared again; the site runs without them)", PHP_EOL; }
 }
 echo "OK\n";
 PHP
