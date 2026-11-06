@@ -130,4 +130,70 @@
         </tr>
     @endforeach
 </table>
+@php($c = $summary['complaints'])
+<h3 style="{{ $heading }}">{{ __('Complaints and suggestions') }}</h3>
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px;">
+    @foreach ([
+        ['Received', number_format($c['total']), null],
+        ['Finished', number_format($c['done']).($c['total'] ? ' ('.round($c['done'] * 100 / $c['total']).'%)' : ''), '#15803d'],
+        ['Still open', number_format($c['open']), null],
+        ['Past their days', number_format($c['late']), $c['late'] ? '#b91c1c' : null],
+    ] as [$label, $figure, $colour])
+        <div style="padding: 12px; border: 1px solid rgba(128,128,128,.35); border-radius: 10px;">
+            <div style="font-size: .85rem; opacity: .75;">{{ __($label) }}</div>
+            <div style="font-size: 1.5rem; font-weight: 700; {{ $colour ? 'color: '.$colour.';' : '' }}">{{ $figure }}</div>
+        </div>
+    @endforeach
+</div>
+<p style="margin-top: 8px;">{{ __('Average from receiving to finishing: :days days (the aim is :aim).', ['days' => $c['average_days'] ?? '–', 'aim' => $c['days']]) }}</p>
+
+@if ($c['total'])
+    @php($most = max(1, ...array_values($c['kinds'])))
+    <table style="{{ $table }} margin-top: 10px;">
+        <tr><th style="{{ $cell }}">{{ __('Kind') }}</th><th style="{{ $cell }} width: 55%;"></th><th style="{{ $number }}">{{ __('Matters') }}</th></tr>
+        @foreach ($c['kinds'] as $kind => $count)
+            <tr>
+                <td style="{{ $cell }}">{{ __(App\Models\Complaint::KINDS[$kind]) }}</td>
+                <td style="{{ $cell }}"><div style="height: 10px; width: {{ round($count * 100 / $most) }}%; border-radius: 5px; background: #ea580c;"></div></td>
+                <td style="{{ $number }}">{{ $count }}</td>
+            </tr>
+        @endforeach
+    </table>
+
+    <table style="{{ $table }} margin-top: 14px;">
+        <tr><th style="{{ $cell }}">{{ __('Month') }}</th><th style="{{ $number }}">{{ __('Matters') }}</th></tr>
+        @foreach ($c['monthly'] as $key => $count)
+            <tr><td style="{{ $cell }}">{{ $month($key) }}</td><td style="{{ $number }}">{{ $count }}</td></tr>
+        @endforeach
+    </table>
+
+    @if ($c['groups'])
+        <p style="margin: 14px 0 6px; font-weight: 600;">{{ __('Concerning most') }}</p>
+        <table style="{{ $table }}">
+            @foreach ($c['groups'] as $group => $count)
+                <tr><td style="{{ $cell }}">{{ $loop->iteration }}. {{ $group }}</td><td style="{{ $number }}">{{ $count }}</td></tr>
+            @endforeach
+        </table>
+    @endif
+
+    @if ($c['follow'])
+        <p style="margin: 14px 0 6px; font-weight: 600;">{{ __('To follow up') }}</p>
+        <table style="{{ $table }}">
+            <tr><th style="{{ $cell }}">{{ __('Code') }}</th><th style="{{ $cell }}">{{ __('Kind') }}</th><th style="{{ $cell }}">{{ __('Received') }}</th><th style="{{ $number }}">{{ __('Days open') }}</th><th style="{{ $cell }}">{{ __('Where it stands') }}</th></tr>
+            @foreach ($c['follow'] as $one)
+                <tr @if ($one['late']) style="color: #b91c1c;" @endif>
+                    <td style="{{ $cell }} font-family: monospace;">{{ $one['code'] }}</td>
+                    <td style="{{ $cell }}">{{ __(App\Models\Complaint::KINDS[$one['kind']] ?? $one['kind']) }}</td>
+                    <td style="{{ $cell }}">{{ $one['received']->format('d/m/').($one['received']->year + 543) }}</td>
+                    <td style="{{ $number }}">{{ $one['days'] }}</td>
+                    <td style="{{ $cell }}">{{ __(App\Models\Complaint::STATUSES[$one['status']] ?? $one['status']) }}</td>
+                </tr>
+            @endforeach
+        </table>
+    @endif
+    <p style="margin-top: 6px; font-size: .85rem; opacity: .75;">{{ __('No name, number or address of whoever sent a matter is in this report: each is its code.') }}</p>
+@else
+    <p>{{ __('Nothing was sent in during this period.') }}</p>
+@endif
+
 <p style="margin-top: 8px; font-size: .85rem; opacity: .75;">{{ __('Pages opened are counted without keeping anything about visitors; they are pages, not people. "Times opened" is counted since each item was published.') }}</p>

@@ -5,9 +5,11 @@ namespace App\Support;
 use App\Models\AccessLog;
 use App\Models\Announcement;
 use App\Models\AnnouncementType;
+use App\Models\Complaint;
 use App\Models\Department;
 use App\Models\ItaItem;
 use App\Models\User;
+use App\Models\WorkGroup;
 use Illuminate\Support\Carbon;
 
 /**
@@ -96,6 +98,41 @@ class Reports
             'searches' => Searches::between($from, $until),
             'ita' => self::ita(Announcement::fiscalYearOf($until->copy()->min(now()))),
             'staff' => self::staff($from, $until),
+            'complaints' => self::complaints($from, $until),
+        ];
+    }
+
+    /**
+     * The matters sent in during a period, for executives: how many, how many finished and how quickly, how many
+     * still open and past their days, by kind, by month and by the group of work they concern, and those to follow
+     * up. Nobody's name, number or address is in it: a matter is its code.
+     *
+     * @return array<string, mixed>
+     */
+    public static function complaints(Carbon $from, Carbon $until): array
+    {
+        $in = Complaint::query()->whereBetween('created_at', [$from, $until]);
+        $days = SiteSettings::complaintDays();
+        $all = (clone $in)->get(['id', 'code', 'kind', 'title', 'status', 'work_group_id', 'created_at', 'closed_at']);
+        $done = $all->filter(fn (Complaint $one) => $one->status === 'done');
+        $open = $all->reject(fn (Complaint $one) => in_array($one->status, Complaint::CLOSED, true));
+        $late = $open->filter(fn (Complaint $one) => $one->created_at->lt(now()->subDays($days)));
+        $groups = WorkGroup::whereIn('id', $all->pluck('work_group_id')->filter()->unique())->pluck('name', 'id');
+
+        return [
+            'total' => $all->count(),
+            'done' => $done->count(),
+            'open' => $open->count(),
+            'late' => $late->count(),
+            'days' => $days,
+            'average_days' => $done->filter->closed_at->isNotEmpty() ? round($done->filter->closed_at->avg(fn (Complaint $one) => $one->created_at->diffInHours($one->closed_at) / 24), 1) : null,
+            'kinds' => collect(Complaint::KINDS)->keys()->mapWithKeys(fn (string $kind) => [$kind => $all->where('kind', $kind)->count()])->all(),
+            'monthly' => self::perMonth($all->pluck('created_at'), $from, $until),
+            'groups' => $all->whereNotNull('work_group_id')->countBy('work_group_id')->sortDesc()->take(5)->mapWithKeys(fn ($count, $id) => [$groups[$id] ?? '–' => $count])->all(),
+            'follow' => $open->sortBy('created_at')->take(15)->map(fn (Complaint $one) => [
+                'code' => $one->code, 'kind' => $one->kind, 'title' => $one->title, 'status' => $one->status,
+                'received' => $one->created_at, 'days' => (int) $one->created_at->diffInDays(now()), 'late' => $late->contains($one),
+            ])->values()->all(),
         ];
     }
 
@@ -206,6 +243,21 @@ class Reports
         $rows[] = [__('Staff'), __('Role'), __('Created'), __('Changed'), __('Deleted'), __('Sign-ins'), __('Last sign-in')];
         foreach ($summary['staff'] as $row) {
             $rows[] = [$row['name'], __($row['role']), $row['created'], $row['changed'], $row['deleted'], $row['sign_ins'], $row['last_sign_in']?->format('Y-m-d H:i') ?? '-'];
+        }
+
+        $c = $summary['complaints'];
+        $rows[] = [];
+        $rows[] = [__('Complaints and suggestions'), __('In all'), __('Finished'), __('Still open'), __('Past their days'), __('Average days to finish')];
+        $rows[] = ['', $c['total'], $c['done'], $c['open'], $c['late'], $c['average_days'] ?? '-'];
+        foreach ($c['kinds'] as $kind => $count) {
+            $rows[] = [__(Complaint::KINDS[$kind]), $count];
+        }
+        foreach ($c['groups'] as $group => $count) {
+            $rows[] = [$group, $count];
+        }
+        $rows[] = [__('To follow up'), __('Kind'), __('Received'), __('Days open'), __('Where it stands')];
+        foreach ($c['follow'] as $one) {
+            $rows[] = [$one['code'], __(Complaint::KINDS[$one['kind']] ?? $one['kind']), $one['received']->format('Y-m-d'), $one['days'], __(Complaint::STATUSES[$one['status']] ?? $one['status'])];
         }
 
         return $rows;

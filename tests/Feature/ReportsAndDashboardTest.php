@@ -235,4 +235,22 @@ class ReportsAndDashboardTest extends TestCase
         $this->get('/admin/reports')->assertSee('รายงานเว็บไซต์')->assertSee('ปีงบประมาณ 2569')->assertSee('พิมพ์หรือบันทึกเป็น PDF')->assertSee('การทำงานของเจ้าหน้าที่ในหลังบ้าน');
         Livewire::test(NeedsAttention::class)->assertSee('สิ่งที่ต้องดำเนินการ');
     }
+
+    public function test_the_report_sums_up_the_complaints_for_executives_without_who_sent_them(): void
+    {
+        $this->travelTo('2026-03-15 10:00');
+        \App\Models\Complaint::factory()->create(['kind' => 'conduct', 'title' => 'Rude at the counter', 'created_at' => '2026-02-01 09:00', 'is_anonymous' => false, 'name' => 'Somsri Secret', 'phone' => '0899999999']);
+        \App\Models\Complaint::factory()->create(['kind' => 'service', 'status' => 'done', 'created_at' => '2026-03-01 09:00', 'closed_at' => '2026-03-03 09:00']);
+        \App\Models\Complaint::factory()->create(['kind' => 'praise', 'created_at' => '2025-01-01 09:00']);
+
+        $summary = \App\Support\Reports::complaints(now()->setDate(2025, 10, 1)->startOfDay(), now());
+        $this->assertSame([2, 1, 1, 1], [$summary['total'], $summary['done'], $summary['open'], $summary['late']]);
+        $this->assertSame(2.0, (float) $summary['average_days']);
+        $this->assertSame(1, $summary['kinds']['conduct']);
+
+        $this->actingAs(User::factory()->admin()->create());
+        $this->get(route('reports.print', ['period' => 'year', 'year' => 2569]))->assertOk()
+            ->assertSee('Complaints and suggestions')->assertSee('To follow up')
+            ->assertDontSee('Somsri Secret')->assertDontSee('0899999999')->assertDontSee('Rude at the counter');
+    }
 }
