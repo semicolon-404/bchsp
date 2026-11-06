@@ -2,7 +2,6 @@
 
 namespace App\Filament\Resources\People;
 
-use App\Filament\Concerns\AdminOnly;
 use App\Filament\Concerns\TranslatesNames;
 use App\Filament\Resources\People\Pages\ManagePeople;
 use App\Models\Person;
@@ -23,6 +22,9 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\ToggleColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
+use App\Models\WorkGroup;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Validation\ValidationException;
 use UnitEnum;
 
 /**
@@ -32,7 +34,41 @@ use UnitEnum;
  */
 class PersonResource extends Resource
 {
-    use AdminOnly, TranslatesNames;
+    use TranslatesNames;
+
+    /** An administrator; or a department's account, for the people of its own groups of work. */
+    public static function canAccess(): bool
+    {
+        $user = auth()->user();
+
+        return (bool) ($user?->isAdmin() || $user?->postsForOneDepartment());
+    }
+
+    private static function forOneDepartment(): ?int
+    {
+        $user = auth()->user();
+
+        return $user?->postsForOneDepartment() ? $user->department_id : null;
+    }
+
+    public static function getEloquentQuery(): Builder
+    {
+        $department = self::forOneDepartment();
+
+        return parent::getEloquentQuery()->when($department, fn (Builder $query) => $query->whereHas('workGroup', fn (Builder $group) => $group->where('department_id', $department)));
+    }
+
+    /** What a department's account saves stays among its own groups of work, whatever the form held. */
+    public static function ownGroup(array $data): array
+    {
+        $department = self::forOneDepartment();
+
+        if ($department && ! WorkGroup::whereKey($data['work_group_id'] ?? 0)->where('department_id', $department)->exists()) {
+            throw ValidationException::withMessages(['data.work_group_id' => __('Choose one of your own groups of work.')]);
+        }
+
+        return $data;
+    }
 
     protected static ?string $model = Person::class;
 
@@ -91,7 +127,8 @@ class PersonResource extends Resource
                 ...self::fields(),
                 Select::make('work_group_id')
                     ->label(__('Group of work (optional)'))
-                    ->relationship('workGroup', 'name', fn ($query) => $query->orderBy('sort_order')->orderBy('name'))
+                    ->relationship('workGroup', 'name', fn ($query) => $query->when(self::forOneDepartment(), fn ($query, $department) => $query->where('department_id', $department))->orderBy('sort_order')->orderBy('name'))
+                    ->required(fn () => (bool) self::forOneDepartment())
                     ->searchable()
                     ->preload(),
                 Toggle::make('is_active')
@@ -140,7 +177,7 @@ class PersonResource extends Resource
                     ->relationship('workGroup', 'name'),
             ])
             ->recordActions([
-                EditAction::make(),
+                EditAction::make()->mutateDataUsing(fn (array $data) => self::ownGroup($data)),
                 DeleteAction::make(),
             ]);
     }

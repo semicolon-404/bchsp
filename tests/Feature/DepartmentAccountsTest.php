@@ -8,12 +8,15 @@ use App\Filament\Resources\Announcements\Pages\EditAnnouncement;
 use App\Filament\Resources\Announcements\Pages\ListAnnouncements;
 use App\Filament\Resources\ClinicSessions\Pages\ManageClinicSessions;
 use App\Filament\Resources\Departments\Pages\ManageDepartments;
+use App\Filament\Resources\People\Pages\ManagePeople;
 use App\Filament\Resources\Users\Pages\ManageUsers;
 use App\Models\Announcement;
 use App\Models\AnnouncementType;
 use App\Models\ClinicSession;
 use App\Models\Department;
+use App\Models\Person;
 use App\Models\User;
+use App\Models\WorkGroup;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\EditAction;
 use Filament\Actions\Testing\TestAction;
@@ -172,6 +175,28 @@ class DepartmentAccountsTest extends TestCase
             ->assertHasNoActionErrors();
 
         $this->assertSame($this->dental->id, ClinicSession::where('name', 'Dentures')->value('department_id'));
+    }
+
+    public function test_it_keeps_the_people_of_its_own_groups_of_work_and_only_those(): void
+    {
+        $ownGroup = WorkGroup::factory()->create(['department_id' => $this->dental->id]);
+        $otherGroup = WorkGroup::factory()->create(['department_id' => $this->pharmacy->id]);
+        $own = Person::factory()->create(['name' => 'Dr Dent', 'work_group_id' => $ownGroup->id]);
+        $other = Person::factory()->create(['name' => 'Pharmacist', 'work_group_id' => $otherGroup->id]);
+
+        $this->actingAs($this->account);
+        $this->get('/admin/people')->assertOk();
+
+        Livewire::test(ManagePeople::class)
+            ->assertCanSeeTableRecords([$own])
+            ->assertCanNotSeeTableRecords([$other])
+            ->callAction('create', ['name' => 'New nurse', 'work_group_id' => $otherGroup->id])
+            ->assertHasActionErrors();
+
+        $this->assertNull(Person::where('name', 'New nurse')->first());
+
+        Livewire::test(ManagePeople::class)->callAction('create', ['name' => 'New nurse', 'work_group_id' => $ownGroup->id])->assertHasNoActionErrors();
+        $this->assertSame($ownGroup->id, Person::where('name', 'New nurse')->value('work_group_id'));
     }
 
     public function test_an_administrator_gives_an_account_to_a_department(): void

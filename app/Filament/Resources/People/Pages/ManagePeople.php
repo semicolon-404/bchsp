@@ -14,7 +14,7 @@ class ManagePeople extends ManageRecords
     {
         return [
             // A new one goes to the end of the list.
-            CreateAction::make()->mutateDataUsing(fn (array $data) => $data + ['sort_order' => (int) PersonResource::getModel()::max('sort_order') + 1]),
+            CreateAction::make()->mutateDataUsing(fn (array $data) => PersonResource::ownGroup($data) + ['sort_order' => (int) PersonResource::getModel()::max('sort_order') + 1]),
         ];
     }
 }
