@@ -476,6 +476,12 @@ class Announcement extends Model
             : $date->locale('en')->translatedFormat('j M Y');
     }
 
+    /** Its short address, to share: /a/123, not the title spelt out as %E0%B8... */
+    public function shortUrl(): string
+    {
+        return route('announcements.short', $this->id);
+    }
+
     /**
      * Its day and the hour it went up, as every list and card shows it: "4 พ.ย. 2569 · 09:30 น.".
      * Put up today, how long ago instead of the day, as a social page does: "3 ชั่วโมงที่แล้ว · 09:30 น.".

@@ -1,24 +1,17 @@
 {{--
-    Ways to pass a page on: to LINE, to Facebook, or its address copied (resources/js/share.js; without scripts
-    the address is still there to copy by hand, in the address bar). Nothing is loaded from either network:
-    these are plain links to their sharing pages, opened only when pressed.
+    The way to pass a page on: one Share button that opens the share window (components/site/share-sheet; LINE,
+    Facebook, X, e-mail, a QR code, the phone's own sharing, the address to copy), and Print beside it where the
+    browser can print. Nothing is loaded from any network until a button in the window is pressed.
 
-    <x-site.share :url="route('announcements.show', $announcement)" :title="$announcement->localTitle()" />
+    <x-site.share :url="$announcement->shortUrl()" :title="$announcement->localTitle()" />
 --}}
 @props(['url', 'title'])
 
-<div {{ $attributes->class('flex flex-wrap items-center gap-2') }} aria-label="{{ __('Share') }}" role="group">
-    <span class="text-sm text-muted">{{ __('Share') }}</span>
-    <a href="https://social-plugins.line.me/lineit/share?url={{ urlencode($url) }}" target="_blank" rel="noopener noreferrer" class="chip min-h-9 px-3 text-sm">LINE<span class="sr-only"> {{ __('(opens in a new tab)') }}</span></a>
-    <a href="https://www.facebook.com/sharer/sharer.php?u={{ urlencode($url) }}" target="_blank" rel="noopener noreferrer" class="chip min-h-9 px-3 text-sm">Facebook<span class="sr-only"> {{ __('(opens in a new tab)') }}</span></a>
-    {{-- A QR code of this page, drawn by the site itself: to print on a poster or show on a screen. --}}
-    <a href="{{ route('qr', ['to' => '/'.ltrim((string) parse_url($url, PHP_URL_PATH), '/')]) }}" target="_blank" rel="noopener" class="chip min-h-9 gap-1 px-3 text-sm">
-        <x-heroicon-m-qr-code class="size-4" aria-hidden="true" />{{ __('QR code') }}<span class="sr-only"> {{ __('(opens in a new tab)') }}</span>
-    </a>
-    <button type="button" class="chip min-h-9 gap-1 px-3 text-sm" data-print hidden>
-        <x-heroicon-m-printer class="size-4" aria-hidden="true" />{{ __('Print') }}
+<div {{ $attributes->class('flex flex-wrap items-center gap-2') }}>
+    <button type="button" class="btn btn-line min-h-10 gap-2 px-4" data-share-url="{{ $url }}" data-share-title="{{ $title }}" data-shared="{{ __('Link copied') }}">
+        <x-heroicon-m-share class="size-4" aria-hidden="true" /><span data-share-label>{{ __('Share') }}</span>
     </button>
-    <button type="button" class="chip min-h-9 gap-1 px-3 text-sm" data-copy="{{ $url }}" data-copied="{{ __('Copied') }}" hidden>
-        <x-heroicon-m-link class="size-4" aria-hidden="true" /><span data-copy-label>{{ __('Copy link') }}</span>
+    <button type="button" class="btn btn-line min-h-10 gap-2 px-4" data-print hidden>
+        <x-heroicon-m-printer class="size-4" aria-hidden="true" />{{ __('Print') }}
     </button>
 </div>

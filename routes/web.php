@@ -18,6 +18,8 @@ Route::view('/', 'home')->name('home');
 
 Route::get('/announcements', [AnnouncementController::class, 'index'])->name('announcements.index');
 Route::get('/announcements/{announcement}', [AnnouncementController::class, 'show'])->name('announcements.show');
+// The short way to an announcement, to share (bchsp.com/a/123): on to its full address.
+Route::get('/a/{id}', fn (int $id) => redirect()->route('announcements.show', App\Models\Announcement::findOrFail($id), 301))->whereNumber('id')->name('announcements.short');
 Route::post('/announcements/{announcement}/helpful', [AnnouncementController::class, 'helpful'])->middleware('throttle:12,1')->name('announcements.helpful');
 
 // Articles are announcements now: an address shared before still leads somewhere.

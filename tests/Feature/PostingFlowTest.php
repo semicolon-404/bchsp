@@ -253,9 +253,9 @@ class PostingFlowTest extends TestCase
 
         $this->get($address)
             ->assertOk()
-            ->assertSee('https://social-plugins.line.me/lineit/share?url='.urlencode($address), false)
-            ->assertSee('https://www.facebook.com/sharer/sharer.php?u='.urlencode($address), false)
-            ->assertSee('data-copy="'.$address.'"', false)
+            // One Share button, its short address, opening the window with LINE, Facebook and the address to copy.
+            ->assertSee('data-share-url="'.$announcement->shortUrl().'"', false)
+            ->assertSee('data-share-to="line"', false)->assertSee('data-share-to="facebook"', false)
             ->assertSeeInOrder(['Notice.pdf', 'Read it here', '<iframe src="'.Storage::disk('public')->url('announcements/files/notice.pdf').'#view=FitH"'], false);
 
         // One with no file has nothing to read in place.

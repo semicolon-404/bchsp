@@ -85,7 +85,7 @@
     @endif
     <div class="post-bar">
         <a href="{{ $url }}" class="post-action"><x-heroicon-o-book-open class="size-5" aria-hidden="true" />{{ __('Read') }}</a>
-        <button type="button" class="post-action" data-share-url="{{ $url }}" data-share-title="{{ $announcement->localTitle() }}" data-shared="{{ __('Link copied') }}">
+        <button type="button" class="post-action" data-share-url="{{ $announcement->shortUrl() }}" data-share-title="{{ $announcement->localTitle() }}" data-shared="{{ __('Link copied') }}">
             <x-heroicon-o-share class="size-5" aria-hidden="true" /><span data-share-label>{{ __('Share') }}</span>
         </button>
     </div>

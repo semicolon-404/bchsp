@@ -39,7 +39,8 @@ class QrAndSearchWordsTest extends TestCase
         $post = Announcement::factory()->create();
         $code = route('qr', ['to' => '/announcements/'.$post->slug]);
 
-        $this->get(route('announcements.show', $post))->assertSee('href="'.e($code).'"', false)->assertSee('QR code');
+        // In the share window (it fills its QR link with the short address as it opens).
+        $this->get(route('announcements.show', $post))->assertSee('data-share-to="qr"', false)->assertSee('QR code');
 
         $this->actingAs(User::factory()->create(['role' => Role::Admin]));
         Livewire::test(EditAnnouncement::class, ['record' => $post->getRouteKey()])

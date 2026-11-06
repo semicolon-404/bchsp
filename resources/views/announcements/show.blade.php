@@ -45,7 +45,7 @@
         @endif
 
         @if ($announcement->isPublished())
-            <x-site.share class="mt-4" :url="route('announcements.show', $announcement)" :title="$announcement->localTitle()" />
+            <x-site.share class="mt-4" :url="$announcement->shortUrl()" :title="$announcement->localTitle()" />
         @endif
 
         @if ($announcement->department?->is_active)
@@ -161,4 +161,6 @@
             </div>
         </section>
     @endif
+    {{-- The window that opens from Share. --}}
+    <x-site.share-sheet />
 </x-layouts.site>

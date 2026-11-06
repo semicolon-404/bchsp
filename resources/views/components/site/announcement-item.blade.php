@@ -52,7 +52,7 @@
         @endif
     </a>
     {{-- Beside the row, not in it (a button inside a link is no button): opens the share window (components/site/share-sheet). --}}
-    <button type="button" class="m-2 mt-4 grid size-10 shrink-0 place-items-center rounded-full text-muted hover:bg-page hover:text-brand" data-share-url="{{ route('announcements.show', $announcement) }}" data-share-title="{{ $announcement->localTitle() }}" data-shared="{{ __('Link copied') }}" title="{{ __('Share') }}">
+    <button type="button" class="m-2 mt-4 grid size-10 shrink-0 place-items-center rounded-full text-muted hover:bg-page hover:text-brand" data-share-url="{{ $announcement->shortUrl() }}" data-share-title="{{ $announcement->localTitle() }}" data-shared="{{ __('Link copied') }}" title="{{ __('Share') }}">
         <x-heroicon-o-share class="size-5" aria-hidden="true" /><span class="sr-only" data-share-label>{{ __('Share') }}</span>
     </button>
 </li>
