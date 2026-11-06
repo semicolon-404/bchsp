@@ -2089,9 +2089,9 @@ html.is-mourning {
         flex-direction: column;
     }
 
+    /* Rows keep their own height, close together; what is left over goes above the way to more news. */
     .news-list > li {
         display: flex;
-        flex: 1;
     }
 
     .news-list > li > a {
@@ -4975,4 +4975,24 @@ html.is-mourning {
     }
 
     .menu-list .menu-all:hover { background: var(--color-brand); color: var(--color-on-brand); }
+}
+
+@layer components {
+    /* The foot of the home page's list of news: the way to all of it. */
+    .news-list-more { margin-top: auto; border-top: 1px solid var(--color-line); border-bottom: 0 !important; }
+
+    .news-list-more a {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.4rem;
+        min-height: 3rem;
+        color: var(--color-brand);
+        font-weight: 600;
+        text-decoration: none;
+    }
+
+    .news-list-more a:hover { background: color-mix(in srgb, var(--color-brand) 7%, transparent); }
+    .news-list-more a:hover svg { transform: translateX(3px); }
+    .news-list-more svg { transition: transform 0.15s ease; }
 }

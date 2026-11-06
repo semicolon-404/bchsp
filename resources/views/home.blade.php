@@ -28,7 +28,7 @@
         now()->hour >= 16 && now()->hour < 19 => 'evening',
         default => 'night',
     };
-    $announcements = $shows('announcements') ? App\Models\Announcement::current()->with('type')->inListOrder()->limit(8)->get() : collect();
+    $announcements = $shows('announcements') ? App\Models\Announcement::current()->with('type')->inListOrder()->limit(6)->get() : collect();
     // The slides sit beside the announcements, unless an administrator gave them a section of their own.
     $slides = $shows('announcements') && ! $shows('slides') ? App\Models\Announcement::slides() : collect();
     // The departments that posted most lately, newest first: a way in to their own pages.
@@ -242,6 +242,8 @@
                             @foreach ($announcements as $announcement)
                                 <x-site.announcement-row :announcement="$announcement" />
                             @endforeach
+                            {{-- The newest six, then the way to the rest, at the foot of the list where the reader ends up. --}}
+                            <li class="news-list-more"><a href="{{ route('announcements.index') }}">{{ __('More news') }}<x-heroicon-m-arrow-right class="size-4" aria-hidden="true" /></a></li>
                         </ul>
                     @endif
                 </div>
