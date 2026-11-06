@@ -38,13 +38,14 @@
     <details class="menu-group relative shrink-0" data-menu>
         <summary class="account-me" aria-label="{{ $user->name }}" title="{{ $user->name }}">{{ $initials }}</summary>
         <div class="menu-list account-panel left-auto right-0">
-            <div class="account-who">
+            {{-- Who one is: a press opens one's profile. --}}
+            <a href="{{ route('filament.admin.auth.profile') }}" class="account-who" title="{{ __('Profile') }}">
                 <span class="account-me is-large" aria-hidden="true">{{ $initials }}</span>
                 <span class="min-w-0">
                     <span class="block truncate font-semibold">{{ $user->name }}</span>
                     <span class="block truncate text-xs text-muted">{{ $user->department?->localName() ?? ($user->isAdmin() ? __('Administrator') : $user->email) }}</span>
                 </span>
-            </div>
+            </a>
             {{-- Language and look, folded away behind the gear at the top right of the menu. --}}
             <details class="account-settings">
                 <summary class="account-gear" aria-label="{{ __('Language and display') }}" title="{{ __('Language and display') }}"><x-heroicon-o-cog-6-tooth class="size-5" aria-hidden="true" /></summary>

@@ -6020,3 +6020,10 @@ html.is-mourning {
     .account-settings[open] > .account-gear { transform: rotate(60deg); background: var(--color-raised); color: var(--color-brand); }
     .account-panel .account-settings > .account-prefs { border-top: 0; border-bottom: 1px solid var(--color-line); }
 }
+
+@layer components {
+    /* Who one is, at the top of one's menu: it leads to one's profile. */
+    .account-panel a.account-who { border-radius: 0; color: var(--color-ink); font-size: 1rem; text-decoration: none; }
+    .account-panel a.account-who:hover { background: var(--color-raised); color: var(--color-ink); }
+    .account-panel a.account-who .account-me.is-large { cursor: pointer; }
+}
